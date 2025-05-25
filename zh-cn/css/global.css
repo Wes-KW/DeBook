@@ -1,0 +1,154 @@
+div.left{
+    position:absolute;
+    float:left;
+    width:160px;
+    height:180px;
+    text-align: center;
+  }
+
+  div.left>a{
+    position:absolute;
+    float:left;
+    height:100%;
+    margin:auto;
+    text-align: center;
+    top:0px;
+    left:0px;
+    right:0px;
+    bottom:0px;
+  }
+
+  div.left img{
+    height:100%;
+    width:auto;
+  }
+
+  div.right{
+    position:relative;
+    float:left;
+    right:0px;
+    margin-left:175px;
+    width:81%;
+    width:-webkit-fill-available;
+    width:-moz-available;
+    width:-o-available;
+  }
+
+  div.right>*{
+    margin-bottom: 6px;
+    font-family: "system-ui";
+    font-family: fangsong;
+  }
+
+  div.right h3{
+    color:#0366d6;
+    font-weight: bolder;
+  }
+
+  div.right a{
+    color:inherit;
+  }
+
+  div.right a.ath{
+    margin-left: 15px;
+    color:#0F1111;
+    font-size: 20px;
+    font-weight: normal;
+  }
+
+  div.right a:hover{
+    text-decoration: underline solid 1px;
+  }
+
+  div.right p{
+    color: #565959;
+    font-size:16px;
+  }
+
+  div.right p.qlty{
+    color:#228b22;
+  }
+
+  i.star5d0, i.star4d5, i.star4d0, i.star3d5, i.star3d0, i.star2d5, i.star2d0, i.star1d5, i.star1d0, i.star0d5, i.star0d0{
+    position: relative;
+    width:80px;
+    height:18px;
+    background-image:url("../Image/src/amazon.png");
+    display: inline-block;
+    top:3px;
+    margin-left:2px;
+  }
+
+  i.star5d0{
+    background-position:-166px -36px;
+  }
+
+  i.star4d5{
+    background-position: -83px -27px;
+  }
+
+  i.star4d0{
+    background-position: -83px -7px;
+  }
+
+  i.star3d5{
+    background-position:-180px -56px;
+  }
+
+  i.star3d0{
+    background-position: -83px -47px;
+  }
+
+  i.star2d5{
+    background-position: -98px -68px;
+  }
+
+  i.star2d0{
+    background-position: -83px -76px;
+  }
+
+  i.star1d5{
+    background-position:-180px -56px;
+  }
+
+  i.star1d0{
+    background-position: -389px -163px;
+  }
+
+  i.star0d5{
+    background-position: -277px -119px;
+  }
+
+  i.star0d0{
+    background-position: -277px -100px;
+  }
+
+  p.abtn>a{
+    position:relative;
+    float:none;
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    padding:0.1em 0.2em;
+  }
+
+  p.bbtn{
+    font-size:15px;
+  }
+
+  p.bbtn>a{
+    position:relative;
+    float:none;
+    margin-right: 0px;
+    text-decoration: none;
+    padding:0.1em 0.2em;
+    font-family: "Consolas";
+  }
+
+  * {
+    backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;	/* Chrome 和 Safari */
+    -moz-backface-visibility:hidden; 	/* Firefox */
+    -ms-backface-visibility:hidden; 	/* Internet Explorer */
+  }

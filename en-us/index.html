@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <?php
+        include_once ".phtml/vrfylogin.php";
+        $home = true;
+        //include document files inside
+        include_once "home.i.html";
+        include_once "book.i.html";
+        include_once "author.i.html";
+        include_once "list.i.html";
+        include_once "search.i.html";
+        include_once "help.i.html";
+        include_once "apl.i.html";
+        include_once "cart.i.html";
+        include_once "usr.pre.i.html";
+        include_once "usr.i.html";
+        $usr = getPhpUser();
+        $preCSS = FBASE."css/";
+
+        function writeCss($fpath){
+            $file_handle = fopen($fpath,"r");
+            if($file_handle){
+                while(!feof($file_handle)){
+                    $line = fgets($file_handle);
+                    echo $line;
+                }
+            }
+            fclose($file_handle);
+        }
+
+        function getArgs($args){
+            if($args=="") return array();
+            $arr1 = explode("&","$args");
+            $arr2 = array();
+            for($i=0;$i<sizeof($arr1);$i++){
+                $iarr = explode("=",$arr1[$i]);
+                if(sizeof($iarr)<2) continue;
+                $arr2[$iarr[0]] = $iarr[1];
+            }
+            return $arr2;
+        }
+    ?>
+
+    <head>
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+        <title>DeBook - Used Book Store</title>
+        <link rel="icon" href="Image/debook.ico">
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+        <link rel="stylesheet" type="text/css" href="css/msgbox.css">
+        <link rel="stylesheet" type="text/css" href="css/input.css">
+        <link rel="stylesheet" type="text/css" href="css/table.css">
+        <link rel="stylesheet" type="text/css" href="css/global.css">
+    </head>
+    <!--body-->
+
+    <body>
+        <div id="tips_box" style="opacity:0">
+            <p></p>
+        </div>
+        <div class="MsgBox" style="top:-100%;">
+            <div class="middle_area"></div>
+        </div>
+        <div class="fix_area" style="position: fixed;">
+            <div id="notice_area">
+            <?php
+                $hiddenMsg = isset($_SESSION["hiddenMsg"])?$_SESSION["hiddenMsg"]:array();
+                $msgs = exeSql("SELECT msgid,innerHTML FROM msginfo WHERE status=1");
+                while($rows=mysqli_fetch_array($msgs,MYSQLI_ASSOC)){
+                    if(in_array($rows["msgid"],$hiddenMsg)) continue;
+                    echo urldecode(base64_decode($rows["innerHTML"]));
+                }
+            ?>
+            </div>
+            <div id="topbar">
+                <div class="con" style="height:100%;text-align: left;">
+                    <div style="position:relative;float:left;width:100%;height:100%">
+                        <a href="?" xhr id="title" style="position: absolute; float: left; height: auto;">
+                            <img id="Ticon" src="Image/debook.ico" alt="DeBook Icon">
+                            <img id="Theader" src="Image/main/DeBook_Title.png" alt="DeBook Text">
+                        </a>
+                        <ul>
+                            <li id="searchbox">
+                                <form onsubmit="return false;" style="left:-1px">
+                                    <div class="asbox_con">
+                                        <input class="asbox" placeholder="Search..."
+                                            style="margin-right:28px;background-color:transparent">
+                                        <div class="searchBut"></div>
+                                    </div>
+                                    <div class="asboxList_con" style="width:98%;display:none;" tabindex="1"
+                                        onfocus="extendBox(this.parentElement.parentElement,'auto',1);showListCon()"
+                                        onblur="extendBox(this.parentElement.parentElement,'',0);hideListCon()">
+                                        <div class="ini">
+                                            <div class="item_con">
+                                                <div><a href="javascript:;" onfocus="loadSearch('label:')">label:</a>&nbsp;Novel<span>Search with tags</span></div>
+                                                <div><a href="javascript:;" onfocus="loadSearch('book:')">book:</a>&nbsp;Harry Potter<span>Search by title</span></div>
+                                                <div><a href="javascript:;" onfocus="loadSearch('author:')">author:</a>&nbsp;Rowling<span>Search by author</span></div>
+                                            </div>
+                                            <div class="item_con">
+                                                <div><a href="javascript:;" onfocus="loadSearch('list:')">list:</a>&nbsp;Harry Potter Series<span>Search a list</span></div>
+                                                <div><a href="javascript:;" onfocus="loadSearch('help:')">help:</a><span>&nbsp;Search for help</span></div>
+                                                <div>More: <a href="javascript:;" onfocus="loadSearch()" style="color:#9fa6ad">Clear search box</a></div>
+                                            </div>
+                                        </div>
+                                        <div class="ini" style="font-size:14px;text-align: left;padding-bottom:0;display:none;">
+                                            You have entered selection mode, enter keyword and select the book you wish to sell. Press ESC to exit.
+                                        </div>
+                                        <div class="line" style="width: 100%;margin:12px 0;"></div>
+                                        <div class="ini" style="font-size:14px;text-align: left;">
+                                            No Relevant Result?&nbsp;&nbsp;<a xhr href="?help/search" style="color:#0366d6;" onblur="hideListCon();">Help</a>
+                                        </div>
+                                        <ul class="result_list" style="display: none"></ul>
+                                    </div>
+                                </form>
+                            </li>
+                        </ul>
+                        <div id="top_fn_bar">
+                            <ul>
+                                <li class="i0"><a class="button" xhr href="?cart" tips="Cart"
+                                        style="background-image:url('Image/fatcow/cart.png');"></a></li>
+                                <li class="i0"><a class="button" xhr href="?help" tips="Help"
+                                        style="background-image:url('Image/fatcow/help.png');"></a></li>
+                                <li class="i1"><a class="text_btn_default" xhr href="?account">
+                                        <?php echo $usr!=null?"Your Account":"Sign In";?>
+                                    </a></li>
+                                <li class="i2"><a class="text_btn" xhr href="<?php echo $usr!=null?"
+                                        javascript:signout();":"?account#signup";?>" >
+                                        <?php echo $usr!=null?"Sign Out":"Sign Up";?>
+                                    </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="_load">
+                <div id="_ld"></div>
+            </div>
+        </div>
+        <div id="main_body">
+            <div id="sectionBlank" style="height:100px"></div>
+            <div id="sectionCon">
+                <div class="section">
+                    <?php
+                        $q = $_SERVER["QUERY_STRING"];
+                        if($q==""||$q=="/"){
+                            writeHome();
+                        }else{
+                            if(strpos($q,"book")===0){
+                                $qindex = strpos($q,"/")!==false?strpos($q,"/")+1:strlen($q);
+                                $bokkey = substr($q,$qindex);
+                                if($bokkey==""){
+                                    writeBokMain();
+                                }else{
+                                    $bokkey = rawurldecode($bokkey);
+                                    writeBook($bokkey);
+                                }
+                                writeBookEdit();
+                            }else if(strpos($q,"author")===0){
+                                $qindex = strpos($q,"/")!==false?strpos($q,"/")+1:strlen($q);
+                                $aurkey = substr($q,$qindex);
+                                if($aurkey==""){
+                                    writeAurMain();
+                                }else{
+                                    $aurkey = rawurldecode($aurkey);
+                                    writeAuthor($aurkey);
+                                }
+                                writeAurEdit();
+                            }else if(strpos($q,"list")===0){
+                                $qindex = strpos($q,"/")!==false?strpos($q,"/")+1:strlen($q);
+                                $listkey = substr($q,$qindex);
+                                if($listkey==""){
+                                    writeListMain();
+                                }else{
+                                    $listkey = rawurldecode($listkey);
+                                    writeList($listkey);
+                                }
+                                writeListEdit();
+                            }else if(strpos($q,"account")===0){
+                                if($usr==null){
+                                    writePreUser();
+                                }else{
+                                    writeUsrPage();
+                                }
+                            }else if(strpos($q,"help")===0){
+                                if($q=="help"||$q=="help/"){
+                                    writeHelpMain(); 
+                                }else{
+                                    writeHelpInner(substr($q,strpos($q,"help/")+strlen("help/")));
+                                }
+                            }else if(strpos($q,"search")===0){
+                                $qindex = strpos($q,"/")!==false?strpos($q,"/")+1:strlen($q);
+                                $qindex2 = strpos($q,"&")!==false?strpos($q,"&"):strlen($q);
+                                $qindex3 = strpos($q,"&")!==false?strpos($q,"&")+1:strlen($q);
+                                $searchkey = substr($q,$qindex,$qindex2-$qindex);
+                                $otherArgs = substr($q,$qindex3);
+                                $argsArr = getArgs($otherArgs);
+                                writeSearch(rawurldecode($searchkey),getArray($argsArr,"page"),getArray($argsArr,"type"));
+                            }else if(strpos($q,"cart")===0){
+                                writeCartPage("");
+                            }else if(strpos($q,"apply")===0){
+                                $qindex = strpos($q,"/")!==false?strpos($q,"/")+1:strlen($q);
+                                $bookid = substr($q,$qindex);
+                                JSJudge($bookid);
+                            }else{
+                                echo <<<EOF
+                                    <div class="dcon">
+                                        <div class="innercon">
+                                            <div style="width:65%;z-index: 1;text-align: left;">
+                                                <h2 class="l" style="margin-bottom: 8px;">页面不存在</h2>
+                                                <p class="l">404 - 您所访问的页面不存在<br>请检查您的网址是否有错误</p>
+                                                <a class="btn" xhr href="?">返回主页</a>
+                                            </div>
+                                            <div k style="position:absolute;top:-24px;width:300px">
+                                                <svg style="position:relative;float:left;width:100%;-webkit-filter:grayscale(100%)" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 768 576">
+                                                    <defs>
+                                                        <linearGradient id="b" x1="162.84" gradientUnits="userSpaceOnUse" x2="162.84" gradientTransform="matrix(.70233 0 0 .6756 -3.924 6.49)" y1="439.45" y2="228.35">
+                                                            <stop stop-color="#fdd835" offset="0"></stop>
+                                                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                                                        </linearGradient>
+                                                        <filter id="g" color-interpolation-filters="sRGB">
+                                                            <feGaussianBlur stdDeviation="2.186"></feGaussianBlur>
+                                                        </filter>
+                                                        <filter id="e" color-interpolation-filters="sRGB">
+                                                            <feGaussianBlur stdDeviation="4.5"></feGaussianBlur>
+                                                        </filter>
+                                                        <filter id="k" width="1.026" y="-.165" x="-.013" height="1.331" color-interpolation-filters="sRGB">
+                                                            <feGaussianBlur stdDeviation="3.687"></feGaussianBlur>
+                                                        </filter>
+                                                        <filter id="c" width="1.033" y="-.104" x="-.016" height="1.209" color-interpolation-filters="sRGB">
+                                                            <feGaussianBlur stdDeviation="4.062"></feGaussianBlur>
+                                                        </filter>
+                                                        <linearGradient id="a">
+                                                            <stop stop-color="#fff" offset="0"></stop>
+                                                            <stop stop-opacity="0" stop-color="#fff" offset="1"></stop>
+                                                        </linearGradient>
+                                                        <filter id="n" width="1.026" y="-.165" x="-.013" height="1.331" color-interpolation-filters="sRGB">
+                                                            <feGaussianBlur stdDeviation="3.687"></feGaussianBlur>
+                                                        </filter>
+                                                        <filter id="m" width="1.033" y="-.104" x="-.016" height="1.209" color-interpolation-filters="sRGB">
+                                                            <feGaussianBlur stdDeviation="4.062"></feGaussianBlur>
+                                                        </filter>
+                                                        <linearGradient id="d" y2="285.22" gradientUnits="userSpaceOnUse" x2="360.36" y1="283.79" x1="342.5">
+                                                            <stop offset="0"></stop>
+                                                            <stop stop-color="#ccc" offset="1"></stop>
+                                                        </linearGradient>
+                                                        <linearGradient id="f" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68228 0 0 1.2202 967.34 -126.44)" y1="445.22" x1="564.42"></linearGradient><linearGradient id="h" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.70022 -.06541 -.01782 .44318 984.41 235.89)" y1="445.22" x1="564.42"></linearGradient><linearGradient id="i" y2="445.22" xlink:href="#b" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71448 -.15435 .00897 -.31646 979.33 599.82)" y1="445.22" x1="564.42"></linearGradient>
+                                                        <linearGradient id="j" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71803 .08687 -.02422 -.31389 995.29 518.54)" y1="445.22" x1="564.42"></linearGradient><linearGradient id="l" y2="445.22" xlink:href="#b" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71264 .17918 -.0368 -.30996 999.11 486.13)" y1="445.22" x1="564.42"></linearGradient><linearGradient id="o" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.67271 -.05464 -.01387 .40326 955.28 281.41)" y1="445.22" x1="564.42"></linearGradient>
+                                                        <linearGradient id="p" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68869 .084 -.02555 -.28535 967.79 538.45)" y1="445.22" x1="564.42"></linearGradient><linearGradient id="q" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68705 -.13544 .0063 -.28793 953.07 612.49)" y1="445.22" x1="564.42">
+                                                            <stop stop-color="#ffee58" offset="0"></stop>
+                                                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                                                        </linearGradient>
+                                                        <linearGradient id="r" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71448 .15435 .00897 .31646 970.76 250.51)" y1="445.22" x1="564.42">
+                                                            <stop stop-color="#ffee58" offset="0"></stop>
+                                                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                                                        </linearGradient>
+                                                        <linearGradient id="s" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.73092 .00801 -.05464 .31184 1010.7 281.9)" y1="445.22" x1="564.42">
+                                                            <stop stop-color="#ffee58" offset="0"></stop>
+                                                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                                                        </linearGradient>
+                                                        <linearGradient id="t" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.72479 .09476 -.01722 .31612 989.98 251.77)" y1="445.22" x1="564.42">
+                                                            <stop stop-color="#ffee58" offset="0"></stop>
+                                                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                                                        </linearGradient>
+                                                        <linearGradient id="u" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.72479 .09476 -.01722 .31612 995.87 238.35)" y1="445.22" x1="564.42">
+                                                            <stop stop-color="#ffee58" offset="0"></stop>
+                                                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                                                        </linearGradient>
+                                                        <linearGradient id="v" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.73086 -.01204 -.05293 -.31214 1017.3 570.96)" y1="445.22" x1="564.42">
+                                                            <stop stop-color="#fdd835" offset="0"></stop><stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                                                        </linearGradient>
+                                                        <radialGradient id="w" gradientUnits="userSpaceOnUse" cy="133.61" cx="14.817" gradientTransform="matrix(2.8644 0 0 2.343 738.15 127.24)" r="40.913">
+                                                            <stop stop-color="#f6f6aa" offset="0"></stop>
+                                                            <stop stop-opacity="0" stop-color="#f8f8ac" offset="1"></stop>
+                                                        </radialGradient>
+                                                    </defs>
+                                                    <path d="M335.11 255.73l663.28-80.86L334.34 291.5z" transform="matrix(.68228 0 0 -1.2055 -212.275 413)" opacity=".363" fill="#ffee58" filter="url(#c)"></path>
+                                                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -287.17)" fill="none" stroke="#000" stroke-width=".792"></path>
+                                                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -274.9)" fill="none" stroke="#000" stroke-width=".792"></path>
+                                                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -260.97)" stroke="#000" stroke-width="1.266"></path>
+                                                    <path d="M477.98 260.36L442.8 755.71l71.61 11.07 8.39-516.6z" fill="#b3b3b3" stroke="#b3b3b3"></path><path d="M522.98 250.36l40.714 6.429 27.143 503.57-76.071 7.142z" fill="#f2f2f2" stroke="#f2f2f2"></path>
+                                                    <path d="M563.69 256.78l20 12.857 41.071 481.07-33.75 9.464z" fill="#ececec" stroke="#ececec"></path><path d="M468.69 270.36l9.286-8.571-35.536 493.93-19.464-8.215z" fill="#999" stroke="#b3b3b3"></path>
+                                                    <path d="M536.9 494.32l26.895.126-1.515 55.432z" fill="#b3b3b3"></path><path d="M540.92 500.13l17.425.253.126 18.562-17.678-.127zm.05 20.93l17.425.253.126 18.562-17.678-.127zm-97.89 131.1l1.515-49.119 4.672-1.768-3.283 51.644zm15.59-199.06l1.515-49.119 4.672-1.768-3.283 51.644zm9.85-125.26l1.515-49.119 4.672-1.768-3.283 51.644z" stroke="#000"></path>
+                                                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -299.45)" fill="none" stroke="#000" stroke-width=".792"></path>
+                                                    <path d="M567.349 188.699a41.786 13.304 0 1 1-.004-.183"></path><path d="M297.95 302.54c17.309-10.51 57.09-7.151 72.143.536v-25.18c-21.019-12.346-47.757-13.053-71.786-1.606z" fill="url(#d)" stroke="#000" stroke-width="2.2" transform="translate(191.55 -84.15)"></path>
+                                                    <path d="M485.03 248.35c17.309-10.51 66.019-8.937 81.071-1.25v-25.179c-18.16-11.63-58.11-14.3-80.71-1.6z" stroke="#000"></path><path d="M513.07 160.21l13.036-10.714 11.964 11.071z" stroke="#000" stroke-linejoin="round"></path>
+                                                    <path d="M516.91 160l.357 16.071 16.43.536.535-16.25z" stroke="#000"></path>
+                                                    <path d="M525.84 152.86l.893-55.179M477.09 210.18l.536 34.107M462.26 224.64l.54 34.11m125.18-37.5l-.536 37.679M565.84 207.68l-.714 38.214" fill="none" stroke="#000"></path>
+                                                    <path d="M538.985 160.537a13.181 4.197 0 1 1-.001-.057"></path><path d="M557.73 191.91l-6.566 22.728m-7.074-1.518l-6.06-26.264" fill="none" stroke="#000" stroke-width="2.3"></path>
+                                                    <path d="M1013.6 197.14l-658.29 84.542v14.496s662.99 98.569 658.29 93.904z" transform="matrix(-.68228 0 0 1.1507 711.32 -134.302)" opacity=".668" fill="none" stroke="#fff" stroke-width="4.048" filter="url(#e)"></path>
+                                                    <path d="M286.77 301.95l439.86 97.468v17.688l-439.86 114.58z" opacity=".668" fill="url(#f)" transform="translate(-257.72 -210.44)"></path><path d="M1012.9 190.92l-657.59 94.611v5.7s660.74 108.96 656.04 104.29z" transform="matrix(-.68228 0 0 1.2202 711.32 -154.728)" opacity=".668" fill="none" stroke="#fff" stroke-width="4.048" filter="url(#g)"></path>
+                                                    <path d="M281.44 345.28l445.18 59.875v6.424l-450.25-1.9z" opacity=".668" fill="url(#h)" transform="translate(-257.72 -210.44)"></path><path d="M265.33 331.8l461.3 91.787v-4.588l-459.59-146.78z" opacity=".49" fill="url(#i)" transform="translate(-257.72 -210.44)"></path>
+                                                    <path d="M360.24 384.45l637.23-203.31-628.3 233.59z" transform="matrix(.6533 -.34756 -.19671 -1.1543 -147.12 760.92)" opacity=".363" fill="#80ffe6" filter="url(#c)"></path>
+                                                    <path d="M269.5 490.25l457.12-78.122v-4.55L266 435.896z" opacity=".668" fill="url(#j)" transform="translate(-257.72 -210.44)"></path><path d="M1015.4 297.01l-660.09-11.053v3.268l657.64 50.226z" transform="matrix(-.68228 0 0 1.2202 711.32 -154.728)" opacity=".313" fill="#fff" filter="url(#k)"></path>
+                                                    <path d="M281.24 466.99l445.38-46.915v-4.493l-452.31-6.95z" opacity=".413" fill="url(#l)" transform="translate(-257.72 -210.44)"></path>
+                                                    <path d="M335.11 255.73l690.19-66.12L334.34 291.5z" transform="matrix(.655 -.00473 -.00882 -1.0965 -201.033 430.01)" opacity=".363" fill="#ffee58" filter="url(#m)"></path>
+                                                    <path d="M1021.2 227.46l-692.97 45.145.044 3.267 690.48-5.972z" transform="matrix(-.655 .00473 .00893 1.1099 681.49 -92.81)" opacity=".313" fill="#fff" filter="url(#n)"></path><path d="M281.22 385.8l445.4 37.255v5.846l-449.81 15.513z" opacity=".668" fill="url(#o)" transform="translate(-257.72 -210.44)"></path>
+                                                    <path d="M281.2 403.46l445.42 22.099v-2.652l-449.18-68.864z" opacity=".668" fill="url(#p)" transform="translate(-257.72 -210.44)"></path><path d="M268.46 392.63l458.17 32.063v-4.174l-456.96-82.1z" opacity=".49" fill="#ffee58" transform="translate(-257.72 -210.44)"></path><path d="M261.2 515.57l465.42-87.279v4.588l-463.71 142.27z" opacity=".49" fill="url(#r)" transform="translate(-257.72 -210.44)"></path>
+                                                    <path d="M262.43 391.94l464.19 27.007v4.52L267 453.625z" opacity=".49" fill="url(#s)" transform="translate(-257.72 -210.44)"></path><path d="M260.94 457.27l465.68-29.23v4.583l-468.9 84.168z" opacity=".49" fill="url(#t)" transform="translate(-257.72 -210.44)"></path><path d="M266.84 443.85l459.78-22.943v4.583l-463.01 77.881z" opacity=".49" fill="url(#u)" transform="translate(-257.72 -210.44)"></path>
+                                                    <path d="M269.64 449.38l456.98-17.832v-4.525l-466.93-36.415z" opacity=".49" fill="url(#v)" transform="translate(-257.72 -210.44)"></path><path d="M897.77 440.28c0 52.925-52.449 95.838-117.16 95.854-64.709 0-117.18-42.881-117.22-95.822-.032-52.925 52.392-95.857 117.1-95.897 64.709-.04 117.21 42.828 117.28 95.753" opacity=".875" fill="url(#w)" transform="translate(-257.72 -210.44)"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <style>
+                                            div.dcon{background-image: none;overflow: hidden;}
+                                            div.dcon>div.innercon{height:auto;margin-bottom: 15px;}
+                                            div.dcon>div.innercon:last-child{margin-bottom: 0;}
+                                            div.dcon>div.innercon>div{position:relative;float:left;}
+                                            div.title{width:100%;}div[wborder]{border:1px solid #767676;}
+                                            div[innerbox]{padding:2px 6px;}h2.l{font-weight: normal;}
+                                            p.l{font-size:18px;line-height:1.779;color:#333;}
+                                            a.btn{position: relative;float: left;margin-top: 5px;font-size: 17px;padding: 2px 7px;margin-bottom: 10px;}
+                                            div.h{position: relative;float:left;width: 100%;}
+                                            div.h>div{position:relative;float:left;width:25%;margin-bottom: 16px;height:63px;}
+                                            div.infobox>div.icon{position:relative;float:left;margin:4px 8px;width:32px;height:32px;background-repeat: no-repeat;}
+                                            div.infobox>div.text{position:relative;float:left;max-width: 186px;text-align: left;white-space: normal;}
+                                            div.infobox>div.text>div.innertext{font-size:16px;color:#444;}div[k]{right:0px;}
+                                            @mediascreenand ( min-width : 0\0 ) {div[k]{right:-80%;}}
+                                            @media only screen and (max-width:1100px){div.h>div{width:33.3%;}
+                                            div.infobox>div.text{max-width:192px}}
+                                            @media only screen and (max-width:840px){div.h>div{width:50%;height:96px;}
+                                            div.infobox>div.text{max-width:160px}}
+                                        </style>
+                                    </div>
+                                EOF;
+                            }
+                        }
+                    ?>
+                </div>
+                <div class="con" id="bottom">
+                    <div class="line" style="width: 100%;"></div>
+                    <div class="bottom">DeBook | <a xhr href="?help/about/privacy">Privacy</a> | Add or Edit: <a xhr href="?book#edit">Entry for Book</a>,&nbsp;<a xhr href="?list#edit">Booklist</a>&nbsp;or&nbsp;<a xhr href="?author#edit">Entry for Author</a> |
+                        <a xhr href="?help/about">About Us</a>
+                        &nbsp;<a xhr href="?help/about/contact">Contact Us</a>
+                        &nbsp;<a xhr href="?help/about/share">Share</a>
+                        &nbsp;<a xhr href="?help">Support</a> |
+                        <a href="javascript:feedback();">Feedback</a> |
+                        <a href="admin">Admin</a> |
+                        Language
+                        <a href="javascript:;">English</a> |
+                        <a style="color:#757575">Last Update: Dec 11 2022</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="hidden" hidden></div>
+        <div id="picture_panel" style="display: none;">
+            <div id="panel">
+                <div id="pan_inner">
+                    <div id="viewBox">
+                        <div class="center">
+                            <img alt="书籍图像">
+                        </div>
+                    </div>
+                    <div id="consBox">
+                        <div class="title">
+                            <p></p>
+                            <p class="descri"></p>
+                            <p class="warning">此处图像仅供参考，商品真实图像请查看详细信息。</p>
+                            <p class="warning" style="background-color: #f1f8e9;border-color: forestgreen;">
+                                此处图像为真实图像，请务必检查商品图像是否和此书的细节描述一致。<a href="javascript:;" style="color:#800080">投诉商家</a></p>
+                        </div>
+                        <div class="picboxes">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="close_picture" tips="关闭图像浏览" onmouseover="showTooltip(this)" onmouseleave="hideTooltip()"
+                onclick="hidePicture()"><svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" viewBox="0 0 23 23">
+                    <path fill-opacity=".51"
+                        d="M19.65 0a.436.436 0 0 0-.282.125l-8.031 8L3.493.282C3.336.125 3.103.109 2.962.25L.274 2.938c-.14.141-.125.375.032.531l7.843 7.844-8.021 8.021c-.157.157-.172.422-.031.563l2.687 2.656c.141.141.375.126.532-.031l8.02-8.021 8.21 8.208c.156.157.39.173.531.032l2.688-2.688c.14-.14.125-.374-.032-.531l-8.209-8.209 8.032-8.031c.156-.157.172-.39.03-.531L19.9.094a.311.311 0 0 0-.25-.093z" />
+                    <path fill="#fff"
+                        d="M19.65.657a.32.32 0 0 0-.22.093l-8.093 8.094L3.43.938a.316.316 0 0 0-.438 0L1.306 2.625a.316.316 0 0 0 0 .438l7.906 7.906-8.094 8.094a.316.316 0 0 0 0 .437l1.719 1.688a.278.278 0 0 0 .406 0l8.094-8.094 8.281 8.281c.118.118.32.118.438 0l1.687-1.718a.278.278 0 0 0 0-.407l-8.281-8.28 8.094-8.095a.316.316 0 0 0 0-.437L19.868.75a.32.32 0 0 0-.219-.093z" />
+                </svg></button>
+        </div>
+        <style id="cstyle">
+            <?php
+                $access =array("book", "author", "list", "account", "apply", "cart", "help", "search");
+                $q =$_SERVER["QUERY_STRING"];
+                $qindex =strpos($q, "/") !==false?strpos($q, "/"):strlen($q);
+                $qindex2 =strpos($q, "&") !==false?strpos($q, "&"):strlen($q);
+                $qindex =$qindex<$qindex2?$qindex: $qindex2;
+                $csspath =substr($q, 0, $qindex);
+
+                if(in_array($csspath, $access)) {
+                    if($csspath=="apply") {
+                        $csspath ="apl";
+                    }
+
+                    else if($csspath=="account") {
+                        if($usr==null) {
+                            $csspath ="usr.pre";
+                        }
+
+                        else {
+                            $csspath ="usr";
+                        }
+                    }
+
+                    $csspath .=".i.css";
+                    echo writeCss($preCSS.$csspath);
+                }
+            ?>
+        </style>
+    </body>
+    <!--style-->
+    <style>
+        * {
+            font-family: "Times New Roman";
+        }
+
+        img {
+            image-rendering: auto;
+        }
+
+        div.rcon {
+            background-image: -webkit-linear-gradient(45deg, #f0f0f0, #fff);
+            background-image: -moz-linear-gradient(45deg, #f0f0f0, #fff);
+            background-image: -ms-linear-gradient(45deg, #f0f0f0, #fff);
+            background-color: #fafafa;
+            padding: 0px;
+        }
+
+        div[rconId="1"] {
+            width: 100%;
+            height: 100%;
+            background-image: url('Image/main/spine_of_book_711x466.png');
+            background-repeat: no-repeat;
+            background-size: 711px 466px;
+            background-position-x: 420px;
+            background-position-y: 144px;
+            height: 590px;
+        }
+
+        div[textArea] {
+            position: absolute;
+            float: left;
+            text-align: left;
+            width: auto;
+            max-width: 320px;
+            height: auto;
+            left: 55px;
+            top: 105px;
+        }
+
+        div[textArea]>* {
+            position: relative;
+            float: left;
+            margin-bottom: 7px;
+        }
+
+        div[textArea]>.break {
+            width: 100%;
+            background-color: transparent;
+        }
+
+        div[textArea]>a.btn {
+            float: left;
+            margin-top: 2px;
+            font-size: 20px;
+            padding: 2px 7px;
+        }
+
+        div#topbar>div.con ul.result_list {
+            position: relative;
+            float: left;
+            text-align: left;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        div#topbar>div.con ul ul.result_list>li {
+            width: 100%;
+            padding: 0;
+            font-size: 16px;
+            text-align: left;
+            border-bottom: 1px solid #c4c4c4;
+            transition: none;
+        }
+
+        div#topbar>div.con ul ul.result_list>li>a {
+            float: left;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        div#topbar>div.con ul ul.result_list>li>a>span[img] {
+            position: absolute;
+            float: left;
+            width: 27px;
+            height: 39px;
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            border-right: 1px solid #c4c4c4;
+        }
+
+        div#topbar>div.con ul ul.result_list>li>a p {
+            position: relative;
+            float: none;
+            padding: 3px 0 1px 0;
+            margin-left: 32px;
+            line-height: 105%;
+        }
+
+        div#topbar>div.con ul ul.result_list>li>a p>span {
+            position: relative;
+            float: left;
+            width: 100%;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow-x: hidden;
+        }
+
+        div#topbar>div.con ul ul.result_list>li>a font.small {
+            font-size: 13px;
+            color: #666;
+        }
+
+        div#topbar>div.con ul ul.result_list>li:last-child {
+            border-bottom: 0;
+        }
+
+        div#topbar>div.con ul ul.result_list>li:hover,
+        div#topbar>div.con ul ul.result_list>li[selected] {
+            background-color: #e0e0e0;
+        }
+
+        div#topbar>div.con ul ul.result_list>li:active {
+            background-color: #dbdbdb;
+        }
+
+        /*scroll bar*/
+        div {
+            scrollbar-face-color: white;
+            scrollbar-track-color: #606060;
+            scrollbar-arrow-color: white;
+        }
+
+        div::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+            background-color: transparent;
+        }
+
+        div::-webkit-scrollbar-thumb {
+            border-radius: 3px;
+            background-color: #c4c4c4;
+        }
+
+        div::-webkit-scrollbar-thumb:hover {
+            background-color: #a4a4a4;
+        }
+
+        div::-webkit-scrollbar-button {
+            background-color: #fff;
+            width: 0px;
+            height: 0px;
+        }
+
+        span.price>span {
+            float: left;
+            margin-right: 3px;
+        }
+
+        /*_load bar*/
+        div#_load {
+            position: relative;
+            float: left;
+            width: 100%;
+            height: 5px;
+        }
+
+        div#_ld {
+            position: relative;
+            float: left;
+            width: 0%;
+            height: 100%;
+            background-color: #228b22;
+            box-shadow: 0px 1px 4px 0px #bdbdbd;
+            transition: width 0.2s ease 0s;
+        }
+
+        div#_ld[infinite] {
+            width: 100%;
+        }
+
+        button.asbox_submit {
+            margin-right: 10px;
+        }
+
+        p#page_title {
+            display: none;
+        }
+
+        div.asboxList_con>div.ini {
+            padding: 12px;
+        }
+
+        div.asboxList_con>div.ini>div.item_con {
+            position: relative;
+            float: left;
+            width: 50%;
+            text-align: left;
+        }
+
+        div.asboxList_con div.item_con>div {
+            width: 100%;
+            margin-bottom: 8px;
+            color: #3B4045;
+            font-size: 15px;
+        }
+
+        div.asboxList_con div.item_con>div>span {
+            margin-left: 5px;
+            color: #9fa6ad;
+        }
+
+
+        div#picture_panel {
+            position: fixed;
+            float: left;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            background-color: rgba(97, 97, 97, 0.67);
+            text-align: center;
+            overflow-y: auto;
+        }
+
+        div#picture_panel>div#panel {
+            position: relative;
+            float: left;
+            padding: 15px 20px;
+            width: calc(92% - 40px);
+            height: calc(100% - 140px);
+            min-height: 400px;
+            max-height: 540px;
+            margin: 55px 4%;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 1px 1px 5px 0px #757575;
+        }
+
+        div#picture_panel div#pan_inner {
+            position: relative;
+            float: left;
+            margin: 20px 0;
+            width: 100%;
+            height: calc(100% - 40px);
+        }
+
+        div#picture_panel div#viewBox {
+            position: relative;
+            float: left;
+            height: 100%;
+            width: calc(100% - 320px);
+            text-align: center;
+        }
+
+        div#picture_panel div#viewBox>div.center {
+            position: relative;
+            text-align: center;
+            height: 100%;
+            width: auto;
+            margin: 0 auto;
+        }
+
+        div#picture_panel div#viewBox img {
+            height: 100%;
+            box-shadow: 0px 1px 5px 1px #bdbdbd;
+        }
+
+        div#picture_panel div#consBox {
+            position: absolute;
+            float: right;
+            width: 320px;
+            height: 100%;
+            right: 0px;
+            overflow-y: auto;
+        }
+
+        div#picture_panel div#consBox>div.title {
+            position: relative;
+            float: left;
+        }
+
+        div#picture_panel div#consBox>div.title>p {
+            font-size: 28px;
+            color: #002020;
+            text-align: left;
+        }
+
+        div#picture_panel div#consBox>div.title>p.descri {
+            margin: 5px 0;
+            font-size: 17px;
+            color: #767676;
+        }
+
+        div#picture_panel div#consBox>div.title>p.warning {
+            width: calc(100% - 16px);
+            font-size: 16px;
+            padding: 2px 6px;
+            border: 1px solid #0288d1;
+            background-color: #e1f5fe;
+            border-radius: 3px;
+        }
+
+        div#picture_panel div#consBox div.picboxes {
+            position: relative;
+            float: left;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        div#picture_panel div#consBox a.picbox {
+            position: relative;
+            float: left;
+            height: 56px;
+            width: auto;
+            margin: 0 6px 5px 0;
+            cursor: pointer;
+            border: 2px solid #c4c4c4;
+        }
+
+        div#picture_panel div#consBox a.picbox[selected],
+        div#picture_panel div#consBox a.picbox[selected]:hover {
+            border-color: #1571d9;
+        }
+
+        div#picture_panel div#consBox a.picbox[selected] span.pageNum,
+        div#picture_panel div#consBox a.picbox[selected]:hover span.pageNum {
+            color: #1571d9;
+        }
+
+        div#picture_panel div#consBox a.picbox:hover {
+            border-color: #454545;
+        }
+
+        div#picture_panel div#consBox a.picbox:hover span.pageNum {
+            color: #202122;
+        }
+
+        div#picture_panel div#consBox a.picbox>img {
+            padding: 3px 2px;
+            height: calc(100% - 6px);
+            width: auto;
+        }
+
+        div#picture_panel div#consBox a.picbox>span.pageNum {
+            position: absolute;
+            text-align: center;
+            left: 0px;
+            width: 100%;
+            height: auto;
+            padding: 19px 0;
+            background-color: #fff6;
+            color: #9e9e9e;
+            font-weight: bold;
+            font-family: consolas;
+            font-size: 14px;
+        }
+
+        div#picture_panel>button#close_picture {
+            position: fixed;
+            right: 4px;
+            top: 8px;
+            background-color: transparent;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        @media only screen and (max-width: 870px) {
+            div#picture_panel>div#panel {
+                height: auto;
+                max-height: none;
+            }
+
+            div#picture_panel div#viewBox {
+                width: 100%;
+            }
+
+            div#picture_panel div#viewBox img {
+                height: 420px;
+            }
+
+            div#picture_panel div#consBox {
+                position: relative;
+                float: left;
+                width: 100%;
+                margin-top: 15px;
+            }
+
+            div#picture_panel div#consBox>div.title {
+                display: none;
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg)
+            }
+
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @-webkit-keyframes spin {
+            from {
+                -webkit-transform: rotate(0deg)
+            }
+
+            to {
+                -webkit-transform: rotate(360deg)
+            }
+        }
+
+        @-moz-keyframes spin {
+            from {
+                -moz-transform: rotate(0deg)
+            }
+
+            to {
+                -moz-transform: rotate(360deg)
+            }
+        }
+
+        @media only screen and (max-width:996px) {
+            div.asboxList_con>div.ini>div.item_con {
+                width: 100%;
+            }
+        }
+    </style>
+    <!--script-->
+    <script type="text/javascript" src="script/jquery.1.7.2.js"></script>
+    <script type="text/javascript" src="script/jquery.md5.js"></script>
+    <script type="text/javascript" src="script/home.js"></script>
+    <script type="text/javascript" src="script/search.js"></script>
+    <script type="text/javascript" src="script/edit.js"></script>
+    <script type="text/javascript" src="script/usr.pre.js"></script>
+    <script type="text/javascript" src="script/usr.js"></script>
+    <script type="text/javascript" src="script/apply.js"></script>
+    <script type="text/javascript" src="script/cart.js"></script>
+    <script type="text/javascript" src="script/deliver.js"></script>
+    <script type="text/javascript" src="script/table.js"></script>
+    <script type="text/javascript" src="script/utils.js"></script>
+    <script>
+        var editMode = -1;
+        var editData = ["bok", "aur", "bkl"];
+        var firstLoad = true;
+        var force_stay = false;
+
+        function scrollTop() {
+            window.scrollTo(0, 0);
+        }
+
+        function forceStay() {
+            force_stay = true;
+        }
+
+        function extraInit() {
+            initAllLink();
+            initSearch();
+            firstLoad = false;
+            window.onpopstate = function () {
+                firstLoad = false;
+                initPage();
+            }
+        }
+
+        function blResize() {
+            var l = document.getElementsByClassName("pleft");
+            var r = document.getElementsByClassName("pright");
+            if (window.innerWidth < 840) {
+                for (var i = 0; i < l.length; i++) {
+                    l[i].setAttribute("s", "");
+                    r[i].setAttribute("s", "");
+                }
+            } else {
+                for (var i = 0; i < l.length; i++) {
+                    l[i].removeAttribute("s");
+                    r[i].removeAttribute("s");
+                }
+            }
+        }
+
+        function usrResize() {
+            var l = document.getElementsByClassName("pleft");
+            var r = document.getElementsByClassName("pright");
+            if (window.innerWidth < 840) {
+                for (var i = 0; i < l.length; i++) {
+                    l[i].setAttribute("r", "");
+                    r[i].setAttribute("r", "");
+                }
+            } else {
+                for (var i = 0; i < l.length; i++) {
+                    l[i].removeAttribute("r");
+                    r[i].removeAttribute("r");
+                }
+            }
+        }
+
+        function searchAdvance(obj) {
+            var n = obj.parentElement.parentElement;
+            var i = in_array(n.parentElement.children, n);
+            var h = n.parentElement.children[i + 1];
+            if (h.style.display == "block") {
+                h.style.display = "none";
+                obj.innerHTML = "显示高级选项";
+            } else {
+                h.style.display = "block";
+                obj.innerHTML = "隐藏高级选项";
+            }
+        }
+
+        function tab(obj, num) {
+            var o = obj.parentElement.children;
+            for (var i = 0; i < o.length; i++) {
+                if (o[i].hasAttribute("selected")) {
+                    o[i].removeAttribute('selected');
+                    break;
+                }
+            }
+            obj.setAttribute('selected', '');
+            var d = obj.parentElement.parentElement.children[1].children;
+            for (var i = 0; i < d.length; i++) {
+                d[i].style.display = "none";
+                if (num == i) d[i].style.display = "block";
+            }
+        }
+
+        function addEvent(event, fn, obj) {
+            if (obj == null) {
+                obj = window;
+            }
+            if (obj.addEventListener != null) {
+                obj.addEventListener(event, fn);
+            } else {
+                obj.attachEvent("on" + event, fn);
+            }
+        }
+
+        function removeEvent(event, fn, obj) {
+            if (obj == null) {
+                obj = window;
+            }
+            if (obj.removeEventListener != null) {
+                obj.removeEventListener(event, fn);
+            } else {
+                obj.dispatchEvent("on" + event, fn);
+            }
+        }
+
+        var judgeLoadLogin = false;
+
+        function bokShowAllContent(obj) {
+            var obj2 = obj.parentElement.parentElement.children[4];
+            if (obj2.hasAttribute("hidtext")) {
+                obj2.removeAttribute("hidtext");
+                obj.innerText = "显示更少内容";
+            } else {
+                obj2.setAttribute("hidtext", "");
+                obj.innerText = "显示所有内容";
+            }
+        }
+
+        function aurShowAllContent(obj) {
+            var obj2 = obj.parentElement.parentElement.children[1];
+            if (obj2.hasAttribute("hidtext")) {
+                obj2.removeAttribute("hidtext");
+                obj.innerText = "显示更少内容";
+            } else {
+                obj2.setAttribute("hidtext", "");
+                obj.innerText = "显示所有内容";
+            }
+        }
+
+        function bklShowAllContent(obj) {
+            var obj2 = obj.parentElement.parentElement.children[0];
+            if (obj2.hasAttribute("hidtext")) {
+                obj2.removeAttribute("hidtext");
+                obj.innerText = "显示更少内容";
+            } else {
+                obj2.setAttribute("hidtext", "");
+                obj.innerText = "显示所有内容";
+            }
+        }
+
+        function completeEvent(fn) {
+            if (judgeLoadLogin) {
+                fn();
+            } else {
+                tita(function () {
+                    completeEvent(fn)
+                }, 100);
+            }
+        }
+
+        function initAllLink() {
+            var a = document.getElementsByTagName("a");
+            var fnClick = function (href) {
+                putHis("", "", href);
+                hideTooltip();
+                gotoPage(href);
+            }
+            for (var i = 0; i < a.length; i++) {
+                if (a[i].hasAttribute("href") && a[i].hasAttribute("xhr")) {
+                    if (a[i].getAttribute("href").indexOf("javascript") < 0) {
+                        a[i].onclick = function (e) {
+                            e.preventDefault();
+                            fnClick(this.getAttribute("href"));
+                        }
+                    }
+                }
+            }
+        }
+
+        function showNetWorkFatalPage(href, post) {
+            if (href == "apl.i.html") href = "?apply";
+            else if (href == "usr.i.html" || href == "usr.pre.i.html") href = "?account";
+            else if (href == "home.i.html") {
+                href = "";
+            }
+            else href = "?" + href.substr(0, href.length - 7);
+            if (href != "") {
+                href += "/" + post;
+            }
+            document.getElementsByClassName("section")[0].innerHTML = "<div class=\"dcon\"><div class=\"innercon\"><div style=\"width:65%;z-index: 1;text-align: left;\"><h2 class=\"l\" style=\"margin-bottom: 8px;\">网络连接不可用</h2><p class=\"l\">网络连接不可用，请检查您的网络状态<br>确认网络正常后尝试重新加载。</p><a class=\"btn\" xhr href=\"" + href + "\">重新加载</a></div><div k style=\"position:absolute;top:-24px;width:300px\"><svg style=\"position:relative;float:left;width:100%;-webkit-filter:grayscale(100%)\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 768 576\"><defs><linearGradient id=\"b\" x1=\"162.84\" gradientUnits=\"userSpaceOnUse\" x2=\"162.84\" gradientTransform=\"matrix(.70233 0 0 .6756 -3.924 6.49)\" y1=\"439.45\" y2=\"228.35\"><stop stop-color=\"#fdd835\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><filter id=\"g\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"2.186\"></feGaussianBlur></filter><filter id=\"e\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"4.5\"></feGaussianBlur></filter><filter id=\"k\" width=\"1.026\" y=\"-.165\" x=\"-.013\" height=\"1.331\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"3.687\"></feGaussianBlur></filter><filter id=\"c\" width=\"1.033\" y=\"-.104\" x=\"-.016\" height=\"1.209\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"4.062\"></feGaussianBlur></filter><linearGradient id=\"a\"><stop stop-color=\"#fff\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fff\" offset=\"1\"></stop></linearGradient><filter id=\"n\" width=\"1.026\" y=\"-.165\" x=\"-.013\" height=\"1.331\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"3.687\"></feGaussianBlur></filter><filter id=\"m\" width=\"1.033\" y=\"-.104\" x=\"-.016\" height=\"1.209\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"4.062\"></feGaussianBlur></filter><linearGradient id=\"d\" y2=\"285.22\" gradientUnits=\"userSpaceOnUse\" x2=\"360.36\" y1=\"283.79\" x1=\"342.5\"><stop offset=\"0\"></stop><stop stop-color=\"#ccc\" offset=\"1\"></stop></linearGradient><linearGradient id=\"f\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.68228 0 0 1.2202 967.34 -126.44)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"h\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.70022 -.06541 -.01782 .44318 984.41 235.89)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"i\" y2=\"445.22\" xlink:href=\"#b\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71448 -.15435 .00897 -.31646 979.33 599.82)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"j\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71803 .08687 -.02422 -.31389 995.29 518.54)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"l\" y2=\"445.22\" xlink:href=\"#b\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71264 .17918 -.0368 -.30996 999.11 486.13)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"o\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.67271 -.05464 -.01387 .40326 955.28 281.41)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"p\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.68869 .084 -.02555 -.28535 967.79 538.45)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"q\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.68705 -.13544 .0063 -.28793 953.07 612.49)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"r\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71448 .15435 .00897 .31646 970.76 250.51)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"s\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.73092 .00801 -.05464 .31184 1010.7 281.9)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"t\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.72479 .09476 -.01722 .31612 989.98 251.77)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"u\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.72479 .09476 -.01722 .31612 995.87 238.35)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"v\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.73086 -.01204 -.05293 -.31214 1017.3 570.96)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#fdd835\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><radialGradient id=\"w\" gradientUnits=\"userSpaceOnUse\" cy=\"133.61\" cx=\"14.817\" gradientTransform=\"matrix(2.8644 0 0 2.343 738.15 127.24)\" r=\"40.913\"><stop stop-color=\"#f6f6aa\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#f8f8ac\" offset=\"1\"></stop></radialGradient></defs><path d=\"M335.11 255.73l663.28-80.86L334.34 291.5z\" transform=\"matrix(.68228 0 0 -1.2055 -212.275 413)\" opacity=\".363\" fill=\"#ffee58\" filter=\"url(#c)\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -287.17)\" fill=\"none\" stroke=\"#000\" stroke-width=\".792\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -274.9)\" fill=\"none\" stroke=\"#000\" stroke-width=\".792\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -260.97)\" stroke=\"#000\" stroke-width=\"1.266\"></path><path d=\"M477.98 260.36L442.8 755.71l71.61 11.07 8.39-516.6z\" fill=\"#b3b3b3\" stroke=\"#b3b3b3\"></path><path d=\"M522.98 250.36l40.714 6.429 27.143 503.57-76.071 7.142z\" fill=\"#f2f2f2\" stroke=\"#f2f2f2\"></path><path d=\"M563.69 256.78l20 12.857 41.071 481.07-33.75 9.464z\" fill=\"#ececec\" stroke=\"#ececec\"></path><path d=\"M468.69 270.36l9.286-8.571-35.536 493.93-19.464-8.215z\" fill=\"#999\" stroke=\"#b3b3b3\"></path><path d=\"M536.9 494.32l26.895.126-1.515 55.432z\" fill=\"#b3b3b3\"></path><path d=\"M540.92 500.13l17.425.253.126 18.562-17.678-.127zm.05 20.93l17.425.253.126 18.562-17.678-.127zm-97.89 131.1l1.515-49.119 4.672-1.768-3.283 51.644zm15.59-199.06l1.515-49.119 4.672-1.768-3.283 51.644zm9.85-125.26l1.515-49.119 4.672-1.768-3.283 51.644z\" stroke=\"#000\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -299.45)\" fill=\"none\" stroke=\"#000\" stroke-width=\".792\"></path><path d=\"M567.349 188.699a41.786 13.304 0 1 1-.004-.183\"></path><path d=\"M297.95 302.54c17.309-10.51 57.09-7.151 72.143.536v-25.18c-21.019-12.346-47.757-13.053-71.786-1.606z\" fill=\"url(#d)\" stroke=\"#000\" stroke-width=\"2.2\" transform=\"translate(191.55 -84.15)\"></path><path d=\"M485.03 248.35c17.309-10.51 66.019-8.937 81.071-1.25v-25.179c-18.16-11.63-58.11-14.3-80.71-1.6z\" stroke=\"#000\"></path><path d=\"M513.07 160.21l13.036-10.714 11.964 11.071z\" stroke=\"#000\" stroke-linejoin=\"round\"></path><path d=\"M516.91 160l.357 16.071 16.43.536.535-16.25z\" stroke=\"#000\"></path><path d=\"M525.84 152.86l.893-55.179M477.09 210.18l.536 34.107M462.26 224.64l.54 34.11m125.18-37.5l-.536 37.679M565.84 207.68l-.714 38.214\" fill=\"none\" stroke=\"#000\"></path><path d=\"M538.985 160.537a13.181 4.197 0 1 1-.001-.057\"></path><path d=\"M557.73 191.91l-6.566 22.728m-7.074-1.518l-6.06-26.264\" fill=\"none\" stroke=\"#000\" stroke-width=\"2.3\"></path><path d=\"M1013.6 197.14l-658.29 84.542v14.496s662.99 98.569 658.29 93.904z\" transform=\"matrix(-.68228 0 0 1.1507 711.32 -134.302)\" opacity=\".668\" fill=\"none\" stroke=\"#fff\" stroke-width=\"4.048\" filter=\"url(#e)\"></path><path d=\"M286.77 301.95l439.86 97.468v17.688l-439.86 114.58z\" opacity=\".668\" fill=\"url(#f)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M1012.9 190.92l-657.59 94.611v5.7s660.74 108.96 656.04 104.29z\" transform=\"matrix(-.68228 0 0 1.2202 711.32 -154.728)\" opacity=\".668\" fill=\"none\" stroke=\"#fff\" stroke-width=\"4.048\" filter=\"url(#g)\"></path><path d=\"M281.44 345.28l445.18 59.875v6.424l-450.25-1.9z\" opacity=\".668\" fill=\"url(#h)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M265.33 331.8l461.3 91.787v-4.588l-459.59-146.78z\" opacity=\".49\" fill=\"url(#i)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M360.24 384.45l637.23-203.31-628.3 233.59z\" transform=\"matrix(.6533 -.34756 -.19671 -1.1543 -147.12 760.92)\" opacity=\".363\" fill=\"#80ffe6\" filter=\"url(#c)\"></path><path d=\"M269.5 490.25l457.12-78.122v-4.55L266 435.896z\" opacity=\".668\" fill=\"url(#j)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M1015.4 297.01l-660.09-11.053v3.268l657.64 50.226z\" transform=\"matrix(-.68228 0 0 1.2202 711.32 -154.728)\" opacity=\".313\" fill=\"#fff\" filter=\"url(#k)\"></path><path d=\"M281.24 466.99l445.38-46.915v-4.493l-452.31-6.95z\" opacity=\".413\" fill=\"url(#l)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M335.11 255.73l690.19-66.12L334.34 291.5z\" transform=\"matrix(.655 -.00473 -.00882 -1.0965 -201.033 430.01)\" opacity=\".363\" fill=\"#ffee58\" filter=\"url(#m)\"></path><path d=\"M1021.2 227.46l-692.97 45.145.044 3.267 690.48-5.972z\" transform=\"matrix(-.655 .00473 .00893 1.1099 681.49 -92.81)\" opacity=\".313\" fill=\"#fff\" filter=\"url(#n)\"></path><path d=\"M281.22 385.8l445.4 37.255v5.846l-449.81 15.513z\" opacity=\".668\" fill=\"url(#o)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M281.2 403.46l445.42 22.099v-2.652l-449.18-68.864z\" opacity=\".668\" fill=\"url(#p)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M268.46 392.63l458.17 32.063v-4.174l-456.96-82.1z\" opacity=\".49\" fill=\"#ffee58\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M261.2 515.57l465.42-87.279v4.588l-463.71 142.27z\" opacity=\".49\" fill=\"url(#r)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M262.43 391.94l464.19 27.007v4.52L267 453.625z\" opacity=\".49\" fill=\"url(#s)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M260.94 457.27l465.68-29.23v4.583l-468.9 84.168z\" opacity=\".49\" fill=\"url(#t)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M266.84 443.85l459.78-22.943v4.583l-463.01 77.881z\" opacity=\".49\" fill=\"url(#u)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M269.64 449.38l456.98-17.832v-4.525l-466.93-36.415z\" opacity=\".49\" fill=\"url(#v)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M897.77 440.28c0 52.925-52.449 95.838-117.16 95.854-64.709 0-117.18-42.881-117.22-95.822-.032-52.925 52.392-95.857 117.1-95.897 64.709-.04 117.21 42.828 117.28 95.753\" opacity=\".875\" fill=\"url(#w)\" transform=\"translate(-257.72 -210.44)\"></path></svg></div></div><style>		div.dcon{background-image: none;overflow: hidden;}div.dcon>div.innercon{height:auto;margin-bottom: 15px;}div.dcon>div.innercon:last-child{margin-bottom: 0;}div.dcon>div.innercon>div{position:relative;float:left;}div.title{width:100%;}div[wborder]{border:1px solid #767676;}div[innerbox]{padding:2px 6px;}h2.l{font-weight: normal;}p.l{font-size:18px;line-height:1.779;color:#333;}a.btn{position: relative;float: left;margin-top: 5px;font-size: 17px;padding: 2px 7px;margin-bottom: 10px;}div.h{position: relative;float:left;width: 100%;}div.h>div{position:relative;float:left;width:25%;margin-bottom: 16px;height:63px;}div.infobox>div.icon{position:relative;float:left;margin:4px 8px;width:32px;height:32px;background-repeat: no-repeat;}div.infobox>div.text{position:relative;float:left;max-width: 186px;text-align: left;white-space: normal;}div.infobox>div.text>div.innertext{font-size:16px;color:#444;}div[k]{right:0px;}@mediascreenand ( min-width : 0\0 ) {div[k]{right:-80%;}}@media only screen and (max-width:1100px){div.h>div{width:33.3%;}div.infobox>div.text{max-width:192px}}@media only screen and (max-width:840px){div.h>div{width:50%;height:96px;}div.infobox>div.text{max-width:160px}}	</style></div>";
+            var cstyle = document.getElementById("cstyle");
+            cstyle.innerHTML = "";
+            initAllLink();
+            resize();
+            var title = document.getElementsByTagName("title")[0];
+            title.innerText = "DeBook - Used Book Store";
+            firstLoad = false;
+        }
+
+        function loadTitle(title) {
+            document.title = title;
+        }
+
+        function loadTitleFromObj(obj) {
+            if (obj == null || typeof obj == "undefined") return;
+            loadTitle(obj.innerHTML);
+        }
+
+        function loadPage(href, post, animation, extraFn) {
+            if (firstLoad) {
+                firstLoad = false;
+                initAllLink();
+                window.setTimeout(function () {
+                    resize();
+                }, 200);
+                if (extraFn != null) {
+                    extraFn();
+                }
+                return;
+            }
+            current_step = 0;
+            //start init
+            var myan = animation == null ? true : animation;
+            var css = "css/" + href.substr(0, href.length - 4) + "css";
+            if (myan) {
+                $('#_ld').css('opacity', '1');
+            }
+            pageCompleted = false;
+            newXMLHttpRequest("POST", css, post, function (cssRspt) {
+                newXMLHttpRequest("POST", href, post, function (htmlRspt) {
+                    var cstyle = document.getElementById("cstyle");
+                    cstyle.innerHTML = cssRspt;
+                    var sec = document.getElementsByClassName("section")[0];
+                    sec.innerHTML = htmlRspt;
+                    initAllLink();
+                    window.scrollTo(0, 0);
+                    window.setTimeout(function () {
+                        resize();
+                    }, 200);
+                    if (extraFn != null) {
+                        extraFn();
+                    }
+                }, function () {
+                    showNetWorkFatalPage(href, post);
+                }, function (e) {
+                    if (e.lengthComputable && myan) {
+                        pageEvent = e;
+                        loadBar(50);
+                    }
+                }, function () {
+                    pageCompleted = true;
+                    $('#_ld').css('width', '100%');
+                    window.setTimeout(function () {
+                        $('#_ld').css('opacity', '0');
+                        $('#_ld').css('width', '0%');
+                    }, 400);
+                });
+            }, function () {
+                showNetWorkFatalPage(href, post);
+            }, function (e) {
+                if (e.lengthComputable && myan) {
+                    pageEvent = e;
+                    loadBar();
+                }
+            }, function () {
+                pageCompleted = true;
+            });
+        }
+
+        function goHome() {
+            if (!firstLoad) {
+                loadPage("home.i.html", "homeKey=write", null, function () {
+                    loadTitleFromObj(document.getElementById("page_title"));
+                });
+            }
+        }
+
+        function goNullPage() {
+            if (!firstLoad) {
+                document.getElementsByClassName("section")[0].innerHTML = "<div class=\"dcon\"><div class=\"innercon\"><div style=\"width:65%;z-index: 1;text-align: left;\"><h2 class=\"l\" style=\"margin-bottom: 8px;\">页面不存在</h2><p class=\"l\">404 - 您所访问的页面不存在<br>请检查您的网址是否有错误</p><a class=\"btn\" xhr href=\"?\">返回主页</a></div><div k style=\"position:absolute;top:-24px;width:300px\"><svg style=\"position:relative;float:left;width:100%;-webkit-filter:grayscale(100%)\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 768 576\"><defs><linearGradient id=\"b\" x1=\"162.84\" gradientUnits=\"userSpaceOnUse\" x2=\"162.84\" gradientTransform=\"matrix(.70233 0 0 .6756 -3.924 6.49)\" y1=\"439.45\" y2=\"228.35\"><stop stop-color=\"#fdd835\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><filter id=\"g\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"2.186\"></feGaussianBlur></filter><filter id=\"e\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"4.5\"></feGaussianBlur></filter><filter id=\"k\" width=\"1.026\" y=\"-.165\" x=\"-.013\" height=\"1.331\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"3.687\"></feGaussianBlur></filter><filter id=\"c\" width=\"1.033\" y=\"-.104\" x=\"-.016\" height=\"1.209\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"4.062\"></feGaussianBlur></filter><linearGradient id=\"a\"><stop stop-color=\"#fff\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fff\" offset=\"1\"></stop></linearGradient><filter id=\"n\" width=\"1.026\" y=\"-.165\" x=\"-.013\" height=\"1.331\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"3.687\"></feGaussianBlur></filter><filter id=\"m\" width=\"1.033\" y=\"-.104\" x=\"-.016\" height=\"1.209\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"4.062\"></feGaussianBlur></filter><linearGradient id=\"d\" y2=\"285.22\" gradientUnits=\"userSpaceOnUse\" x2=\"360.36\" y1=\"283.79\" x1=\"342.5\"><stop offset=\"0\"></stop><stop stop-color=\"#ccc\" offset=\"1\"></stop></linearGradient><linearGradient id=\"f\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.68228 0 0 1.2202 967.34 -126.44)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"h\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.70022 -.06541 -.01782 .44318 984.41 235.89)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"i\" y2=\"445.22\" xlink:href=\"#b\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71448 -.15435 .00897 -.31646 979.33 599.82)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"j\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71803 .08687 -.02422 -.31389 995.29 518.54)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"l\" y2=\"445.22\" xlink:href=\"#b\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71264 .17918 -.0368 -.30996 999.11 486.13)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"o\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.67271 -.05464 -.01387 .40326 955.28 281.41)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"p\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.68869 .084 -.02555 -.28535 967.79 538.45)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"q\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.68705 -.13544 .0063 -.28793 953.07 612.49)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"r\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71448 .15435 .00897 .31646 970.76 250.51)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"s\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.73092 .00801 -.05464 .31184 1010.7 281.9)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"t\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.72479 .09476 -.01722 .31612 989.98 251.77)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"u\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.72479 .09476 -.01722 .31612 995.87 238.35)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"v\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.73086 -.01204 -.05293 -.31214 1017.3 570.96)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#fdd835\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><radialGradient id=\"w\" gradientUnits=\"userSpaceOnUse\" cy=\"133.61\" cx=\"14.817\" gradientTransform=\"matrix(2.8644 0 0 2.343 738.15 127.24)\" r=\"40.913\"><stop stop-color=\"#f6f6aa\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#f8f8ac\" offset=\"1\"></stop></radialGradient></defs><path d=\"M335.11 255.73l663.28-80.86L334.34 291.5z\" transform=\"matrix(.68228 0 0 -1.2055 -212.275 413)\" opacity=\".363\" fill=\"#ffee58\" filter=\"url(#c)\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -287.17)\" fill=\"none\" stroke=\"#000\" stroke-width=\".792\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -274.9)\" fill=\"none\" stroke=\"#000\" stroke-width=\".792\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -260.97)\" stroke=\"#000\" stroke-width=\"1.266\"></path><path d=\"M477.98 260.36L442.8 755.71l71.61 11.07 8.39-516.6z\" fill=\"#b3b3b3\" stroke=\"#b3b3b3\"></path><path d=\"M522.98 250.36l40.714 6.429 27.143 503.57-76.071 7.142z\" fill=\"#f2f2f2\" stroke=\"#f2f2f2\"></path><path d=\"M563.69 256.78l20 12.857 41.071 481.07-33.75 9.464z\" fill=\"#ececec\" stroke=\"#ececec\"></path><path d=\"M468.69 270.36l9.286-8.571-35.536 493.93-19.464-8.215z\" fill=\"#999\" stroke=\"#b3b3b3\"></path><path d=\"M536.9 494.32l26.895.126-1.515 55.432z\" fill=\"#b3b3b3\"></path><path d=\"M540.92 500.13l17.425.253.126 18.562-17.678-.127zm.05 20.93l17.425.253.126 18.562-17.678-.127zm-97.89 131.1l1.515-49.119 4.672-1.768-3.283 51.644zm15.59-199.06l1.515-49.119 4.672-1.768-3.283 51.644zm9.85-125.26l1.515-49.119 4.672-1.768-3.283 51.644z\" stroke=\"#000\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -299.45)\" fill=\"none\" stroke=\"#000\" stroke-width=\".792\"></path><path d=\"M567.349 188.699a41.786 13.304 0 1 1-.004-.183\"></path><path d=\"M297.95 302.54c17.309-10.51 57.09-7.151 72.143.536v-25.18c-21.019-12.346-47.757-13.053-71.786-1.606z\" fill=\"url(#d)\" stroke=\"#000\" stroke-width=\"2.2\" transform=\"translate(191.55 -84.15)\"></path><path d=\"M485.03 248.35c17.309-10.51 66.019-8.937 81.071-1.25v-25.179c-18.16-11.63-58.11-14.3-80.71-1.6z\" stroke=\"#000\"></path><path d=\"M513.07 160.21l13.036-10.714 11.964 11.071z\" stroke=\"#000\" stroke-linejoin=\"round\"></path><path d=\"M516.91 160l.357 16.071 16.43.536.535-16.25z\" stroke=\"#000\"></path><path d=\"M525.84 152.86l.893-55.179M477.09 210.18l.536 34.107M462.26 224.64l.54 34.11m125.18-37.5l-.536 37.679M565.84 207.68l-.714 38.214\" fill=\"none\" stroke=\"#000\"></path><path d=\"M538.985 160.537a13.181 4.197 0 1 1-.001-.057\"></path><path d=\"M557.73 191.91l-6.566 22.728m-7.074-1.518l-6.06-26.264\" fill=\"none\" stroke=\"#000\" stroke-width=\"2.3\"></path><path d=\"M1013.6 197.14l-658.29 84.542v14.496s662.99 98.569 658.29 93.904z\" transform=\"matrix(-.68228 0 0 1.1507 711.32 -134.302)\" opacity=\".668\" fill=\"none\" stroke=\"#fff\" stroke-width=\"4.048\" filter=\"url(#e)\"></path><path d=\"M286.77 301.95l439.86 97.468v17.688l-439.86 114.58z\" opacity=\".668\" fill=\"url(#f)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M1012.9 190.92l-657.59 94.611v5.7s660.74 108.96 656.04 104.29z\" transform=\"matrix(-.68228 0 0 1.2202 711.32 -154.728)\" opacity=\".668\" fill=\"none\" stroke=\"#fff\" stroke-width=\"4.048\" filter=\"url(#g)\"></path><path d=\"M281.44 345.28l445.18 59.875v6.424l-450.25-1.9z\" opacity=\".668\" fill=\"url(#h)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M265.33 331.8l461.3 91.787v-4.588l-459.59-146.78z\" opacity=\".49\" fill=\"url(#i)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M360.24 384.45l637.23-203.31-628.3 233.59z\" transform=\"matrix(.6533 -.34756 -.19671 -1.1543 -147.12 760.92)\" opacity=\".363\" fill=\"#80ffe6\" filter=\"url(#c)\"></path><path d=\"M269.5 490.25l457.12-78.122v-4.55L266 435.896z\" opacity=\".668\" fill=\"url(#j)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M1015.4 297.01l-660.09-11.053v3.268l657.64 50.226z\" transform=\"matrix(-.68228 0 0 1.2202 711.32 -154.728)\" opacity=\".313\" fill=\"#fff\" filter=\"url(#k)\"></path><path d=\"M281.24 466.99l445.38-46.915v-4.493l-452.31-6.95z\" opacity=\".413\" fill=\"url(#l)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M335.11 255.73l690.19-66.12L334.34 291.5z\" transform=\"matrix(.655 -.00473 -.00882 -1.0965 -201.033 430.01)\" opacity=\".363\" fill=\"#ffee58\" filter=\"url(#m)\"></path><path d=\"M1021.2 227.46l-692.97 45.145.044 3.267 690.48-5.972z\" transform=\"matrix(-.655 .00473 .00893 1.1099 681.49 -92.81)\" opacity=\".313\" fill=\"#fff\" filter=\"url(#n)\"></path><path d=\"M281.22 385.8l445.4 37.255v5.846l-449.81 15.513z\" opacity=\".668\" fill=\"url(#o)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M281.2 403.46l445.42 22.099v-2.652l-449.18-68.864z\" opacity=\".668\" fill=\"url(#p)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M268.46 392.63l458.17 32.063v-4.174l-456.96-82.1z\" opacity=\".49\" fill=\"#ffee58\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M261.2 515.57l465.42-87.279v4.588l-463.71 142.27z\" opacity=\".49\" fill=\"url(#r)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M262.43 391.94l464.19 27.007v4.52L267 453.625z\" opacity=\".49\" fill=\"url(#s)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M260.94 457.27l465.68-29.23v4.583l-468.9 84.168z\" opacity=\".49\" fill=\"url(#t)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M266.84 443.85l459.78-22.943v4.583l-463.01 77.881z\" opacity=\".49\" fill=\"url(#u)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M269.64 449.38l456.98-17.832v-4.525l-466.93-36.415z\" opacity=\".49\" fill=\"url(#v)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M897.77 440.28c0 52.925-52.449 95.838-117.16 95.854-64.709 0-117.18-42.881-117.22-95.822-.032-52.925 52.392-95.857 117.1-95.897 64.709-.04 117.21 42.828 117.28 95.753\" opacity=\".875\" fill=\"url(#w)\" transform=\"translate(-257.72 -210.44)\"></path></svg></div></div><style>		div.dcon{background-image: none;overflow: hidden;}div.dcon>div.innercon{height:auto;margin-bottom: 15px;}div.dcon>div.innercon:last-child{margin-bottom: 0;}div.dcon>div.innercon>div{position:relative;float:left;}div.title{width:100%;}div[wborder]{border:1px solid #767676;}div[innerbox]{padding:2px 6px;}h2.l{font-weight: normal;}p.l{font-size:18px;line-height:1.779;color:#333;}a.btn{position: relative;float: left;margin-top: 5px;font-size: 17px;padding: 2px 7px;margin-bottom: 10px;}div.h{position: relative;float:left;width: 100%;}div.h>div{position:relative;float:left;width:25%;margin-bottom: 16px;height:63px;}div.infobox>div.icon{position:relative;float:left;margin:4px 8px;width:32px;height:32px;background-repeat: no-repeat;}div.infobox>div.text{position:relative;float:left;max-width: 186px;text-align: left;white-space: normal;}div.infobox>div.text>div.innertext{font-size:16px;color:#444;}div[k]{right:0px;}@mediascreenand ( min-width : 0\0 ) {div[k]{right:-80%;}}@media only screen and (max-width:1100px){div.h>div{width:33.3%;}div.infobox>div.text{max-width:192px}}@media only screen and (max-width:840px){div.h>div{width:50%;height:96px;}div.infobox>div.text{max-width:160px}}	</style></div>";
+                loadTitle("404 - DeBook - Used Book Store");
+            }
+            var cstyle = document.getElementById("cstyle");
+            cstyle.innerHTML = "";
+            initAllLink();
+            resize();
+        }
+
+        function gotoPage(arg, bool) {
+            if (typeof editMode != "undefined" && editMode != null) {
+                editMode = -1;
+            }
+            if (arg.length != 0) {
+                arg = arg.substr(1, arg.length - 1);
+            }
+            if (arg.indexOf("#") >= 0) {
+                arg = arg.substr(0, arg.indexOf("#"));
+            }
+            var arg2 = arg.split("/");
+            var args = [arg2[0], arg2.slice(1).join("/")];
+            page = ["book", "author", "list", "account", "help", "search", "cart", "apply"];
+            var idx = in_array(page, args[0]);
+            if (idx == -1) {
+                if (args[0] == "") {
+                    //load this page
+                    goHome();
+                } else {
+                    goNullPage();
+                }
+            } else {
+                if (args[1] == null || typeof args[1] == "undefined") {
+                    args[1] = "";
+                }
+                if (idx == 0) {
+                    loadPage("book.i.html", "bokkey=" + args[1], bool, function () {
+                        loadTitleFromObj(document.getElementById("page_title"));
+                        blResize();
+                        addEvent("resize", function () {
+                            blResize();
+                        });
+                        editMode = 0;
+                        if (window.location.hash.indexOf("#edit") >= 0) {
+                            showEdit();
+                            var h = window.location.hash;
+                            var ds = h.split("&");
+                            for (var i = 0; i < ds.length; i++) {
+                                if (ds[i] == "") continue;
+                                if (ds[i].split("=")[0] == "book-fill" && ds[i].split("=").length == 2) {
+                                    document.getElementById("book_name").value = decodeURI(ds[i].split("=")[1]);
+                                } else if (ds[i].split("=")[0] == "author-fill" && ds[i].split("=").length == 2) {
+                                    document.getElementById("author_name").value = decodeURI(ds[i].split("=")[1]);
+                                }
+                            }
+                        }
+                        if (window.location.hash == "#redeem") {
+                            var redeemRow = document.getElementById("redeemRow");
+                            if (typeof redeemRow == "undefined" || redeemRow == null) return;
+                            window.setTimeout(function () {
+                                scrollTo(0, redeemRow.getClientRects()[0].y);
+                                shakeBox(redeemRow, "leftRight", 4, 100, 30);
+                            }, 200);
+                        }
+                    });
+                } else if (idx == 1) {
+                    loadPage("author.i.html", "aurkey=" + args[1], bool, function () {
+                        loadTitleFromObj(document.getElementById("page_title"));
+                        blResize();
+                        addEvent("resize", function () {
+                            blResize();
+                        });
+                        editMode = 1;
+                        if (window.location.hash.indexOf("#edit") >= 0) {
+                            showEdit();
+                        }
+                        if (window.location.hash == "#book") {
+                            var ed = document.getElementById('author_books');
+                            if (typeof ed == "undefined" || ed == null) return;
+                            window.setTimeout(function () {
+                                scrollTo(0, window.scrollY + ed.getClientRects()[0].y);
+                                shakeBox(ed.children[0], "leftRight", 4, 125, 25);
+                            }, 200);
+                        }
+                    });
+                } else if (idx == 2) {
+                    loadPage("list.i.html", "listkey=" + args[1], bool, function () {
+                        loadTitleFromObj(document.getElementById("page_title"));
+                        blResize();
+                        addEvent("resize", function () {
+                            blResize();
+                        });
+                        editMode = 2;
+                        if (window.location.hash.indexOf("#edit") >= 0) {
+                            showEdit();
+                        }
+                        if (window.location.hash == "#book") {
+                            var ed = document.getElementById('list_books');
+                            if (typeof ed == "undefined" || ed == null) return;
+                            window.setTimeout(function () {
+                                scrollTo(0, window.scrollY + ed.getClientRects()[0].y);
+                                shakeBox(ed.children[0], "leftRight", 4, 125, 25);
+                            }, 200);
+                        }
+                    });
+                } else if (idx == 3) {
+                    //account manipulation
+                    loadTitle("DeBook 账户");
+                    completeEvent(function () {
+                        judgeUsr();
+                    });
+                } else if (idx == 4) {
+                    loadPage("help.i.html", "helpPath=" + args[1], bool, function () {
+                        loadTitleFromObj(document.getElementById("page_title"));
+                    });
+                } else if (idx == 5) {
+                    loadPage("search.i.html", "searchkey=" + args[1], bool, function () {
+                        loadTitleFromObj(document.getElementById("page_title"));
+                    });
+                } else if (idx == 6) {
+                    var newItem = "";
+                    if (args[1].indexOf("newItem") >= 0) {
+                        newItem = "&newItem=" + args[1].split("/").slice(1).join("/");
+                        args[1] = args[1].split("/")[0];
+                    }
+                    loadPage("cart.i.html", "cartKey=" + args[1] + newItem, bool, function () {
+                        loadTitleFromObj(document.getElementById("page_title"));
+                    });
+                } else if (idx == 7) {
+                    loadPage("apl.i.html", "aplKey=" + args[1], bool, function () {
+                        loadTitleFromObj(document.getElementById("page_title"));
+                        if (isSellMode) {
+                            searchSell();
+                        }
+                        usrResize();
+                        initApply();
+                        addEvent("resize", function () {
+                            usrResize();
+                        });
+                    });
+                }
+            }
+        }
+
+        function judgeUsr() {
+            if (usr.usrid != "" && typeof usr.usrid != "undefined") {
+                loadPage("usr.i.html", "", null, function () {
+                    //view account info
+                    initAllLink();
+                    initUsrPage();
+                    usrResize();
+                    addEvent("resize", function () {
+                        usrResize();
+                    });
+                });
+            } else {
+                loadPage("usr.pre.i.html", "", null, function () {
+                    if (window.location.hash == "#signup") {
+                        lp(1);
+                    } else if (window.location.hash == "#forget") {
+                        lp(2);
+                    } else if (window.location.hash == "#login") {
+                        lp(0);
+                    }
+                    resize();
+                    initUsrForm();
+                });
+            }
+        }
+
+        function initPage() {
+            var s = window.location.search;
+            var h = window.location.href;
+            if (h.indexOf("?") >= 0) {
+                h = h.substr(h.indexOf("?"));
+                gotoPage(h);
+            } else {
+                goHome();
+            }
+        }
+
+        var pageEvent;
+        var pageCompleted = false;
+
+        function loadBar(i) {
+            if (i == null) i = 0;
+            var pageComplete = (pageEvent.loaded / pageEvent.total * 100 / 2 + i | 0);
+            $('#_ld').css('width', pageComplete + '%');
+            if (!pageCompleted) {
+                setTimeout(function () {
+                    loadBar(i);
+                }, 1);
+            }
+        }
+
+        function getHashContinue() {
+            var str = window.location.hash;
+            var nexturl = "";
+            if (str.indexOf("#continue") == 0) {
+                nexturl = str.substr(str.indexOf("=") + 1);
+            }
+            return nexturl;
+        }
+
+        function showAllPicture(bookid) {
+            newXMLHttpRequest("POST", ".phtml/search.php", "searchKey=pic&str=" + bookid, function (rspt) {
+                var d = JSON.parse(rspt);
+                var name = decodeURI(d["names"]);
+                while (name.indexOf("%2F") >= 0) name = name.replace("%2F", "/");
+                var picpath = d["picpath"] == "" ? [] : d["picpath"].split(":");
+                if (picpath.length == 0) return;
+                var pan = document.getElementById("picture_panel");
+                var vb = document.getElementById("viewBox");
+                var titlebox = document.getElementById("consBox").children[0].children[0];
+                titlebox.innerHTML = name;
+                vb.children[0].children[0].src = picpath[0];
+                var pb = document.getElementsByClassName("picboxes")[0];
+                pb.innerHTML = "";
+                for (var i = 0; i < picpath.length; i++) {
+                    pb.innerHTML += "<a class=\"picbox\" onclick=\"selectPic(this)\"><img src=\"Image/book/" + picpath[i] + "\"></a>";
+                }
+                pb.children[0].click();
+                var warn = document.getElementsByClassName('warning');
+                warn[0].parentElement.style.display = "";
+                warn[0].style.display = "block";
+                warn[1].style.display = "none";
+                pan.style.display = "block";
+                document.body.style.overflow = "hidden";
+                document.getElementsByClassName("descri")[0].innerHTML = "";
+            }, function (stObj) {
+                if (stObj.status == 0) {
+                    advice = "Please make sure you are online";
+                } else if (stObj.status == 403) {
+                    advice = "Please make sure you have permission to access this page";
+                } else if (stObj.status == 404 || stObj.status == 500) {
+                    advice = "Please make sure that there is no error in the access path";
+                }
+                showMsgbox(msgbox, '<h3 style="width:100%">Network Error</h3><p>An error occurred while accessing the network. The page returned code: ' + stObj.status + '，' + advice + '.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
+            });
+        }
+
+        function selectPic(item) {
+            var p = item.parentElement.children;
+            var ind = in_array(p, item);
+            for (var i = 0; i < p.length; i++) {
+                if (i == ind) {
+                    p[i].setAttribute("selected", "");
+                } else {
+                    p[i].removeAttribute("selected");
+                }
+            }
+            document.getElementById('viewBox').children[0].children[0].src = item.children[0].src;
+        }
+
+        function hidePicture() {
+            var pan = document.getElementById("picture_panel");
+            pan.style.display = "none";
+            document.body.style.overflow = "";
+        }
+
+        initPage();
+        resize();
+        window.onresize = function () { resize(); };
+    </script>
+
+</html>

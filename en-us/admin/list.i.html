@@ -1,0 +1,101 @@
+<?php
+    include "../.phtml/admin.php";
+    $condata = getcon(getArray($_POST, "id"));
+    $data = (array) json_decode($condata["object"]);
+    $data = decodeTextInArr($data);
+
+    //preparing images
+    $o = explode(":", $data["images"]);
+    $bigImage_str = $o[0] == "" ? "<a edit title=\"Booklist image\" style=\"color:#999\">Booklist editor did not upload any images</a>" : "<a edit title=\"Booklist image\"><img src=\"../Image/tmp/" . $o[0] . "/" . urldecode(base64_decode($o[1])) . "\" alt=\"book_name_picture\"></a>";
+    //preparing all the data
+    $ln = $data["list_name"];
+    $lbn = $data["label_name"];
+    $cn = $data["contents"];
+    $si = $data["searchIndex"] == "" ? "(empty)" : $data["searchIndex"];
+    $di = $data["book_name"];
+    $editText = isset($data["editId"]) ? "Edit booklist" : "Add booklist";
+    $usr = decodeInfo($condata["contributor"]);
+    $email = $usr["email"] == "!" || $usr["email"] == "" ? "(anonymous)" : $usr["email"];
+    $ip = $condata["ip"];
+    $date = getLongDate($condata["date"]);
+    $object = $condata["object"];
+    $btn = $condata["status"] == 0 ? '<button class="asbox_submit" id="but_continue"><span>Continue</span></button><button class="asbox_submit" shallow id="but_ignore"><span>Ignore</span></button><button class="asbox_submit" shallow id="but_cancel"><span>Cancel</span></button>' : '<button class="asbox_submit" shallow id="but_cancel"><span>Cancel</span></button>';
+    echo <<<PAGE
+        <div class="dcon" style="margin-top: 15px;" id="editBoard">
+            <div class="scon">
+                <div class="pleft">
+                    <div class="_image" id="imagebox">
+                        $bigImage_str
+                        <div class="line"></div>
+                        <a style="float: left;color:#999">Image of the Booklist</a>
+                    </div>
+                </div>
+                <div class="pright">
+                    <div class="title">
+                        <div class="asbox_con" edit>
+                            <p title>&nbsp;Name*</p>
+                            <input class="asbox" placeholder="Name" onfocus="boxstyle(this.parentElement,1)"
+                                onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="list_name" value="$ln">
+                        </div>
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;Tags&nbsp;<a xhr href="../?search/label/all/">All labels</a></p>
+                            <input class="asbox" placeholder="Tags" onfocus="boxstyle(this.parentElement,1)"
+                                onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="label_name" value="$lbn">
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="detail">
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;A description of Booklist*&nbsp;:&nbsp;<a>200 words or more recommended</a></p>
+                            <textarea class="asbox" onfocus="boxstyle(this.parentElement,1)"
+                                onblur="boxstyle(this.parentElement,0)" id="contents">$cn</textarea>
+                        </div>
+                    </div>
+                    <div class="detail" style="margin-top: 10px;">
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;Contains books*</p>
+                            <input class="asbox" placeholder="Book name" onfocus="boxstyle(this.parentElement,1)"
+                                onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="book_name" value="$di">
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="detail">
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;Search Index&nbsp;<a xhr href="../?help/labelling">Have questions? View help</a></p>
+                            <input class="asbox" placeholder="Search index" onfocus="boxstyle(this.parentElement,1)"
+                                onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="search_index" value="$si">
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <p style="margin-bottom: 5px;"><b>The following is the data submitted by the user</b></p>
+                    <div class="detail">
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;Applicant email</p>
+                            <div class="asbox">$email</div>
+                            <!--Requests can be added or modified-->
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;User IP</p>
+                            <div class="asbox">$ip</div>
+                            <!--Requests can be added or modified-->
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;Request time</p>
+                            <div class="asbox">$date</div>
+                            <!--Request can be added or modified-->
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;This request belongs to the following behavior</p>
+                            <div class="asbox">$editText</div>
+                            <!--The request can be added or modified-->
+                        </div>
+                    </div>
+                    <div class="line" style="margin:5px 0 15px 0;"></div>
+                    <div class="detail" style="margin-bottom: 20px;">
+                        $btn
+                    </div>
+                </div>
+            </div>
+        </div>
+    PAGE;
+?>

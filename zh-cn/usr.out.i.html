@@ -1,0 +1,11 @@
+<?php
+  include ".phtml/vrfylogin.php";
+  //cookie must be set before header;
+  if(getArray($_POST,'action')=="logout"){
+    clearUsr();
+    sleep(0.5);
+  }
+  $pl = $_SERVER["HTTP_HOST"];
+  header("Location: http://$pl/db.cn/?account");
+  exit();
+?>

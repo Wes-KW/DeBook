@@ -1,0 +1,115 @@
+div.menu{
+    margin-bottom: 20px;
+    color: #9e9e9e;
+    text-align: left;
+    font-size: 17px;
+    overflow-y: hidden;
+    overflow-x: auto;
+    white-space: nowrap;
+    text-align: center;
+}
+
+div.pleft{
+    position:relative;
+    float:left;
+    min-width:100px;
+    width:23%;
+    margin-top:10px;
+}
+
+div.pleft>div{
+    position:relative;
+    float:left;
+    width: 100%;
+}
+
+div.pright{
+    position:relative;
+    float:right;
+    margin:0px;
+    width:72%;
+}
+
+div.pright>div{
+    position:relative;
+    float:left;
+    width: 100%;
+}
+
+div.headBox{
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+div.headBox img{
+    position:relative;
+    float:left;
+    width:100%;
+}
+
+div.detail{
+    position:relative;
+    float:left;
+    width:100%;
+}
+
+div.detail>*{
+    position: relative;
+    float:left;
+}
+
+div.detail[whiteboard]{
+    background-color: white;
+    border: 1px solid #c4c4c4;
+}
+
+div.whiteboard{
+    position:relative;
+    float:left;
+    width:98%;
+    margin:4px 1%;
+}
+
+div.row{
+    position:relative;
+    float:left;
+    width:100%;
+    margin-bottom: 0px;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: left;
+}
+
+/*edit*/
+div.asbox_con[edit]{
+    margin-bottom: 10px;
+}
+
+div.asbox_con[edit]>div.asbox{
+    overflow-wrap: break-word;
+}
+
+p[title]{
+    background-color: #eeeeee;
+}
+
+textarea{
+    font-family: "Cambria";
+    letter-spacing: 0.5px;
+    font-size: 17px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+p[console]{
+    font-size: 17px;
+    background-color: #fbf3d5;
+    border-bottom:1px solid #f1e5bc;
+    color:#333;
+}
+
+div.asbox{
+    padding:3px .8%;
+    background-color: #fdf7e2;
+    font-size: 17px;
+    color:#3b4045;
+}

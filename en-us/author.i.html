@@ -1,0 +1,316 @@
+<?php
+    include_once '.phtml/apply.php';
+
+    function writeAurMain(){
+        echo <<<MAINPAGE
+        <div class="rcon" style="background-image:-webkit-linear-gradient(top,#e0e0e0 -50%,#f9fbe7 50%,#fff 100%)">
+            <div rconId="1" id="pic" style='background-image: url("Image/main/spine_of_book_711x466.png"); opacity: 1;'>
+            </div>
+            <div textArea>
+                <h2 style="font-size:40px;">Author</h2>
+                <br>
+                <h3 style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;">This is the main page of entry for author</a></h3>
+                <a class="btn" onclick="focusSearch('author:')">Search for author</a>
+                <div class="break"></div>
+                <a class="btn" onclick="focusSearch('author:')">Add a book entry to author</a>
+                <div class="break"></div>
+                <h3 style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;">You may also want to</h3>
+                <div class="break"></div>
+                <a class="btn" href="javascript:showEdit();">Add an entry for author</a>
+                <div style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;padding:0px 10px">or</div>
+                <a class="btn" xhr href="?book#edit">Add an entry for book</a>
+            </div>
+            <p id="page_title">DeBook - Author</p>
+        </div>
+        MAINPAGE;
+    }
+
+    function writeAuthor($aurkey) {
+        $nA = rawurlencode($aurkey);
+        $res = exeSql("SELECT * FROM aurinfo WHERE aurid='$nA' or names='$nA'");
+        $d = array();
+        $c = 0;
+        $addHTML = "";
+        while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+            $d = $row;
+            $id = $row["aurid"];
+            $names = rawurldecode($row["names"]);
+            $addHTML .= "<a extraAur xhr href='?author/$id'>$names</a>";
+            $c++;
+        }
+        if($c!=0){
+            $images = $d['picpath']==""?"src/usr.png":"author/".$d['picpath'];
+            $name = urldecode($d['names']);
+            $contents = nl2br(urldecode($d['contents']));
+            $books_html = "<div class='row' scroll-row>";
+            $myid = $d["aurid"];
+            $res = exeSql("SELECT bookid,picpath,names FROM  bokinfo WHERE authorid LIKE '%id_$myid%'");
+            $cb = 0;
+            $mt = "onmouseover='showTooltip(this)' onmouseleave='hideTooltip()'";
+            while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+                $bookid = $row["bookid"];
+                $book_name = urldecode($row["names"]);
+                $srcpicname = rand(1,6);
+                $picpath = $row["picpath"]==""?"src/abb/$srcpicname":"book/".explode(":",$row["picpath"])[0];
+                $p = generateP($bookid);
+                $books_html .= "<div class=\"bokinfo\" col><a xhr href=\"?book/$bookid\" tips=\"$book_name\" $mt><img src=\"Image/$picpath\" alt=\"$book_name\"></a><a xhr href=\"?book/$bookid\" tips=\"$book_name\" $mt><p bok-title>$book_name</p></a><div class=\"price\">$p</div></div>";
+                if($cb%10==9){
+                    $books_html .= "</div><div class='row' scroll-row>";
+                }
+                $cb++;
+            }
+            $books_html .= "</div>";
+            if($cb==0){
+                $books_html = "<font color='#757575'>No books are recorded for this author</font>";
+            }
+            if($c<=1){
+                $addHTML = "";
+            }else{
+                $addHTML = "<div class=\"rcon\"><div class=\"innercon\" style=\"width: 92%;margin: 0px 4%;padding: 10px 0px;height: auto;\"><div style=\"text-align:left;\"><p style=\"font-size: 17px;\">不是您想要找的作家？<a>尝试从已下列表中寻找</a></p><div style=\"padding: 5px 0 0 0;position: relative;\">$addHTML</div><p style=\"font-size: 16px;margin-top: 8px;\">沒有您想要寻找得到作者？<a xhr=\"\" href=\"#edit\">添加作者</a></p></div></div></div>";
+            }
+            echo <<<AUTHORPAGE
+            <div class="dcon" style="margin-top: 15px;">
+                <div class="scon">
+                    <div class="row">
+                        <div class="detail">
+                            <div class="whiteboard">
+                                <div class="pleft">
+                                    <div class="headBox" style="margin-bottom: 2px;">
+                                        <img alt="Photo of Author" src="Image/$images">
+                                    </div>
+                                </div>
+                                <div class="pright">
+                                    <div class="row">
+                                        <h3>$name</h3>
+                                    </div>
+                                    <div class="row" style="font-size: 17px;line-height: 24px;" hidtext>
+                                        $contents
+                                    </div>
+                                    <div class="row">
+                                        <a style="float:left;" onclick='aurShowAllContent(this)'>Show all</a>
+                                    </div>
+                                    <div class="line" style="margin-top: 7px;"></div>
+                                    <div class="row">
+                                        <a style="float:left;margin-right:5px;" onclick="showEdit('$myid')">Edit an entry for author</a>
+                                        <a style="float:left;" href="javascript:showEdit();">Add an entry for author</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="line"style="margin-bottom:20px"></div>
+                <div class="scon">
+                    <div class="detail" id="author_books">
+                        <div class="row">
+                            <h4>$name's book</h4>
+                        </div>
+                        <div class="row">
+                            $books_html
+                        </div>
+                        <div class="row" style="margin-top: 5px;">
+                            <a xhr href="?book#edit&author-fill=$name" style="float:left;">Link a book to this author</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="line"></div>
+                <div class="scon">
+                    <div style="text-align:left;"><a class="sword" style="margin:12px 8px 12px 0px"><font style="font-size:20px;">Discussion about this author</font></a></div>
+                    <div class="detail">
+                        <div class="row">(Not available)</div>
+                    </div>
+                </div>
+                <p id="page_title">DeBook - $name (Author)</p>
+            </div>
+            $addHTML
+            AUTHORPAGE;
+        }else{
+            writeAurLoss($aurkey);
+        }
+    }
+
+    function writeAurLoss($aurkey) {
+        echo <<<BOOKPAGE
+        <div class="dcon" style="margin-top: 15px;">
+            <div style="position:relative;width:auto;margin:0px auto;padding:120px 0">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="128" height="96" viewBox="0 0 1024 768">
+                    <defs>
+                        <linearGradient id="b" x1="162.84" gradientUnits="userSpaceOnUse" x2="162.84" gradientTransform="matrix(.70233 0 0 .6756 -3.924 6.49)" y1="439.45" y2="228.35">
+                            <stop stop-color="#fdd835" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <filter id="g" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="2.186"></feGaussianBlur>
+                        </filter>
+                        <filter id="e" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="4.5"></feGaussianBlur>
+                        </filter>
+                        <filter id="k" width="1.026" y="-.165" x="-.013" height="1.331" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="3.687"></feGaussianBlur>
+                        </filter>
+                        <filter id="c" width="1.033" y="-.104" x="-.016" height="1.209" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="4.062"></feGaussianBlur>
+                        </filter>
+                        <linearGradient id="a">
+                            <stop stop-color="#fff" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fff" offset="1"></stop>
+                        </linearGradient>
+                        <filter id="n" width="1.026" y="-.165" x="-.013" height="1.331" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="3.687"></feGaussianBlur>
+                        </filter>
+                        <filter id="m" width="1.033" y="-.104" x="-.016" height="1.209" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="4.062"></feGaussianBlur>
+                        </filter>
+                        <linearGradient id="d" y2="285.22" gradientUnits="userSpaceOnUse" x2="360.36" y1="283.79" x1="342.5">
+                            <stop offset="0"></stop>
+                            <stop stop-color="#ccc" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="f" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68228 0 0 1.2202 967.34 -126.44)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="h" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.70022 -.06541 -.01782 .44318 984.41 235.89)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="i" y2="445.22" xlink:href="#b" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71448 -.15435 .00897 -.31646 979.33 599.82)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="j" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71803 .08687 -.02422 -.31389 995.29 518.54)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="l" y2="445.22" xlink:href="#b" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71264 .17918 -.0368 -.30996 999.11 486.13)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="o" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.67271 -.05464 -.01387 .40326 955.28 281.41)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="p" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68869 .084 -.02555 -.28535 967.79 538.45)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="q" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68705 -.13544 .0063 -.28793 953.07 612.49)" y1="445.22" x1="564.42">
+                            <stop stop-color="#ffee58" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="r" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71448 .15435 .00897 .31646 970.76 250.51)" y1="445.22" x1="564.42">
+                            <stop stop-color="#ffee58" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="s" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.73092 .00801 -.05464 .31184 1010.7 281.9)" y1="445.22" x1="564.42">
+                            <stop stop-color="#ffee58" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="t" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.72479 .09476 -.01722 .31612 989.98 251.77)" y1="445.22" x1="564.42">
+                            <stop stop-color="#ffee58" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="u" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.72479 .09476 -.01722 .31612 995.87 238.35)" y1="445.22" x1="564.42">
+                            <stop stop-color="#ffee58" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="v" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.73086 -.01204 -.05293 -.31214 1017.3 570.96)" y1="445.22" x1="564.42">
+                            <stop stop-color="#fdd835" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <radialGradient id="w" gradientUnits="userSpaceOnUse" cy="133.61" cx="14.817" gradientTransform="matrix(2.8644 0 0 2.343 738.15 127.24)" r="40.913">
+                            <stop stop-color="#f6f6aa" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#f8f8ac" offset="1"></stop>
+                        </radialGradient>
+                    </defs>
+                    <path d="M335.11 255.73l663.28-80.86L334.34 291.5z" transform="matrix(.68228 0 0 -1.2055 -212.275 413)" opacity=".363" fill="#ffee58" filter="url(#c)"></path>
+                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -287.17)" fill="none" stroke="#000" stroke-width=".792"></path>
+                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -274.9)" fill="none" stroke="#000" stroke-width=".792"></path>
+                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -260.97)" stroke="#000" stroke-width="1.266"></path>
+                    <path d="M477.98 260.36L442.8 755.71l71.61 11.07 8.39-516.6z" fill="#b3b3b3" stroke="#b3b3b3"></path>
+                    <path d="M522.98 250.36l40.714 6.429 27.143 503.57-76.071 7.142z" fill="#f2f2f2" stroke="#f2f2f2"></path>
+                    <path d="M563.69 256.78l20 12.857 41.071 481.07-33.75 9.464z" fill="#ececec" stroke="#ececec"></path>
+                    <path d="M468.69 270.36l9.286-8.571-35.536 493.93-19.464-8.215z" fill="#999" stroke="#b3b3b3"></path>
+                    <path d="M536.9 494.32l26.895.126-1.515 55.432z" fill="#b3b3b3"></path>
+                    <path d="M540.92 500.13l17.425.253.126 18.562-17.678-.127zm.05 20.93l17.425.253.126 18.562-17.678-.127zm-97.89 131.1l1.515-49.119 4.672-1.768-3.283 51.644zm15.59-199.06l1.515-49.119 4.672-1.768-3.283 51.644zm9.85-125.26l1.515-49.119 4.672-1.768-3.283 51.644z" stroke="#000"></path>
+                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -299.45)" fill="none" stroke="#000" stroke-width=".792"></path>
+                    <path d="M567.349 188.699a41.786 13.304 0 1 1-.004-.183"></path>
+                    <path d="M297.95 302.54c17.309-10.51 57.09-7.151 72.143.536v-25.18c-21.019-12.346-47.757-13.053-71.786-1.606z" fill="url(#d)" stroke="#000" stroke-width="2.2" transform="translate(191.55 -84.15)"></path>
+                    <path d="M485.03 248.35c17.309-10.51 66.019-8.937 81.071-1.25v-25.179c-18.16-11.63-58.11-14.3-80.71-1.6z" stroke="#000"></path>
+                    <path d="M513.07 160.21l13.036-10.714 11.964 11.071z" stroke="#000" stroke-linejoin="round"></path>
+                    <path d="M516.91 160l.357 16.071 16.43.536.535-16.25z" stroke="#000"></path>
+                    <path d="M525.84 152.86l.893-55.179M477.09 210.18l.536 34.107M462.26 224.64l.54 34.11m125.18-37.5l-.536 37.679M565.84 207.68l-.714 38.214" fill="none" stroke="#000"></path>
+                    <path d="M538.985 160.537a13.181 4.197 0 1 1-.001-.057"></path>
+                    <path d="M557.73 191.91l-6.566 22.728m-7.074-1.518l-6.06-26.264" fill="none" stroke="#000" stroke-width="2.3"></path>
+                    <path d="M1013.6 197.14l-658.29 84.542v14.496s662.99 98.569 658.29 93.904z" transform="matrix(-.68228 0 0 1.1507 711.32 -134.302)" opacity=".668" fill="none" stroke="#fff" stroke-width="4.048" filter="url(#e)"></path>
+                    <path d="M286.77 301.95l439.86 97.468v17.688l-439.86 114.58z" opacity=".668" fill="url(#f)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M1012.9 190.92l-657.59 94.611v5.7s660.74 108.96 656.04 104.29z" transform="matrix(-.68228 0 0 1.2202 711.32 -154.728)" opacity=".668" fill="none" stroke="#fff" stroke-width="4.048" filter="url(#g)"></path>
+                    <path d="M281.44 345.28l445.18 59.875v6.424l-450.25-1.9z" opacity=".668" fill="url(#h)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M265.33 331.8l461.3 91.787v-4.588l-459.59-146.78z" opacity=".49" fill="url(#i)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M360.24 384.45l637.23-203.31-628.3 233.59z" transform="matrix(.6533 -.34756 -.19671 -1.1543 -147.12 760.92)" opacity=".363" fill="#80ffe6" filter="url(#c)"></path>
+                    <path d="M269.5 490.25l457.12-78.122v-4.55L266 435.896z" opacity=".668" fill="url(#j)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M1015.4 297.01l-660.09-11.053v3.268l657.64 50.226z" transform="matrix(-.68228 0 0 1.2202 711.32 -154.728)" opacity=".313" fill="#fff" filter="url(#k)"></path>
+                    <path d="M281.24 466.99l445.38-46.915v-4.493l-452.31-6.95z" opacity=".413" fill="url(#l)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M335.11 255.73l690.19-66.12L334.34 291.5z" transform="matrix(.655 -.00473 -.00882 -1.0965 -201.033 430.01)" opacity=".363" fill="#ffee58" filter="url(#m)"></path>
+                    <path d="M1021.2 227.46l-692.97 45.145.044 3.267 690.48-5.972z" transform="matrix(-.655 .00473 .00893 1.1099 681.49 -92.81)" opacity=".313" fill="#fff" filter="url(#n)"></path>
+                    <path d="M281.22 385.8l445.4 37.255v5.846l-449.81 15.513z" opacity=".668" fill="url(#o)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M281.2 403.46l445.42 22.099v-2.652l-449.18-68.864z" opacity=".668" fill="url(#p)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M268.46 392.63l458.17 32.063v-4.174l-456.96-82.1z" opacity=".49" fill="url(#q)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M261.2 515.57l465.42-87.279v4.588l-463.71 142.27z" opacity=".49" fill="url(#r)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M262.43 391.94l464.19 27.007v4.52L267 453.625z" opacity=".49" fill="url(#s)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M260.94 457.27l465.68-29.23v4.583l-468.9 84.168z" opacity=".49" fill="url(#t)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M266.84 443.85l459.78-22.943v4.583l-463.01 77.881z" opacity=".49" fill="url(#u)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M269.64 449.38l456.98-17.832v-4.525l-466.93-36.415z" opacity=".49" fill="url(#v)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M897.77 440.28c0 52.925-52.449 95.838-117.16 95.854-64.709 0-117.18-42.881-117.22-95.822-.032-52.925 52.392-95.857 117.1-95.897 64.709-.04 117.21 42.828 117.28 95.753" opacity=".875" fill="url(#w)" transform="translate(-257.72 -210.44)"></path>
+                </svg>
+                <p class="loss_title">Can't find the author you're looking for</p>
+                <p class="loss_detail">There is no author named or with ID <b>$aurkey</b></p>
+                <p class="loss_detail">You may search books&nbsp;<a xhr href="?search/$aurkey">about&nbsp;<b>$aurkey</b></a>&nbsp;or add entry about&nbsp;<a href="javascript:showEdit();">'<b>$aurkey</b>'</a></p>
+            </div>
+            <p id="page_title">DeBook - Used Book Store</p>
+        </div>
+        BOOKPAGE;
+    }
+
+    function writeAurEdit(){
+        echo <<<EDIT
+            <!--edit-->
+            <div class="dcon" style="margin-top: 15px;display: none;" id="editBoard">
+                <div class="scon">
+                    <div class="row">
+                        <div class="detail">
+                            <div class="whiteboard">
+                                <div class="pleft">
+                                    <div class="headBox" style="margin-bottom: 2px;" id="imagebox">
+                                        <a edit tips="Add a Photo" onmouseover="showTooltip(this)" onmouseleave="hideTooltip(this)" href="javascript:addSinImage();"><img src="Image/src/add2.jpg" alt="book_name_picture"></a>
+                                    </div>
+                                    <div class="line"></div>
+                                    <a href="javascript:addSinImage();">Add a Photo of Author</a>
+                                </div>
+                                <div class="pright">
+                                    <div class="asbox_con" edit>
+                                        <p title>&nbsp;Name*</p>
+                                        <input class="asbox" placeholder="Name" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="author_name">
+                                    </div>
+                                    <div class="detail">
+                                        <div class="asbox_con" edit style="margin-bottom: 0px;overflow:hidden">
+                                            <p title>&nbsp;About this author*</p>
+                                            <textarea class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" id="contents"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="line"></div>
+                                    <div class="detail" id="title_edit">
+                                        <div class="asbox_con" edit>
+                                            <p title>&nbsp;Book by this author</p>
+                                            <input class="asbox" placeholder="Book by this author" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="books">
+                                            <div class="asboxList_con" style="position: absolute; top: 50px; border-radius: 0 0 3px 3px; border: 1px solid rgb(196, 196, 196); box-shadow: rgb(206, 206, 206) 2px 2px 5px 0px; opacity: 0; height: 0px;">
+                                                <ul></ul>
+                                            </div>
+                                        </div>
+                                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                                            <p title>&nbsp;Search Index&nbsp;<a xhr href="?help/labelling">What is a search index?</a></p>
+                                            <input class="asbox" placeholder="Search Index" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="search_index">
+                                        </div>
+                                    </div>
+                                    <div class="line"></div>
+                                    <div class="detail">
+                                        <button class="asbox_submit" id="but_continue"><span>Continue</span></button>
+                                        <button class="asbox_submit" shallow onclick="hideEdit(true)" style="background-color: #eee;"><span>Cancel</span></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        EDIT;
+    }
+
+    if(!isset($home)){
+        if(getArray($_POST,"aurkey")==""){
+            writeAurMain();
+        }else{
+            $aurkey = rawurldecode(getArray($_POST,"aurkey"));
+            writeAuthor($aurkey);
+        }
+        writeAurEdit();
+    }
+?>

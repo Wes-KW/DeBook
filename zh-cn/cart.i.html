@@ -1,0 +1,265 @@
+<?php
+    include_once '.phtml/cart.php';
+    
+    function getBookByApply($itemsId){
+        $sortArr = array();
+        for($i=0;$i<sizeof($itemsId);$i++){
+            $aplid = $itemsId[$i];
+            $res = exeSql("SELECT bookid,aplid FROM aplinfo WHERE aplid='$aplid' and aplSta=1");
+            $bookid = "";
+            while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+                $bookid = $row["bookid"];
+                break;
+            }
+            if(!in_array($bookid,$sortArr)) array_push($sortArr,$bookid);
+        }
+        return $sortArr;
+    }
+
+    function getQuaStr($qua){
+        if($qua>=1) return "全新";
+        $qua = round($qua*20)*5;
+        $f = intval($qua/10);
+        $s = $qua%10;
+        $fsStr = $f . "成";
+        if($s!=0) $fsStr.=$s;
+        $fsStr.="新";
+        return $fsStr;
+    }
+
+    function getCartApply($itemsId){
+        $usrid = "";
+        if(getPhpUser()!=null){
+            $usrid = getPhpUser()["usrid"];
+        }
+        $sortArr = array();
+        for($i=0;$i<sizeof($itemsId);$i++){
+            $aplid = $itemsId[$i];
+            $res = exeSql("SELECT bookid,aplid FROM aplinfo WHERE aplid='$aplid' and aplSta=1");
+            $bookid = "";
+            while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+                $bookid = $row["bookid"];
+                break;
+            }
+            $f = false;
+            foreach($sortArr as $x=>$v){
+                if($x==$bookid){
+                    $f = true;
+                    break;
+                }
+            }
+            if(!$f){
+                $sortArr[$bookid] = array($aplid);
+            }else{
+                array_push($sortArr[$bookid],$aplid);
+            }
+        }
+        $cartDisplayArr = array();
+        foreach($sortArr as $x=>$v){
+            $res = exeSql("SELECT bookid,picpath,names,authorid FROM bokinfo WHERE bookid='$x'");
+            while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+                $row["names"] = rawurldecode($row["names"]);
+                //handling author
+                $aurStr = $row["authorid"];
+                $aurStrArr = explode(":",$aurStr);
+                $aurArr = array();
+                $aurLinkArr = array();
+                for($i=0;$i<sizeof($aurStrArr);$i++){
+                    $aurname = "";
+                    $aurLink = "";
+                    if(strpos($aurStrArr[$i],"id_")!==false){
+                        $aurid = substr($aurStrArr[$i],3);
+                        $aurLink = $aurid;
+                        $res2 = exeSql("SELECT names FROM aurinfo WHERE aurid='$aurid'");
+                        $aurname = "";
+                        while($row2=mysqli_fetch_array($res2,MYSQLI_ASSOC)){
+                            $aurname = rawurldecode($row2["names"]);
+                            break;
+                        }
+                    }else{
+                        $aurname = rawurldecode($aurStrArr[$i]);
+                    }
+                    array_push($aurArr,$aurname);
+                    array_push($aurLinkArr,$aurLink);
+                }
+                $row["author"] = $aurArr;
+                $row["authorLink"] = $aurLinkArr;
+                //handling picture
+                $images = explode(":",$row["picpath"]);
+                $row["images"] = array();
+                for($i=0;$i<sizeof($images);$i++){
+                    if($images[$i]=="") continue;
+                    array_push($row["images"],$images[$i]);
+                }
+                //handling supply
+                $row["supply"] = array();
+                $res2 = exeSql("SELECT aplid,lang,publish,quality,price,usrid FROM aplinfo WHERE bookid='$x' and aplSta=1 and usrid<>'SPECIAL'");
+                while($row2=mysqli_fetch_array($res2,MYSQLI_ASSOC)){
+                    $row2["lang"] = rawurldecode(base64_decode($row2["lang"]));
+                    $row2["publish"] = rawurldecode(base64_decode($row2["publish"]));
+                    $row2["disabled"] = $usrid==$row2["usrid"];
+                    $row2["selected"] = $usrid!=$row2["usrid"]?in_array($row2["aplid"],$v):false;
+                    array_push($row["supply"],$row2);
+                }
+                //pushing into the whole array
+                array_push($cartDisplayArr,$row);
+                break;
+            }
+        }
+        return $cartDisplayArr;
+    }
+
+    function generateCartNewItemHtml($displayArr){
+        if(sizeof($displayArr)==0) return "";
+        $html = "<p class=\"title\">成功将新商品添加至购物车</p>";
+        for($i=0;$i<sizeof($displayArr);$i++){
+            $image = sizeof($displayArr[$i]["images"])>0?"book/".$displayArr[$i]["images"][0]:"src/abb/".rand(2,6).".png";
+            $linkHtml = "";
+            for($x=0;$x<sizeof($displayArr[$i]["authorLink"]);$x++){
+                $link = $displayArr[$i]["authorLink"][$x];
+                $name = $displayArr[$i]["author"][$x];
+                $linkHtml .= $link==""?"<a>$name</a>":"<a xhr href='?author/$link'>$name</a>";
+                if($x==3) break;
+            }
+            if(sizeof($displayArr[$i]["author"])>3){
+                $linkHtml .= "等";
+            }
+            $bookid = $displayArr[$i]["bookid"];
+            $bookname = $displayArr[$i]["names"];
+            $html .= "<div class=\"addInfo\" style=\"display: block;\"><a><img src=\"Image/$image\"></a><div class=\"text\"><a class=\"title\" xhr href=\"?book/$bookid\">$bookname</a><p g >#书籍 | 作者：$linkHtml</p><button class=\"close_new\" tips=\"隐藏通知\" onmouseover=\"showTooltip(this)\" onmouseleave=\"hideTooltip()\" onclick=\"hideNewMsg()\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"23\" height=\"23\" viewBox=\"0 0 23 23\"> <path fill-opacity=\".51\" d=\"M19.65 0a.436.436 0 0 0-.282.125l-8.031 8L3.493.282C3.336.125 3.103.109 2.962.25L.274 2.938c-.14.141-.125.375.032.531l7.843 7.844-8.021 8.021c-.157.157-.172.422-.031.563l2.687 2.656c.141.141.375.126.532-.031l8.02-8.021 8.21 8.208c.156.157.39.173.531.032l2.688-2.688c.14-.14.125-.374-.032-.531l-8.209-8.209 8.032-8.031c.156-.157.172-.39.03-.531L19.9.094a.311.311 0 0 0-.25-.093z\"></path> <path fill=\"#fff\" d=\"M19.65.657a.32.32 0 0 0-.22.093l-8.093 8.094L3.43.938a.316.316 0 0 0-.438 0L1.306 2.625a.316.316 0 0 0 0 .438l7.906 7.906-8.094 8.094a.316.316 0 0 0 0 .437l1.719 1.688a.278.278 0 0 0 .406 0l8.094-8.094 8.281 8.281c.118.118.32.118.438 0l1.687-1.718a.278.278 0 0 0 0-.407l-8.281-8.28 8.094-8.095a.316.316 0 0 0 0-.437L19.868.75a.32.32 0 0 0-.219-.093z\"></path> </svg></button></div></div>";
+        }
+        return $html;
+    }
+
+    function generateCartHtml($cartDisplayArr,$cartSelectionArr){
+        if(sizeof($cartDisplayArr)==0) return array("<div operation><a style=\"margin-right: 10px;\">已选择0/0件商品</a></div><div class=\"infobox\" style=\"border: 0;padding:6px 0;width:100%;\"><div class=\"chbox\" style=\"top: 6px;\"><input type=\"checkbox\" class=\"asbox\" disabled><span style=\"background-image: url('Image/fatcow/asterisk_yellow.png');\"></span></div><div class=\"text\" style='margin-left:25px'><p class=\"title\">购物车内没有任何书籍</p><p style=\"font-size: 16px;color: #202122;\"><a xhr href=\"?book\">转到书籍主页</a>或<a style='cursor:pointer' onclick=\"focusSearch()\">搜索书籍</a>，以添加一本书籍到购物车。</p></div></div>","<p><b style=\"font-size: 18px;\">商品小计(共1件)</b></p><p style=\"margin-bottom: 0;\"><span class=\"price\"><span class=\"priceSym\">CNY</span><span class=\"priceFra\">00</span><span class=\"priceq\">00</span></span></p><div class=\"asbox_con\" opa style=\"margin-top: 5px;\"><button class=\"asbox\" disabled><div class=\"big\">立即结算</div></button></div><div class=\"asbox_con\" opa style=\"margin-top: 5px;\"><button class=\"asbox\" disabled><div class=\"big\">清空购物车</div></button></div>");
+        $numSelected = 0;
+        $numTotal = 0;
+        $itemHtml = "";
+        $ttprice = 0;
+        for($i=0;$i<sizeof($cartDisplayArr);$i++){
+            $tprice = 0;
+            $t2price = 0;
+            $inumSelected = 0;
+            $i2numSelected = 0;
+            $inumDisabled = 0;
+            $image = sizeof($cartDisplayArr[$i]["images"])>0?"book/".$cartDisplayArr[$i]["images"][0]:"src/abb/".rand(2,6).".png";
+            $linkHtml = "";
+            for($x=0;$x<sizeof($cartDisplayArr[$i]["authorLink"]);$x++){
+                $link = $cartDisplayArr[$i]["authorLink"][$x];
+                $name = $cartDisplayArr[$i]["author"][$x];
+                $linkHtml .= $link==""?"<a>$name</a>":"<a xhr href='?author/$link'>$name</a>";
+                if($x==3) break;
+            }
+            if(sizeof($cartDisplayArr[$i]["author"])>3){
+                $linkHtml .= "等";
+            }
+            $bookid = $cartDisplayArr[$i]["bookid"];
+            $bookname = $cartDisplayArr[$i]["names"];
+            $rowHtml = "";
+            $supply = $cartDisplayArr[$i]["supply"];
+            $selectHtml = in_array($bookid,$cartSelectionArr)?"checked":"";
+            $selectHtml2 = in_array($bookid,$cartSelectionArr)?"selected":"";
+            for($x=0;$x<sizeof($supply);$x++){
+                if(!$supply[$x]["disabled"]&&$supply[$x]["selected"]) $inumSelected++;
+                if(!$supply[$x]["disabled"]&&$supply[$x]["selected"]&&in_array($bookid,$cartSelectionArr)) $i2numSelected++;
+            }
+            $koStr = "[";
+            for($x=0;$x<sizeof($supply);$x++){
+                $n = $x+1;
+                if($supply[$x]["selected"]){
+                    $tprice += $supply[$x]["price"];
+                    $numTotal++;
+                    if(in_array($bookid,$cartSelectionArr)) $t2price += $supply[$x]["price"];
+                }
+                $selectedHtml = "";
+                $koStr .= $supply[$x]["aplid"] . ",";
+                if($supply[$x]["selected"]){
+                    $selectedHtml = "selected onclick=\"reSelectCom(this)\"";
+                }else if($supply[$x]["disabled"]){
+                    if($inumSelected==0&&$inumDisabled==0){
+                        $selectedHtml = "disabled='one' onclick=\"reSelectCom(this)\" tips=\"无法购买自己销售的书籍\" onmouseover=\"showTooltip(this)\" onmouseleave=\"hideTooltip()\"";
+                    }else{
+                        $selectedHtml = "disabled tips=\"无法购买自己销售的书籍\" onmouseover=\"showTooltip(this)\" onmouseleave=\"hideTooltip()\"";
+                    }
+                    $inumDisabled++;
+                }
+                $aplid = $supply[$x]["aplid"];
+                $lang = $supply[$x]["lang"];
+                $publish = $supply[$x]["publish"];
+                $quality = getQuaStr(decodeInfo2($supply[$x]["quality"])["quality_value"]);
+                $price = number_format($supply[$x]["price"],2);
+                $rowHtml .= "<div class=\"asbox_con\" goodsId=\"$aplid\" $selectedHtml><div class=\"num\">$n</div><div class=\"tagc\"><div class=\"tag\"><b>$lang</b><font class=\"tag\">$publish</font></div><div class=\"quantity\">$quality 价格$price</div><div class=\"bottomA\"></div></div></div>";
+            }
+            $koStr = strlen($koStr)!=1?substr($koStr,0,strlen($koStr)-1)."]":"[]";
+            $price1 = intval($tprice);
+            $price2 = round(($tprice-$price1)*100);
+            if($price2==0) $price2 = "00";
+            $itemHtml .= "<div class=\"infobox\" $selectHtml2 onclick=\"infoBoxSelect(this)\"><div class=\"chbox\"><input type=\"checkbox\" class=\"asbox\" onclick=\"selectItem(this,$bookid)\" $selectHtml><span></span></div><a xhr href=\"?book/$bookid\"><img src=\"Image/$image\"></a><div class=\"text\"><a class=\"title\" xhr href=\"?book/$bookid\">$bookname</a><p g>#书籍 | 作者：$linkHtml</p><div class=\"k\"><a>确保以下框选的是您已经选择的商品</a><div class=\"row\"><div class=\"row\" scroll-row>$rowHtml<div class=\"row\" btn-row><div class=\"asbox_con\" opa><button class=\"asbox\" onclick=\"confirmSelection(this,$bookid)\"><div class=\"big\">确定</div></button></div></div></div></div></div><div><p style=\"float:left;width:auto;\"><span class=\"price\"><span class=\"lbl\">总共</span><span class=\"priceSym\">CNY</span><span class=\"priceFra\">$price1</span><span class=\"priceq\">$price2</span></span></p><div class=\"fnBox\"><a>购买数量</a><div class=\"asbox_con\" style=\"width: 60px;\"><input class=\"asbox\" value=\"$inumSelected\" type=\"number\" style=\"width:90.4%;padding:0px 4.7%\" autocomplete=\"off\" disabled></div></div><div class=\"fnBox\"><a class=\"del\" onclick=\"deleteCartItem(this,$koStr,$bookid)\" style=\"cursor:pointer\">删除</a></div></div></div></div>";
+            $ttprice += $t2price;
+            $numSelected += $i2numSelected;
+        }
+        $btnword = $numSelected==$numTotal?"取消选中所有商品":"选中所有商品";
+        $headHtml = "<div operation><a style=\"margin-right: 10px;\" id='chosen_bar'>已选择 $numSelected/$numTotal 件商品</a><a class=\"btn\" onclick=\"selectAllItem(this)\">$btnword</a><a class=\"btn\" onclick=\"deleteAllSelected()\">删除所有选中商品</a></div>";
+        $ttprice1 = intval($ttprice);
+        $ttprice2 = round(($ttprice-$ttprice1)*100);
+        if($ttprice2==0) $ttprice2 = "00";
+        $disabled2Html = $ttprice==0?"disabled":"";
+        $barHtml = "<p id=\"tcbar\"><b style=\"font-size: 18px;\">商品小计(共".$numSelected."件)</b></p><p style=\"margin-bottom: 0;\" id=\"tpbar\"><span class=\"price\"><span class=\"priceSym\">CNY</span><span class=\"priceFra\">$ttprice1</span><span class=\"priceq\">$ttprice2</span></span></p><div class=\"asbox_con\" opa style=\"margin-top: 5px;\"><button class=\"asbox\" $disabled2Html onclick=\"buy()\"><div class=\"big\">立即结算</div></button></div><div class=\"asbox_con\" opa style=\"margin-top: 5px;\"><button class=\"asbox\" $disabled2Html onclick=\"clearCart()\"><div class=\"big\">清空购物车</div></button></div>";
+        return array($headHtml . $itemHtml,$barHtml);
+    }
+
+    function writeCartPage($newItem){
+        //new item displaying
+        $newItemArr = decodeInfo2($newItem);
+        $newItemHtml = generateCartNewItemHtml(getCartApply($newItemArr));
+        if(sizeof($newItemArr)!=0) updateCartSelection(getBookByApply($newItemArr));
+        $item = getCart();
+        $selectedBook = getCartSelection();
+        $cartHtmlArr = generateCartHtml(getCartApply($item),$selectedBook);
+        $cartHtml = $cartHtmlArr[0];
+        $barHtml = $cartHtmlArr[1];
+        echo <<<CARTPAGE
+        <div class="dcon" style="margin-top: 0;padding-bottom:0">
+            <div class="innercon" id='MsgCon'>
+                $newItemHtml
+            </div>
+            <div class="innercon">
+                <p class="categ">购物车</p>
+                <p style="width:100%;font-size:17px">临时储存你想要购买的书籍</p>
+            </div>
+            <div class="innercon">
+                <div class="mleft">
+                    $cartHtml
+                </div>
+                <div class="mright">
+                    <div class="shadbox" style="margin-top:10px">
+                        $barHtml
+                    </div>
+                    <div class="title"><p style="padding:1px 6px">高级选项</p></div>
+                    <div class="linkbox" with="image">
+                        <div class="icon" style="background-image: url('Image/fatcow/help.png');"></div>
+                        <div class="text">
+                            <a href="javascript:;" onclick="focusSearch('help:')">搜索帮助</a>
+                            <p>搜索疑问关键词</p>
+                        </div>
+                    </div>
+                    <div class="linkbox" with="image">
+                        <div class="icon" style="background-image: url('Image/fatcow/exclamation.png');"></div>
+                        <div class="text">
+                            <a href="javascript:;" onclick="feedback()">反馈问题</a>
+                            <p>将网站的错误报告给管理员</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p id="page_title">DeBook 购物车</p>
+        </div>
+        CARTPAGE;
+    }
+
+    if(!isset($home)){
+        $newItem = getArray($_POST,"newItem");
+        writeCartPage($newItem);
+    }
+?>

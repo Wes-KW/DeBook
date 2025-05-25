@@ -1,0 +1,113 @@
+<?php
+    function writePreUser(){
+        echo <<<PRE
+            <div class="dcon" style="margin-top: 15px;">
+                <div class="scon">
+                    <div style="float:left;max-width: 400px;">
+                        <div class="title">
+                            <h3>Sign In</h3>
+                        </div>
+                        <div class="line" style="margin: 5px 0px 15px 0px;"></div>
+                        <form>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;DeBook ID or Email</p>
+                                <input id="id0" class="asbox" placeholder="DeBook ID or Email" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;Password&nbsp;:&nbsp;<a xhr href="?account#forget">Forget Password</a></p>
+                                <input id="pwd0" type="password" class="asbox" placeholder="Password" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <div class="asbox_con" style="text-align: left;">
+                                <input type="checkbox" id="check0" class="asbox" type="checkbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" style="height:100%">
+                                <span style="top:2px"></span>
+                                <button a type="button" style="padding:0px" onclick="this.parentElement.children[0].checked=!this.parentElement.children[0].checked">Keep me logged in for 30 days</button>
+                            </div>
+                            <a xhr href="?help/login" type="button" style="float:left;margin-top:10px;">Can't sign in? Ask for help!</a>
+                            <a xhr href="?account#signup" type="button" style="float:left;margin-top:10px;">Not registered? Sign up</a>
+                            <div class="line"></div>
+                            <div class="detail">
+                                <button class="asbox_submit" id="submit0"><span>Continue</span></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="dcon" style="margin-top: 15px;display: none;">
+                <div class="scon">
+                    <div style="float:left;max-width: 400px;">
+                        <div class="title">
+                            <h3>Sign Up</h3>
+                        </div>
+                        <div class="line" style="margin: 5px 0px 15px 0px;"></div>
+                        <form>
+                            <div class="asbox_con" edit hidden>
+                                <p title>&nbsp;New DeBook ID</p>
+                                <input id='id1' class="asbox" placeholder="New DeBook ID" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0)" autocomplete="off" readonly>
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;Email&nbsp;<button a type="button" href="javascript:;" class="mailCode" initbtn>Send a Code</button></p>
+                                <input id='eml0' class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="Email">
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;Email Verification Code</p>
+                                <input id='emlc0' class="asbox" id='emlc0' onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="Email Verification Code" style="padding:0px 0.8%;width:98.4%">
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;Password&nbsp;</p>
+                                <input id='pwd1-0' type="password" class="asbox" placeholder="Password" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <div class="asbox_con" edit style="margin-bottom:0px">
+                                <p title>&nbsp;Confirm Password&nbsp;</p>
+                                <input id='pwd1-1' type="password" class="asbox" placeholder="Confirm Password" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <a xhr href="?help/singup" type="button" style="float:left;margin-top:10px;">Can't sign up? Ask for help!</a>
+                            <a xhr href="?account#login" type="button" style="float:left;margin-top:10px;">Already registered? Sign in</a>
+                            <div class="line"></div>
+                            <div class="detail">
+                                <button class="asbox_submit" id="submit1"><span>Continue</span></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="dcon" style="margin-top: 15px;display: none;">
+                <div class="scon">
+                    <div style="float:left;max-width: 400px;">
+                        <div class="title">
+                            <h3>Forget Password</h3>
+                        </div>
+                        <div class="line" style="margin: 5px 0px 15px 0px;"></div>
+                        <form>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;Email&nbsp;<button a type="button" href="javascript:;" class="mailCode" initbtn>Send a Code</button></p>
+                                <input id="eml1" class="asbox" placeholder="Email" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;Email Verification Code</p>
+                                <input id="emlc1" class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="Email Verification Code">
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;New Password</p>
+                                <input type="password" id="pwd2-0" class="asbox" placeholder="新密码" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <div class="asbox_con" edit style="margin-bottom:0px">
+                                <p title>&nbsp;Confirm Password</p>
+                                <input type="password" id="pwd2-1" class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="Confirm Password">
+                            </div>
+                            <a xhr href="?help/forget" type="button" style="float:left;margin-top:10px;">Can't change your password? Ask for help!</a>
+                            <a xhr href="?account#login" type="button" style="float:left;margin-top:10px;">Sign In</a>
+                            <div class="line"></div>
+                            <div class="detail">
+                                <button class="asbox_submit" id="submit2"><span>Continue</span></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        PRE;
+    }
+
+    if(!isset($home)){
+        writePreUser();
+    }
+?>

@@ -1,0 +1,51 @@
+<?php
+	include "mode.php";
+	date_default_timezone_set("Asia/Shanghai");
+	
+	function exeSql($sql){
+		$csql = new simpleMYSQL();
+		$csql->servername = "localhost";
+		$csql->username = "demo";
+		$csql->pwd = "demo";
+		$csql->dbname = "db";
+		if($sql!=""&&$sql!=null){
+			return $csql->sqlQuery($sql);
+		}
+	}
+
+	function setSession($key,$value){
+		$_SESSION[$key] = $value;
+	}
+	
+	function jsonSql($key){
+		json2Sql(getArray($_POST,"sql"));
+	}
+
+	function json2Sql($str,$key=""){
+		$res = exeSql($str);
+		$array = array();
+		while($row = mysqli_fetch_array($res,MYSQLI_ASSOC)){
+			if($key!=""){
+				array_push($array,$row[$key]);	
+			}else{
+				array_push($array,$row);
+			}
+		}
+		echo json_encode($array);
+	}
+
+	function getClientIP(){
+		$url = "https://api.ipify.org?format=jsonp&callback=?";
+		$json = file_get_contents($url);
+		$js = substr($json,2,strlen($json)-4);
+		$arr = json_decode($js);
+		return $arr->ip;
+	}
+
+	$direct = getArray($_POST,"direct");
+	if($direct=="json"){
+		jsonSql(getArray($_POST,"key"));
+	}else{
+		exeSql(getArray($_POST,'sql'));
+	}
+?>

@@ -1,0 +1,10 @@
+div[rconId="1"]{
+    width:100%;
+    height:100%;
+    background-image:url('Image/main/spine_of_book_711x466.png');
+    background-repeat: no-repeat;
+    background-size:711px 466px;
+    background-position-x:420px;
+    background-position-y:144px;
+    height:590px;
+}

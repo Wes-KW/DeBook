@@ -1,0 +1,31 @@
+<?php
+    include_once ".phtml/mode.php";
+
+    function writeHome(){
+        echo <<<HOME
+            <div class="rcon">
+                <div rconId="1" id="pic">
+                </div>
+                <div textArea>
+                    <h2 style="font-size:40px;">Used Book</h2>
+                    <h3 style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;">Every used book is a story saved from the landfill — a second chance to inspire, educate, and entertain.</h3>
+                    <a class="btn" href="javascript:focusSearch();">Search a book</a>
+                    <div class="break"></div>
+                    <a class="btn" href="javascript:searchSell();" id="sellbtn">Sell a book</a>
+                    <div class="break"></div>
+                    <h3 style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;">You may also</h3>
+                    <div class="break"></div>
+                    <a class="btn" xhr href="?book#edit">Add an entry for book</a>
+                    <div style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;padding:0px 10px">or</div>
+                    <a class="btn" xhr href="?list#edit">Add an entry for author</a>
+                </div>
+            </div>
+            <p id="page_title">DeBook - Used Book Store</p>
+        HOME;
+    }
+
+    $homeKey = getArray($_POST,"homeKey");
+    if($homeKey=="write"){
+        writeHome();
+    }
+?>

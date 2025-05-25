@@ -1,0 +1,651 @@
+<?php
+    include_once ".phtml/vrfylogin.php";
+    include_once ".phtml/deliver.php";
+    
+    function getCnDateTime($date){
+      return date("Y年m月d日 H:i:s",$date);
+    }
+
+    function writeUsrPage(){
+      //data preload
+      $usr = getPhpUser();
+      $deliverInfo = array("name"=>"","phone_number"=>"","address"=>"","sch_allow"=>"","sch"=>"");
+      $receiptInfo = array();
+      $dlvEmpty = false;
+      $clickRow = 'onclick="edSelect(this.parentElement.children[0].children[0],1)"';
+      if(is_array($usr)){
+        //initialize deliver_info
+        if($usr["deliver_info"]==""){
+          $dlvEmpty = true;
+          $usr["deliver_info"] = '{"name":"","phone_number":"","address":"","sch_allow":"","sch":""}';
+          $deliverInfo = json_decode($usr["deliver_info"],true);
+        }else{
+          $deliverInfo = decodeInfo($usr["deliver_info"]);
+        }
+
+        //initialize receipt_info
+        if($usr["receipt_info"]!=""){
+          $tmp = explode(":",$usr["receipt_info"]);
+          for($i=0;$i<count($tmp);$i++){
+            if($tmp[$i]!=""){
+              $receiptInfo[$i] = decodeInfo($tmp[$i]);
+            }
+          }
+        }
+      }
+      //buy
+      $buyHtml = "";
+      $buyPageRl = 10;
+      $data = getToUsrDlv(getPhpUser()["usrid"]);
+      $date = "";
+      $hideCount = 0;
+      for($i=0;$i<$data["rlen"];$i++){
+        if($data[$i]["status"]==-1){
+          $hideCount++;
+          continue;
+        }
+        $idate = $data[$i]["date"];
+        $cdate = date("Y_m_d",$idate);
+        if($cdate!=$date){
+          $dateStr = date("Y年m月d日",$idate);
+          $buyHtml.="<td colspan=\"6\" style=\"text-align: center;background-color: #0366d6;color:#fff;padding:3px 0\">下单时间: $dateStr</td>";
+          $date = $cdate;
+        }
+        $bookid = $data[$i]["bookid"];
+        $bookname = $data[$i]["names"];
+        $bookAuthor = $data[$i]["author"][0];
+        $bookAurLink = $data[$i]["authorLink"][0];
+        $bookAuthorHtml = $bookAurLink==""?$bookAuthor:"<a xhr href=\"?author/$bookAurLink\">$bookAuthor</a>";
+        $datem = getCnDateTime($data[$i]["date"]);
+        if(sizeof($data[$i]["author"])>1) $bookAuthorHtml.="等";
+        $lang = $data[$i]["aplinfo"]["lang"];
+        $dlvid = $data[$i]["dlvid"];
+        $dlvonclick = $data[$i]["status"]==-1?"disabled":"onclick=\"selectDlvApl($dlvid,this)\"";
+        $comj = $data[$i]["evaid"]==""||strpos($data[$i]["evaid"],"auto_")!==false;
+        $comonclick = $comj?"onclick='comment($dlvid)'":"";
+        $comstyle = $comj?"":"style='color:#757575'";
+        $comstr = $comj?"评价":"已评价";
+        $buyConfirm = "onclick=\"buyConfirm($dlvid)\"";
+        $name = $data[$i]["aplinfo"]["udlvinfo"]["name"];
+        if($data[$i]["aplinfo"]["usrid"]=="SPECIAL"){
+          $name = "DeBook 官方";
+        }
+        $staHtml = "";
+        $cmdHtml = "";
+        $ostyle = $data[$i]["status"]==-1?"disabled style='background-color:#e0e0e0;color:#757575'":"";
+        if($data[$i]["status"]==-1){
+          $staHtml = "已取消";
+          $cmdHtml = "<a style='color:#757575'>已取消</a>";
+        }else if($data[$i]["status"]==0){
+          $staHtml = "待支付&发货";
+          $cmdHtml = "<a onclick='cancelOrder($dlvid)'>取消订单</a><br/><a $dlvonclick>查看详情</a>";
+        }else if($data[$i]["status"]==1){
+          $staHtml = "待收货";
+          $cmdHtml = "<a $buyConfirm>确认收货</a><br/><a $dlvonclick>查看详情</a>";
+        }else if($data[$i]["status"]==2){
+          $staHtml = "已完成";
+          $cmdHtml = "<a $comonclick $comstyle>$comstr</a>|<a onclick=\"returnOrder($dlvid)\">申请退货</a><br/><a $dlvonclick>查看详情</a>";
+        }else if($data[$i]["status"]==3){
+          if($data[$i]["returnStatus"]==0){
+            $staHtml = "退货申请中";
+            $cmdHtml = "<a onclick='canReturnOrder($dlvid)'>取消退货</a><br/><a $dlvonclick>查看详情</a>";
+          }else if($data[$i]["returnStatus"]==1){
+            $staHtml = "退货中";
+            $cmdHtml = "<a style='color:#757575'>处理退货中</a><br/><a $dlvonclick>查看详情</a>";
+          }else if($data[$i]["returnStatus"]==2){
+            $staHtml = "退货中";
+            $price = number_format($data[$i]["aplinfo"]["price"],2);
+            $cmdHtml = "<a onclick='cfmPayback($dlvid,$price)'>确认卖家退款</a><br/><a $dlvonclick>查看详情</a>";
+          }else if($data[$i]["returnStatus"]==3){
+            $staHtml = "退货完成";
+            $cmdHtml = "<a $dlvonclick>查看详情</a>";
+          }
+        }
+        $buyHtml .= "<tr $ostyle><td><input type=\"checkbox\" class=\"asbox\" type=\"checkbox\" $dlvonclick><span></span></td><td><a xhr href=\"?book/$bookid\">$bookname</a>($lang)&nbsp;$bookAuthorHtml(著)</td><td><a class=\"contact\">$name</a></td><td>$datem</td><td>$staHtml</td><td>$cmdHtml</td></tr>";
+      }
+      if($data["len"]-$hideCount==0){
+        $buyHtml = "<td colspan=\"6\" style=\"text-align: center;background-color: #f2f4f6;\">(没有订单)</td>";
+      }
+      $buyTp = intval($data["len"]/$buyPageRl);
+      $buyTp += $data["len"]%$buyPageRl==0?0:1;
+      $buyCp = 1;
+      $buyNp = $buyCp+1;
+      $buyPp = $buyCp-1;
+      $buyPagePrevAttr = $buyCp>1?"onclick='showBuyOrder(null,null,$buyPp)'":"disabled";
+      $buyPageNextAttr = $buyCp<$buyTp?"onclick='showBuyOrder(null,null,$buyNp)'":"disabled";
+      $buyPageHtml = "<a $buyPagePrevAttr>上一页</a><a style=\"color:#202122\">第".$buyCp."页 共".$buyTp."页</a><a $buyPageNextAttr>下一页</a><a onclick=\"showBuyOrder(null,null,null,null,1);\">显示已取消的".$hideCount."个订单</a>";
+      //sell
+      $sellHtml = "";
+      $sellPageRl = 10;
+      $data = getFromUsrDlv(getPhpUser()["usrid"]);
+      $date = "";
+      $hideCount = 0;
+      for($i=0;$i<$data["rlen"];$i++){
+        if($data[$i]["status"]==-1){
+          $hideCount++;
+          continue;
+        }
+        $idate = $data[$i]["date"];
+        $cdate = date("Y_m_d",$idate);
+        if($cdate!=$date){
+          $dateStr = date("Y年m月d日",$idate);
+          $sellHtml .= "<td colspan=\"6\" style=\"text-align: center;background-color: #0366d6;color:#fff;padding:3px 0\">下单时间: $dateStr</td>";
+          $date = $cdate;
+        }
+        $bookid = $data[$i]["bookid"];
+        $bookname = $data[$i]["names"];
+        $bookAuthor = $data[$i]["author"][0];
+        $bookAurLink = $data[$i]["authorLink"][0];
+        $bookAuthorHtml = $bookAurLink==""?$bookAuthor:"<a xhr href=\"?author/$bookAurLink\">$bookAuthor</a>";
+        $datem = getCnDateTime($data[$i]["date"]);
+        if(sizeof($data[$i]["author"])>1) $bookAuthorHtml.="等";
+        $lang = $data[$i]["aplinfo"]["lang"];
+        $dlvid = $data[$i]["dlvid"];
+        $dlvonclick = "onclick=\"selectDlvApl($dlvid,this,1)\"";
+        $name = decodeInfo2($data[$i]["rcpt_info"])["name"];
+        $staHtml = "";
+        $cmdHtml = "";
+        $ostyle = $data[$i]["status"]==-1?"disabled style='background-color:#e0e0e0;color:#757575'":"";
+        if($data[$i]["status"]==-1){
+          $staHtml = "已取消";
+          $cmdHtml = "<a style='color:#757575'>已取消</a>";
+        }else if($data[$i]["status"]==0){
+          $staHtml = "待支付&发货";
+          $cmdHtml = "<a onclick=\"setDlvUID($dlvid)\">确认发货</a>|<a onclick='cancelOrder($dlvid)'>取消订单</a><br/><a $dlvonclick>查看详情</a>";
+        }else if($data[$i]["status"]==1){
+          $staHtml = "待收货";
+          $cmdHtml = "<a style='color:#757575'>等待买家确认</a><br/><a $dlvonclick>查看详情</a>";
+        }else if($data[$i]["status"]==2){
+          $staHtml = "已完成";
+          $cmdHtml = "<a $dlvonclick>查看详情</a>";
+        }else if($data[$i]["status"]==3){
+          if($data[$i]["returnStatus"]==0){
+            $staHtml = "退货申请中";
+            $cmdHtml = "<a onclick='cfmReturnOrder($dlvid)'>确认退货</a>|<a onclick='canReturnOrder($dlvid)'>拒绝退货</a><br/><a $dlvonclick>查看详情</a>";
+          }else if($data[$i]["returnStatus"]==1){
+            $staHtml = "退货中";
+            $cmdHtml = "<a onclick='cfmRcvRtnOrder($dlvid)'>确认收货</a><br/><a $dlvonclick>查看详情</a>";
+          }else if($data[$i]["returnStatus"]==2){
+            $staHtml = "退货中";
+            $cmdHtml = "<a style='color:#757575'>处理退款中</a><br/><a $dlvonclick>查看详情</a>";
+          }else if($data[$i]["returnStatus"]==3){
+            $staHtml = "退货完成";
+            $cmdHtml = "<a $dlvonclick>查看详情</a>";
+          }
+        }
+        $sellHtml .= "<tr $ostyle><td><input type=\"checkbox\" class=\"asbox\" type=\"checkbox\" $dlvonclick><span></span></td><td><a xhr href=\"?book/$bookid\">$bookname</a>($lang)&nbsp;$bookAuthorHtml(著)</td><td><a class=\"contact\">$name</a></td><td>$datem</td><td>$staHtml</td><td>$cmdHtml</td></tr>";
+      }
+      if($data["len"]-$hideCount==0){
+        $sellHtml = "<td colspan=\"6\" style=\"text-align: center;background-color: #f2f4f6;\">(没有订单)</td>";
+      }
+      $sellTp = intval($data["len"]/$sellPageRl);
+      $sellTp += $data["len"]%$sellPageRl==0?0:1;
+      $sellCp = 1;
+      $sellNp = $sellCp+1;
+      $sellPp = $sellCp-1;
+      $sellPagePrevAttr = $sellCp>1?"onclick='showSellOrder(null,null,$sellPp)'":"disabled";
+      $sellPageNextAttr = $sellCp<$sellTp?"onclick='showSellOrder(null,null,$sellNp)'":"disabled";
+      $sellPageHtml = "<a $sellPagePrevAttr>上一页</a><a style=\"color:#202122\">第".$sellCp."页 共".$sellTp."页</a><a $sellPageNextAttr>下一页</a><a onclick=\"showSellOrder(null,null,null,null,1);\">显示已取消的".$hideCount."个订单</a>";
+      //receipt
+      $receiptHtml = "";
+      if(count($receiptInfo)==0){
+        $receiptHtml = '<tr empty><td colspan="5" style="text-align: center;background-color: #f2f4f6;">(没有收货地址)</td></tr>';
+      }else{
+        //start table
+        for($i=0;$i<count($receiptInfo);$i++){
+          $receiptHtml .= "<tr id='" . $receiptInfo[$i]["id"] . "'>";
+          $receiptHtml .= "<td><input type=\"checkbox\" class=\"asbox\"><span></span></td>";
+          $receiptHtml .= "<td $clickRow><a>" . $receiptInfo[$i]["address"] ."</a>";
+          if(strpos($receiptInfo[$i]["id"],"A")>0){
+            $receiptHtml .= "<font class=\"default\">(默认)</font></td>";
+          }else{
+            $receiptHtml .= "</td>";
+          }
+          $receiptHtml .= "<td $clickRow>" . $receiptInfo[$i]["name"] . "</td>";
+          $receiptHtml .= "<td $clickRow>电话:" . $receiptInfo[$i]["tele"] . "<br>电子邮箱:" . $receiptInfo[$i]["email"] . "</td>";
+          $receiptHtml .= "<td><a onclick=\"removeReceiptMethod('" . $receiptInfo[$i]["id"] . "');\">删除</a> | <a onclick=\"showUpdateReceiptMethod('" . $receiptInfo[$i]["id"] . "');\">更改</a></td>";
+          $receiptHtml .= "</tr>";
+        }
+      }
+      //sent
+      $sentH3Button = $dlvEmpty?'添加信息':'更改信息';
+      $sentName = writeInfo($deliverInfo["name"]);
+      $sentTele = writeInfo($deliverInfo['phone_number']);
+      $sentAddress = writeInfo($deliverInfo['address']);
+      $sentSch = writeInfo($deliverInfo['sch_allow'])=="1"?"提供":"不提供";
+      $sentSchAddr = writeInfo($deliverInfo['sch']);
+      $sent7days = writeInfo(arrm($deliverInfo,'sdays'))=="1"?"支持":"不支持";
+      //usr
+      $usr_usrid = $usr['usrid'];
+      $usr_email = $usr['email'];
+      $usr_nickname = $usr['nickname']==""?"(无)":$usr['nickname'];
+      $pwdd = $usr["pwd"];
+      $paypwd = strpos($pwdd,':')+1==strlen($pwdd)?'添加密码':'修改密码';
+      $coins = sprintf("%.2f",$usr['coins']);
+      //trans
+      $transHtml = "";
+      $data = getTransaction(getPhpUser()["usrid"],null);
+      $trans = $data["trans"];
+      $c = 0;
+      for($i=0;$i<sizeof($trans);$i++){
+        $contents = rawurldecode($trans[$i]["content"]);
+        $value = $trans[$i]["value"];
+        $value = number_format($value,2);
+        if($trans[$i]["toUsrid"]!=getPhpUser()["usrid"]){
+          $value*=-1;
+        }else{
+          $value = "+$value";
+        }
+        $mdate = getCnDateTime($trans[$i]["date"]);
+        $type = $trans[$i]["toUsrid"]==getPhpUser()["usrid"]?"收款":"付款";
+        $transHtml .= "<tr><td><input type=\"checkbox\" class=\"asbox\" onclick=\"edSelect(this)\"><span style=\"top:3px\"></span></td><td>$contents</td><td style=\"width:140px\">$type</td><td style=\"width:200px\">$value</td><td style=\"width:390px\">$mdate</td><td style=\"width:100px\"><font style='color:#757575'>(无可用操作)</font></td></tr>";
+        $c++;
+      }
+      if($c==0){
+        $transHtml = "<td colspan=\"6\" style=\"text-align: center;background-color: #f2f4f6;\">(没有积分记录)</td>";
+      }
+      $usrid = $usr['usrid'];
+      $trsTp = $data["page_count"];
+      $trsCp = 1;
+      $trsNp = $trsCp+1;
+      $trsPp = $trsCp-1;
+      $trsPagePrevAttr = $trsCp>1?"onclick=\"showTrsinfo('$usrid',$trsPp)\"":"disabled";
+      $trsPageNextAttr = $trsCp<$trsTp?"onclick=\"showTrsinfo('$usrid',$trsNp)\"":"disabled";
+      $transPageHtml = "<a $trsPagePrevAttr>上一页</a><a style=\"color:#202122\">第".$trsCp."页 共".$trsTp."页</a><a $trsPageNextAttr>下一页</a>";
+      //apply
+      $aplHtml = "";
+      $usrid = $usr['usrid'];
+      $res = exeSql("SELECT evanum FROM evainfo WHERE usrid = '$usrid'");
+      $mEva = 0;
+      $mEva2 = 0;
+      $mC = 0;
+      while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+          $mEva += $row["evanum"];
+          $mC++;
+      }
+      $starClassList = array("star0d0","star0d5","star1d0","star1d5","star2d0","star2d5","star3d0","star3d5","star4d0","star4d5","star5d0");
+      $evaWordList = array("非常差","很差","差","较差","中等偏差","中等","中等偏好","较好","良好","非常好","一级棒");
+      $evahtml = "";
+      $evaWord = "";
+      if($mC==0){
+          $evahtml .= "<i class='star0d0'></i>";
+          $evaWord = "暂无评价";
+      }else{
+          $mEva2 = $mEva/$mC;
+          $mEva = round($mEva/$mC);
+          $starClass = $starClassList[$mEva];
+          $evaWord = $evaWordList[$mEva];
+          $evahtml .= "<i class='$starClass'></i>";
+      }
+      $mEva2 = number_format($mEva2/2,1);
+      $aplHtml .= $evahtml;
+      $aplHtml .= "<span style=\"font-family: 'Consolas';font-size: 32px;position: absolute;right: 15px;top: 16px;color: white;margin:0 6px;float: right;\">$mEva2</span>";
+      $aplHtml .= "<span style=\"font-family: 'Consolas';font-size: 16px;position: absolute;right: 16px;top: 56px;color: white;margin:0 6px;float: right;\">$evaWord</span>";
+      $aplTableHtml = "";
+      $edSel = "onclick=\"this.parentElement.children[0].children[0].click()\"";
+      $res = exeSql("SELECT aplid,bookid,lang,publish,price,aplSta FROM aplinfo WHERE usrid='$usrid'");
+      $count = 0;
+      while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+        $aplid = $row["aplid"];
+        $bookid = $row["bookid"];
+        $res2 = exeSql("SELECT names FROM bokinfo WHERE bookid='$bookid'");
+        $names = "";
+        while($row2=mysqli_fetch_array($res2,MYSQLI_ASSOC)){
+          $names = rawurldecode($row2["names"]);
+        }
+        $lang = rawurldecode(base64_decode($row["lang"]));
+        $publish = rawurldecode(base64_decode($row["publish"]));
+        $price = number_format($row["price"],2);
+        $sta = $row["aplSta"];
+        $toolbar = "";
+        if($sta==1){
+          $toolbar = "<a onclick=\"updateAplPic($aplid)\">更改图片</a> | <a onclick=\"updateAplPrice(this,$aplid)\">更改价格</a> | <a class=\"del\" onclick=\"delApply(this,$aplid)\">删除</a>";
+          $sta = "未售出";
+        }else if($sta==0){
+          $toolbar = "<font color=\"#757575\">无可用操作</font>";
+          $sta = "已售出";
+        }
+        $aplTableHtml .= "<tr id=\"$aplid\"><td><input type=\"checkbox\" class=\"asbox\" type=\"checkbox\"><span></span></td><td><a xhr href=\"?book/$bookid\">$names</a></td><td $edSel>$publish</td><td $edSel>$lang</td><td $edSel>￥$price</td><td $edSel>$sta</td><td>$toolbar</td></tr>";
+        $count++;
+      }
+      if($count==0) $aplTableHtml = "<tr empty><td colspan=\"7\" style=\"text-align: center;background-color: #f2f4f6;\">(没有供货)</td></tr>";
+      //contribution
+      $conHtml = "";
+      $f = base64_encode($usr['email']);
+      $res = exeSql("SELECT conid,date,object,status,contributor FROM coninfo");
+      $c = 0;
+      while($row = mysqli_fetch_array($res,MYSQLI_ASSOC)){
+        if(decodeInfo($row["contributor"])["usrid"]!=$usr_usrid) continue;
+        $cdate = date("Y年m月d日",$row["date"]);
+        $csta = "";
+        if($row['status']=='0'){
+          $csta = "审核中";
+        }else if($row['status']=='1'){
+          $csta = "已通过";
+        }else if($row['status']=='2'){
+          $csta = "被拒绝";
+        }
+        $title_me = "";
+        $obj = (array) json_decode($row["object"]);
+        $property = "";
+        $val = "";
+        foreach($obj as $key=>$value){
+          $property = $key;
+          $val = urldecode(base64_decode($value));
+          if(strlen($val)>50) $val = mb_substr($val,0,10,"UTF-8") . "...";
+          break;
+        }
+        $pk = "";
+        if($property=="author_name"){
+          $pk = "作者";
+        }else if($property=="book_name"){
+          $pk = "书籍";
+        }else if($property=="list_name"){
+          $pk = "书单";
+        }
+        $em = "添加";
+        if(isset($obj["editId"])){
+          $em = "编辑";
+        }
+        $em .= $pk . "‘<a>$val</a>" . "’";
+        $meid = $row["conid"];
+        $opa = "<font color='#757575'>无可用操作</font>";
+        $conHtml .= "<tr><td><input type=\"checkbox\" class=\"asbox\" type=\"checkbox\"><span></span></td><td $clickRow><p>$em</p></td><td $clickRow>$cdate</td><td $clickRow>$csta</td><td $clickRow>$opa</td></tr>";
+        $c++;
+      }
+      if($c==0){
+        $conHtml = "<tr empty><td colspan=\"5\" style=\"text-align: center;background-color: #f2f4f6;\">(没有任何条目)</td></tr>";
+      }
+      //start writing
+      echo <<<USER
+        <div class="dcon" style="margin-top: 10px;padding-top: 5px;">
+          <div class="scon">
+              <button class="btn" previous onclick="menuScroll(-1)"><</button>
+              <div class="menu">菜单 |
+                <a href="javascript:;" onclick="signout()"><b>登出此账号</b></a> |
+                <a href="javascript:;" onclick="usrpage(0)">我的购买订单</a>
+                <a href="javascript:;" onclick="usrpage(1)">我的销售订单</a> |
+                <a href="javascript:;" onclick="usrpage(2)">收发货设置</a> |
+                <a href="javascript:;" onclick="usrpage(3)">账户信息</a> |
+                <a href="javascript:;" onclick="usrpage(4)">支付信息</a> |
+                <a href="javascript:;" onclick="usrpage(5)">供货信息</a> |
+                <a href="javascript:;" onclick="usrpage(6)">更多信息</a>
+              </div>
+              <button class="btn" next onclick="menuScroll(1)">></button>
+          </div>
+          <div class="scon">
+              <div class="pleft">
+                  <div class="list_con">
+                      <h4>我的账户</h4>
+                      <ul>
+                          <li><a href="javascript:;" onclick="usrpage(0)">我的购买订单</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(1)">我的销售订单</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(2)">收发货设置</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(3)">账户信息</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(4)">支付信息</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(5)">供货信息</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(6)">更多信息</a></li>
+                      </ul>
+                  </div>
+              </div>
+              <div class="pright">
+                  <div class="rcon" style="background-image:-webkit-linear-gradient(top,#e0e0e0 -50%,#f9fbe7 50%,#fff 100%);">
+                      <div class="rinnerCon" id="buyOrderCon">
+                          <h3>我的购买订单</h3>
+                          <div class="fnBox" style="margin-top:10px;">
+                              <div class="asbox_con" tab selected>
+                                  <button class="asbox" tab-selected onclick="showBuyOrder(this)">
+                                      <div class="tag"><b>全部订单</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showBuyOrder(this,0,null)">
+                                      <div class="tag"><b>待支付&发货</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showBuyOrder(this,1,null)">
+                                      <div class="tag"><b>待收货</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showBuyOrder(this,2,null)">
+                                      <div class="tag"><b>已完成</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showBuyOrder(this,3,null)">
+                                      <div class="tag"><b>退货</b></div>
+                                  </button>
+                              </div>
+                          </div>
+                          <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="buy_item_table">
+                            <thead>
+                              <tr title>
+                                <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px" onclick="return false;" disabled><span style="top:3px"></span></th>
+                                <th>书目</th>
+                                <th>发货人</th>
+                                <th>下单时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                $buyHtml
+                            </tbody>
+                          </table>
+                          <div class="line" style="margin: 8px 0 10px 0;">
+                            $buyPageHtml
+                            <div class="filBox">
+                                <p>订单下于:&nbsp;</p>
+                                <div class="asbox_con" style="width: auto;">
+                                  <select id="select1" onchange="showBuyOrder(null,null,null,getOptionTime(this))" class="selbox" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" style="color:#202122;background-color:#fff;font-size: 15px;">
+                                    <option value="1">最近3个月</option>
+                                    <option value="2">最近6个月</option>
+                                    <option value="3">最近1年</option>
+                                    <option value="4" selected>任何时间</option>
+                                  </select>
+                                  <span class="sel" onclick="this.parentElement.children[0].focus();">⇲</span>
+                                </div>
+                            </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;background-image: -webkit-linear-gradient(top,#e0e0e0 -50%,#ebf3fc 50%,#fff 100%);">
+                      <div class="rinnerCon" id="sellOrderCon">
+                          <h3>我的售卖订单</h3>
+                          <div class="fnBox" style="margin-top:10px;">
+                              <div class="asbox_con" tab selected>
+                                  <button class="asbox" tab-selected onclick="showSellOrder(this)">
+                                      <div class="tag"><b>全部订单</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showSellOrder(this,0,null)">
+                                      <div class="tag"><b>待支付&发货</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showSellOrder(this,1,null)">
+                                      <div class="tag"><b>待收货</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showSellOrder(this,2,null)">
+                                      <div class="tag"><b>已完成</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showSellOrder(this,3,null)">
+                                      <div class="tag"><b>退货</b></div>
+                                  </button>
+                              </div>
+                          </div>
+                          <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="sell_item_table">
+                            <thead>
+                              <tr title>
+                                <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px" onclick="return false;" disabled><span style="top:3px"></span></th>
+                                <th>书目</th>
+                                <th>收货人</th>
+                                <th>下单时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              $sellHtml                              
+                            </tbody>
+                          </table>
+                          <div class="line" style="margin: 8px 0 10px 0;">
+                            $sellPageHtml
+                            <div class="filBox">
+                                <p>订单下于:&nbsp;</p>
+                                <div class="asbox_con" style="width: auto;">
+                                  <select id="select2" onchange="showSellOrder(null,null,null,getOptionTime(this))" class="selbox" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" style="color:#202122;background-color:#fff;font-size: 15px;">
+                                    <option value="1">最近3个月</option>
+                                    <option value="2">最近6个月</option>
+                                    <option value="3">最近1年</option>
+                                    <option value="4" selected>任何时间</option>
+                                  </select>
+                                  <span class="sel" onclick="this.parentElement.children[0].focus();">⇲</span>
+                                </div>
+                            </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;">
+                      <div class="rinnerCon">
+                          <h3>收发货设置</h3>
+                          <h3>收货信息&nbsp;
+                              <a style="font-size: 16px;font-weight:normal;" href="javascript:showUpdateReceiptMethod();">添加收货方式</a>
+                              <a style="font-size: 16px;font-weight:normal;" href="javascript:removeSelectedReceiptMethod()">删除选中收货方式</a>
+                          </h3>
+                          <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;margin-bottom: 10px;" id="receipt_info_table">
+                              <thead>
+                                <tr>
+                                  <th><input type="checkbox" class="asbox" type="checkbox" style="top:7px"><span style="top:3px"></span></th>
+                                  <th>收货地址</th>
+                                  <th>收货人</th>
+                                  <th>联系方式</th>
+                                  <th style="min-width:70px">操作</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                  $receiptHtml
+                              </tbody>
+                          </table>
+                          <h3 style="margin:10px 0 0 0;">发货人信息&nbsp;<a style="font-size: 16px;font-weight:normal;" href="javascript:showUpdateSentInfo();">$sentH3Button</a></h3>
+                          <p class="r" id="dlv_name">姓名: <font color="#454545">$sentName</font></p>
+                          <p class="r" id="dlv_pn">手机号码: <font color="#454545">$sentTele</font></p>
+                          <p class="r" id="dlv_adrs">发货地址: <font color="#454545">$sentAddress</font></p>
+                          <p class="r" id="dlv_sch_allow">是否提供学校发货服务: <font color="#454545">$sentSch</font></p>
+                          <p class="r" id="dlv_sch">学校发货地址: <font color="#454545">$sentSchAddr</font></p>
+                          <p class="r" id="dlv_sdays">是否支持7天无理由退货: <font color="#454545">$sent7days</font></p>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;">
+                      <div class="rinnerCon">
+                          <h3>账户信息</h3>
+                          <p class="r">DeBook ID: <font color="#454545">$usr_usrid</font></p>
+                          <p class="r" id="label_email">电子邮箱: <font color="#454545">$usr_email</font><a class="btn" href="javascript:showUpdateEmail();">更改</a></p>
+                          <div class="r" id="nickname">昵称: <font color="#454545">$usr_nickname</font>
+                            <div class="asbox_con" style="float:none;width:150px;display:none;margin-bottom: -4px;">
+                              <input class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="别名">
+                            </div>
+                            <a class="btn" style="display:none;margin-left: 5px;">取消</a>
+                            <a class="btn" onclick="showUpdateNickname()">更改</a>
+                          </div>
+                          <h3 style="position:relative;float:left;margin-top:10px;width: 100%;">安全</h3>
+                          <p class="r">账户登录密码: <font color="#454545">*</font> <a class="btn" onclick="showUpdatePassword0()">修改密码</a></p>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;">
+                      <div class="rinnerCon" id='trsinfo'>
+                          <h3>支付信息</h3>
+                          <p class="r">账户收付款密码: <font color="#454545">*</font> <a class="btn" onclick="showUpdatePassword1()"> 
+                            $paypwd
+                          </a></p>
+                          <p class="r">DeCoins 积分余额&nbsp;<a circle-border tips="DeCoins积分可用于兑换DeBook特别推荐书籍" onmouseover="showTooltip(this,true)" onmouseleave="hideTooltip()">?</a>: <font color="#454545" style="font-family: consolas;">$coins</font><a class="btn" href='javascript:focusSearch();'>兑换书籍</a></p>
+                          <h3 style="position:relative;float:left;margin:12px 0 6px;width: 100%;">积分流动记录</h3>
+                          <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;margin-bottom: 5px;" id="transaction_table">
+                            <thead>
+                              <tr>
+                                <th><input type="checkbox" class="asbox" style="top:11px" onclick="edSelectAll(this)"><span style="top:3px"></span></th>
+                                <th style="width:32%">内容</th>
+                                <th>类型</th>
+                                <th>DeCoins 积分</th>
+                                <th>日期</th>
+                                <th style="width:20%">操作</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              $transHtml
+                            </tbody>
+                        </table>
+                        <div class="line" style="margin: 0 0 10px 0;">
+                          $transPageHtml
+                        </div>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;">
+                      <div class="rinnerCon">
+                          <h3>供货信息</h3>
+                          <div class="rcon" style="display: block;background-image: -webkit-linear-gradient(45deg,#3949ab,#303f9f);height: 96px;">
+                            <div class="rinnerCon">
+                              <h3 style="position:relative;float:left;width: 100%;color: white;margin-bottom: 10px;">我的评分</h3>
+                              <div>
+                                $aplHtml
+                              </div>
+                            </div>
+                          </div>
+                          <h3>供货记录
+                              <a style="font-size: 16px;font-weight:normal;" href="javascript:searchSell();">添加想要售卖的书</a>
+                              <a style="font-size: 16px;font-weight:normal;" href="javascript:deleteAplSelect();">删除选中供货</a>
+                          </h3>
+                          <table class="tb" id="apply_table" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;margin-bottom: 20px;" id="apply_item_table">
+                              <thead>
+                                <tr>
+                                  <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                  <th>书目</th>
+                                  <th>出版社</th>
+                                  <th>语言</th>
+                                  <th>价格</th>
+                                  <th>状态</th>
+                                  <th>操作</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                $aplTableHtml
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;">
+                      <div class="rinnerCon">
+                          <h3>我编辑的条目</h3>
+                          <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;margin-bottom: 20px;" id="contribution_table">
+                            <thead>
+                              <tr>
+                                <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                <th style="width:32%">词条</th>
+                                <th>日期</a></th>
+                                <th>状态</a></th>
+                                <th style="width:20%">操作</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              $conHtml
+                            </tbody>
+                          </table>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+      USER;
+    }
+
+    if(!isset($home)){
+      writeUsrPage();
+    }
+?>

@@ -1,0 +1,31 @@
+div.title>h3{
+    float:left;
+    font-size:32px;
+    font-weight: normal;
+}
+
+div.asbox_con[edit]{
+    margin-bottom: 10px;
+}
+
+p[title]{
+    background-color: #eeeeee;
+    text-align: left;
+}
+
+a[type="button"]{
+    width:100%;
+    text-align: left;
+}
+
+span.wait{
+    background-image:url('Image/src/ajax_clock_small.gif');
+    position:relative;
+    width:16px;
+    height:16px;
+    margin-left: 0px;
+    image-rendering:-webkit-optimize-contrast;
+    display: inline-block;
+    background-position: left;
+    background-repeat: no-repeat;
+}

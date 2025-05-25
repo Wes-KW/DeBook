@@ -1,0 +1,347 @@
+<?php
+
+    function initF(){
+        $pmb = __FILE__;
+        $pmb = str_replace("\\","/",$pmb);
+        for($i=0;$i<3;$i++){
+            $pmb = substr($pmb,0,strripos($pmb,"/"));
+        }
+        $pmb = $pmb . "/";
+        define("FBASE",$pmb);
+    }
+    
+
+    function getDir($path){
+        $dir = dirname($path . "/a");
+        $files = scandir($dir);
+        $array = array();
+        foreach($files as $file){
+            array_push($array,$file);
+        }
+        $resultJson = json_encode($array);
+        echo $resultJson;
+    }
+
+    function randomStr($patternA,$len){
+        $rw = "";
+        $nPattern = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
+        $WPattern = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
+        $wPattern = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z');
+        $tmpPattern = array();
+        if($patternA=="nwW"){
+          for($i=0;$i<10;$i++){array_push($tmpPattern,$nPattern[$i]);}
+          for($i=0;$i<26;$i++){array_push($tmpPattern,$wPattern[$i]);}
+          for($i=0;$i<26;$i++){array_push($tmpPattern,$WPattern[$i]);}
+        }else if($patternA=="nw"){
+          for($i=0;$i<10;$i++){array_push($tmpPattern,$nPattern[$i]);}
+          for($i=0;$i<26;$i++){array_push($tmpPattern,$wPattern[$i]);}
+        }else if($patternA=="nW"){
+          for($i=0;$i<10;$i++){array_push($tmpPattern,$nPattern[$i]);}
+          for($i=0;$i<26;$i++){array_push($tmpPattern,$WPattern[$i]);}
+        }else if($patternA=="wW"){
+          for($i=0;$i<26;$i++){array_push($tmpPattern,$wPattern[$i]);}
+          for($i=0;$i<26;$i++){array_push($tmpPattern,$WPattern[$i]);}
+        }else if($patternA=="w"){
+          $tmpPattern = $wPattern;
+        }else if($patternA=="W"){
+          $tmpPattern = $WPattern;
+        }else if($patternA=="n"){
+          $tmpPattern = $nPattern;
+        }else{
+          $tmpPattern = array();
+        }
+    
+        for ($i = 0; $i < $len; $i++)
+        {
+          $num = rand(0,count($tmpPattern)-1);
+          $rw .= $tmpPattern[$num];
+        }
+        return $rw;
+    }
+    
+    function randomF($des,$patternA,$len){
+        $folder = randomStr($patternA,$len);
+        while(file_exists($des . "/" . $folder)){
+            $folder = randomStr($patternA,$len);
+        }
+        return $folder;
+    }
+
+    function getFileType($file){
+        $file_ext = strtolower(substr($file,strrpos($file,".")+1));
+        $video = array("mp4","mov","amv","avi","flv","m4v","mkv","webm");
+        $music = array("mp3","flac","m4a","m4b","m4p","wma","wav");
+        $pictures = array("jpg","jpeg","png","bmp","tiff","gif");
+        $images = array("ico","icns","svg");
+        $docs = array("docx","doc","pdf","rtf","rtfx");
+        $ppts = array("pptx","ppt");
+        $excels = array("xls","xlsx");
+        $txt = array("txt");
+        $log = array("log");
+        $zip = array("zip","rar","7z");
+        $code = array("h","cpp","js","css","htm","html","phtml","php","php3","java","xml","vb","c",".out");
+        $exec = array("exe","sh","bat","cmd");
+        if(in_array($file_ext,$video)){
+            return "视频文件";
+        }else if(in_array($file_ext,$music)){
+            return "音乐文件";
+        }else if(in_array($file_ext,$pictures)){
+            return "图片文件";
+        }else if(in_array($file_ext,$images)){
+            return "图像文件";
+        }else if(in_array($file_ext,$docs)){
+            return "文档文件";
+        }else if(in_array($file_ext,$ppts)){
+            return "演示文件";
+        }else if(in_array($file_ext,$excels)){
+            return "表格文件";
+        }else if(in_array($file_ext,$txt)){
+            return "文本文件";
+        }else if(in_array($file_ext,$log)){
+            return "日志文件";
+        }else if(in_array($file_ext,$code)){
+            return "代码文件";
+        }else if(in_array($file_ext,$exec)){
+            return "可执行文件";
+        }else if(in_array($file_ext,$zip)){
+            return "压缩文件";
+        }else{
+            return "其他文件";
+        }
+    }
+
+    function getFilePic($type){
+        if($type=="视频文件"){
+            return "online_video_insert.png";
+        }else if($type=="音乐文件"){
+            return "music.png";
+        }else if($type=="图片文件"){
+            return "picture.png";
+        }else if($type=="图像文件"){
+            return "image.png";
+        }else if($type=="文档文件"){
+            return "document_notes.png";
+        }else if($type=="演示文件"){
+            return "broadcast_slide_show.png";
+        }else if($type=="表格文件"){
+            return "table_excel.png";
+        }else if($type=="文本文件"){
+            return "text.png";
+        }else if($type=="日志文件"){
+            return "raw_access_logs.png";
+        }else if($type=="代码文件"){
+            return "script_bricks.png";
+        }else if($type=="可执行文件"){
+            return "application_osx_terminal.png";
+        }else if($type=="压缩文件"){
+            return "page_white_zip.png";
+        }else{
+            return "document_empty.png";
+        }
+    }
+
+    function getCMD($isfolder,$name){
+        if($isfolder){
+            return "goTo('$name')";
+        }else{
+            return "fopen('$name')";
+        }
+    }
+
+    function getFileTable($path){
+        if(file_exists($path)){
+            setcookie("destinationA",base64_encode(urlencode($path)));
+            $dir = dirname($path . "/a");
+            $s = scandir($dir);
+            $p = array();
+            foreach($s as $sd){
+                if($sd!="."&&$sd!=".."&&$sd[0]!="."){
+                    $m = array("icon"=>"","filetype"=>"","filename"=>"","filedate"=>"","cmd"=>"");
+                    $m["icon"] = is_dir($path . "/" . $sd)?"folder.png":getFilePic(getFileType($sd));
+                    $m["cmd"] = getCMD(is_dir($path . "/" . $sd),$sd);
+                    $m["filetype"] = is_dir($path . "/" . $sd)?"文件夹":getFileType($sd);
+                    $m["filename"] = $sd;
+                    $m["filedate"] = date("Y-m-d H:i:s",filemtime($path . "/" . $sd));
+                    array_push($p,$m);
+                }
+            }
+            $n = json_encode($p);
+            echo $n;
+        }else{
+            echo "{}";
+        }
+    }
+
+    function openFileAsText($fpath){
+        $file_handle = fopen($fpath,"r");
+        if($file_handle){
+            while(!feof($file_handle)){
+                $line = fgets($file_handle);
+                echo $line;
+            }
+        }
+        fclose($file_handle);
+    }
+
+    function getRealPath($path){
+        $arr = explode("/",$path);
+        $rpath = "";
+        for($i=0;$i<count($arr);$i++){
+            if($arr[$i]===".."){
+                if(strpos($rpath,"/")!==false){
+                    $rpath = substr($rpath,0,strripos($rpath,"/"));
+                }
+            }else if($arr[$i]==="."||$arr[$i]===""){
+            }else{
+                $rpath .= "/".$arr[$i];
+            }
+        }
+        $rpath = substr($rpath,1,strlen($rpath)-1);
+        if(strpos($rpath,"/")===strlen($rpath)-1) $rpath = substr($rpath,0,strlen($rpath)-1);
+        return $rpath;
+    }
+
+    function checkFPermission($path){
+        $path = getRealPath($path);
+        // get file real directory
+        // define not-allowed list
+        $fList = array(".help",".phtml",".tmp",".vscode","admin","css","script","Image/fatcow","Image/main","Image/src","Image/merchant");
+        $dList = array("","Image","Image/apply","Image/tmp","Image/author","Image/book","Image/list");
+        $flList = array("apl.i.html","author.i.html","book.i.html","cart.i.hml","compatibility.html","help.i.html","home.html","list.i.html","search.i.html","usr.i.html","usr.out.i.html","usr.pre.i.html","Image/debook.ico");
+        for($i=0;$i<count($fList);$i++) if(strpos($path,$fList[$i])===0) return false;
+        for($i=0;$i<count($dList);$i++) if($path===$dList[$i]) return false;
+        for($i=0;$i<count($flList);$i++) if($path===$flList[$i]) return false;
+        return true;
+    }
+
+    function removeFileOrDir($path){
+        if(getArray($_POST,"prlg")==="allow"){
+            if(is_dir($path)){
+                $files = scandir(dirname($path . "/a"));
+                foreach($files as $file){
+                    if($file!=".."&&$file!="."){
+                        if(is_file($path . "/" . $file)){
+                            $nf = $path ."/" . $file;
+                            unlink($nf);
+                        }else if(is_dir($path ."/" . $file)){
+                            removeFileOrDir($path ."/" . $file);
+                        }
+                    }
+                }
+                rmdir($path);
+            }else if(is_file($path)){
+                unlink($path);
+            }
+        }else{
+            echo "Unable To Delete File";
+        }
+    }
+
+    function upload($files){
+        $fileA= getFile($files);
+        $arr = array();
+        foreach($fileA as $finfo){
+            $npath = urldecode(base64_decode(getArray($_COOKIE,"destinationA"))). $finfo["name"];
+            array_push($arr,uploadFile($finfo,$npath));
+        }
+        echo json_encode($arr);
+    }
+
+    function getFile($files){
+        $f = array();
+        $i = 0;
+        foreach($files as $file){
+            if(is_string($file["name"])){
+                $f[$i] = $file;
+                $i++;
+            }else if(is_array($file["name"])){
+                foreach($file["name"] as $key=>$value){
+                    $f[$i]["name"] = $file["name"][$key];
+                    $f[$i]["tmp_name"] = $file["tmp_name"][$key];
+                    $f[$i]["error"] = $file["error"][$key];
+                    $i++;
+                }
+            }
+        }
+        return $f;
+    }
+
+    function uploadFile($finfo,$path){
+        if($finfo["error"]==UPLOAD_ERR_OK){
+            if(!empty($finfo["name"])){
+                if(move_uploaded_file($finfo["tmp_name"],$path)){
+                    return "";
+                }else{
+                    return "ERR_MOVE_FILE";
+                }
+            }
+        }else{
+            switch($finfo["error"]){
+                case 1:
+                    return "ERR_PHP_INI_OVERSIZE";
+                case 2:
+                    return "ERR_MAX_FILE_SIZE_OVERSIZE";
+                case 3:
+                    return "ERR_PARTIAL_UPLOADED";
+                case 4:
+                    return "ERR_NO_FILE_UPLOADED";
+                case 6:
+                    return "ERR_TMP_FILE_NOT_FOUND";
+                case 7:
+                    return "ERR_WRITE_FILE";
+                case 8:
+                    return "ERR_TERMINATED_BY_PHP_EXTENSION";
+            }
+        }
+    }
+
+    function MK_randDirIn($directory){
+        $rd = randomStr("nW",16);
+        while(file_exists($directory . "/" . $rd)){
+            $rd = randomStr("nW",16);
+        }
+        mkdir($directory . "/" . $rd);
+        echo $rd;
+    }
+
+    function rMKrandDirIn($directory){
+        $directory = FBASE.$directory;
+        $rd = randomStr("nW",16);
+        while(file_exists($directory . "/" . $rd)){
+            $rd = randomStr("nW",16);
+        }
+        mkdir($directory . "/" . $rd);
+        return $rd;
+    }
+
+    function mFiles($oldDir,$files,$newDir){
+        $arr = explode(":",$files);
+        for($i=0;$i<count($arr);$i++){
+            rename(FBASE.$oldDir.$arr[$i],FBASE.$newDir."/".$arr[$i]);
+        }
+    }
+
+    function cFiles($oldDir,$files,$newDir){
+        $arr = explode(":",$files);
+        for($i=0;$i<count($arr);$i++){
+            copy(FBASE.$oldDir.$arr[$i],FBASE.$newDir."/".$arr[$i]);
+        }
+    }
+
+    function renameF($ofs,$nfs){
+        $arro = explode(":",$ofs);
+        $arrn = explode(":",$nfs);
+        for($i=0;$i<count($arro);$i++){
+            rename($arro[$i],$arrn);
+        }
+    }
+
+    function setDestination($path){
+        $path = $path;
+        if(!file_exists($path)) return;
+        setcookie("destinationA",base64_encode(urlencode($path)));
+        return $path;
+    }
+
+    initF();
+?>

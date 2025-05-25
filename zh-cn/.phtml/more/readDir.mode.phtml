@@ -1,0 +1,39 @@
+<?php
+    #try using include_once function
+    include_once 'mode.php';
+    include_once 'readDir.phtml';
+
+    $key = getArray($_POST,"key");
+    if($key=="getDir"){
+        getDir(getArray($_POST,"directory"));
+    }else if($key=="getFileTable"){
+        getFileTable(FBASE.getArray($_POST,"path"));
+    }else if($key=="getFileType"){
+        echo getFileType(FBASE.getArray($_POST,"file"));
+    }else if($key=="getFilePic"){
+        echo getFilePic(FBASE.getArray($_POST,"file"));
+    }else if($key=="fopen"){
+        echo openFileAsText(FBASE.getArray($_POST,"file"));
+    }else if($key=="delete"){
+        $path = getArray($_POST,"path");
+        if(checkFPermission($path)==true){
+            removeFileOrDir(FBASE.$path);
+        }else{
+            echo "ERR_NOT_AUTHORIZED";
+        }
+    }else if($key=="rename"){
+        renameF(getArray($_POST,"ofiles"),getArray($_POST,"newfiles"));
+    }else if($key=="move"){
+        mFiles(getArray($_POST,"oldPath"),getArray($_POST,"files"),getArray($_POST,"newPath"));
+    }else if($key=="copy"){
+        cFiles(getArray($_POST,"oldPath"),getArray($_POST,"files"),getArray($_POST,"newPath"));
+    }else if($key=="mkdir"){
+        mkdir(FBASE . getArray($_POST,"path"));
+    }else if($key=="mkRandDir"){
+        MK_randDirIn(FBASE.getArray($_POST,"path"));
+    }else if($key=="setDes"){
+        echo setDestination(FBASE.getArray($_POST,"path"));
+    }else{
+        upload($_FILES);
+    }
+?>

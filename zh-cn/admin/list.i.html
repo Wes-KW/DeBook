@@ -1,0 +1,98 @@
+<?php
+    include "../.phtml/admin.php";
+    $condata = getcon(getArray($_POST,"id"));
+    $data = (array) json_decode($condata["object"]);
+    $data = decodeTextInArr($data);
+?>
+
+<?php
+//preparing images
+$o = explode(":",$data["images"]);
+$bigImage_str = $o[0]==""?"<a edit title=\"书单图像\" style=\"color:#999\">书单编辑者没有上传任何图像</a>":"<a edit title=\"书单图像\"><img src=\"../Image/tmp/". $o[0] . "/" . urldecode(base64_decode($o[1])) . "\" alt=\"book_name_picture\"></a>";
+//preparing all the data
+$ln = $data["list_name"];
+$lbn = $data["label_name"];
+$cn = $data["contents"];
+$si = $data["searchIndex"]==""?"(空)":$data["searchIndex"];
+$di = $data["book_name"];
+$editText = isset($data["editId"])?"编辑书单":"添加书单";
+$usr = decodeInfo($condata["contributor"]);
+$email = $usr["email"]=="!"||$usr["email"]==""?"(匿名)":$usr["email"];
+$ip = $condata["ip"];
+$date = getLongDate($condata["date"]);
+$object = $condata["object"];
+$btn = $condata["status"]==0?'<button class="asbox_submit" id="but_continue"><span>继续</span></button><button class="asbox_submit" shallow id="but_ignore"><span>忽略</span></button><button class="asbox_submit" shallow id="but_cancel"><span>取消</span></button>':'<button class="asbox_submit" shallow id="but_cancel"><span>取消</span></button>';
+echo <<<PAGE
+        <div class="dcon" style="margin-top: 15px;" id="editBoard">
+            <div class="scon">
+                <div class="pleft">
+                    <div class="_image" id="imagebox">
+                        $bigImage_str
+                        <div class="line"></div>
+                        <a style="float: left;color:#999">书单图像</a>
+                    </div>
+                </div>
+                <div class="pright">
+                    <div class="title">
+                        <div class="asbox_con" edit>
+                            <p title>&nbsp;书单名称*</p>
+                            <input class="asbox" placeholder="书单名称" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="list_name" value="$ln">
+                        </div>
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;书单标签&nbsp;<a xhr href="../?search/label/all/">所有标签</a></p>
+                            <input class="asbox" placeholder="书单标签" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="label_name" value="$lbn">
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="detail">
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;书单内容*&nbsp;:&nbsp;<a>建议200字或以上</a></p>
+                            <textarea class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" id="contents">$cn</textarea>
+                        </div>
+                    </div>
+                    <div class="detail" style="margin-top: 10px;">
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;包含书籍*</p>
+                            <input class="asbox" placeholder="书籍名称" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="book_name" value="$di">
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="detail">
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;搜索索引&nbsp;<a xhr href="../?help/labelling">有疑问？查看帮助</a></p>
+                            <input class="asbox" placeholder="搜索索引" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="search_index" value="$si">
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                        <p style="margin-bottom: 5px;"><b>已下为用户提交的数据</b></p>
+                        <div class="detail">
+                            <div class="asbox_con" edit>
+                                <p console>&nbsp;申请者邮箱</p>
+                                <div class="asbox">$email</div>
+                                <!--请求可以属于添加或修改-->
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p console>&nbsp;用户IP</p>
+                                <div class="asbox">$ip</div>
+                                <!--请求可以属于添加或修改-->
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p console>&nbsp;请求时间</p>
+                                <div class="asbox">$date</div>
+                                <!--请求可以属于添加或修改-->
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p console>&nbsp;此次请求属于以下行为</p>
+                                <div class="asbox">$editText</div>
+                                <!--请求可以属于添加或修改-->
+                            </div>
+                    </div>
+                    <div class="line" style="margin:5px 0 15px 0;"></div>
+                    <div class="detail" style="margin-bottom: 20px;">
+                        $btn
+                    </div>
+                </div>
+            </div>
+        </div>
+PAGE;
+?>

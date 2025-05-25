@@ -1,0 +1,113 @@
+<?php
+    function writePreUser(){
+        echo <<<PRE
+            <div class="dcon" style="margin-top: 15px;">
+                <div class="scon">
+                    <div style="float:left;max-width: 400px;">
+                        <div class="title">
+                            <h3>登录</h3>
+                        </div>
+                        <div class="line" style="margin: 5px 0px 15px 0px;"></div>
+                        <form>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;DeBook ID或邮箱</p>
+                                <input id="id0" class="asbox" placeholder="DeBook ID或邮箱" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;密码&nbsp;:&nbsp;<a xhr href="?account#forget">忘记密码</a></p>
+                                <input id="pwd0" type="password" class="asbox" placeholder="密码" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <div class="asbox_con" style="text-align: left;">
+                                <input type="checkbox" id="check0" class="asbox" type="checkbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" style="height:100%">
+                                <span style="top:2px"></span>
+                                <button a type="button" style="padding:0px" onclick="this.parentElement.children[0].checked=!this.parentElement.children[0].checked">保持我的登录状态30天</button>
+                            </div>
+                            <a xhr href="?help/login" type="button" style="float:left;margin-top:10px;">对登录有疑问？请求帮助</a>
+                            <a xhr href="?account#signup" type="button" style="float:left;margin-top:10px;">没有账号？注册一个</a>
+                            <div class="line"></div>
+                            <div class="detail">
+                                <button class="asbox_submit" id="submit0"><span>继续</span></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="dcon" style="margin-top: 15px;display: none;">
+                <div class="scon">
+                    <div style="float:left;max-width: 400px;">
+                        <div class="title">
+                            <h3>注册</h3>
+                        </div>
+                        <div class="line" style="margin: 5px 0px 15px 0px;"></div>
+                        <form>
+                            <div class="asbox_con" edit hidden>
+                                <p title>&nbsp;新DeBook ID</p>
+                                <input id='id1' class="asbox" placeholder="新DeBook ID" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0)" autocomplete="off" readonly>
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;电子邮箱&nbsp;<button a type="button" href="javascript:;" class="mailCode" initbtn>发送验证码</button></p>
+                                <input id='eml0' class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="电子邮箱">
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;邮箱验证码</p>
+                                <input id='emlc0' class="asbox" id='emlc0' onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="邮箱验证码" style="padding:0px 0.8%;width:98.4%">
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;密码&nbsp;</p>
+                                <input id='pwd1-0' type="password" class="asbox" placeholder="密码" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <div class="asbox_con" edit style="margin-bottom:0px">
+                                <p title>&nbsp;确认密码&nbsp;</p>
+                                <input id='pwd1-1' type="password" class="asbox" placeholder="确认密码" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <a xhr href="?help/singup" type="button" style="float:left;margin-top:10px;">对注册有疑问？请求帮助</a>
+                            <a xhr href="?account#login" type="button" style="float:left;margin-top:10px;">已有账号？立即登录</a>
+                            <div class="line"></div>
+                            <div class="detail">
+                                <button class="asbox_submit" id="submit1"><span>继续</span></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="dcon" style="margin-top: 15px;display: none;">
+                <div class="scon">
+                    <div style="float:left;max-width: 400px;">
+                        <div class="title">
+                            <h3>忘记密码</h3>
+                        </div>
+                        <div class="line" style="margin: 5px 0px 15px 0px;"></div>
+                        <form>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;电子邮箱&nbsp;<button a type="button" href="javascript:;" class="mailCode" initbtn>发送验证码</button></p>
+                                <input id="eml1" class="asbox" placeholder="电子邮箱" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;邮箱验证码</p>
+                                <input id="emlc1" class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="邮箱验证码">
+                            </div>
+                            <div class="asbox_con" edit>
+                                <p title>&nbsp;新密码</p>
+                                <input type="password" id="pwd2-0" class="asbox" placeholder="新密码" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off">
+                            </div>
+                            <div class="asbox_con" edit style="margin-bottom:0px">
+                                <p title>&nbsp;确认密码</p>
+                                <input type="password" id="pwd2-1" class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="确认密码">
+                            </div>
+                            <a xhr href="?help/forget" type="button" style="float:left;margin-top:10px;">对找回密码有疑问？请求帮助</a>
+                            <a xhr href="?account#login" type="button" style="float:left;margin-top:10px;">前往登录</a>
+                            <div class="line"></div>
+                            <div class="detail">
+                                <button class="asbox_submit" id="submit2"><span>继续</span></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        PRE;
+    }
+
+    if(!isset($home)){
+        writePreUser();
+    }
+?>

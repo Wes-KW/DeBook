@@ -1,0 +1,178 @@
+div.scon{
+    position:relative;
+    float:left;
+    width:100%;
+    height:auto;
+    text-align: left;
+}
+
+div.scon>*{
+    position: relative;
+    float:left;
+    width: 100%;
+}
+
+div.pleft{
+    position:relative;
+    float:left;
+    min-width:100px;
+    width:23%;
+    margin-top:10px;
+}
+
+div.pright{
+    position:relative;
+    float:right;
+    margin:0px;
+    width:72%;
+}
+
+div.pright>div{
+    position:relative;
+    float:left;
+    width: 100%;
+}
+
+div._image{
+    position:relative;
+    float:left;
+    width:100%;
+    text-align: center;
+}
+
+div._all_image>div._images_con>a{
+    margin-right: 5px;
+}
+
+div._image img{
+    width: 100%;
+    filter: drop-shadow(0px 1px 5px #bdbdbd);
+    -webkit-filter: drop-shadow(0px 1px 5px #bdbdbd);
+}
+
+div._all_image{
+    position:relative;
+    float:left;
+    width:100%;
+    margin-top: 12px;
+    margin-bottom: 10px;
+}
+
+div._images_con{
+    position: relative;
+    float: left;
+    width:100%;
+    margin-bottom: 3px;
+}
+
+div._all_image ._images_con>div{
+    position: relative;
+    float: left;
+    margin-right: 5px;
+    margin-bottom: 10px;
+}
+
+div._all_image ._images_con[edit]>div{
+    margin-right: 15px;
+}
+
+div._all_image div._images_con[edit] img{
+    max-height: 96px;
+}
+
+a[img_delete]{
+    position: absolute;
+    right: -2px;
+    top: -8px;
+    width: 16px;
+    height: 16px;
+    background-color: #0366d6;
+    border-radius: 10px;
+    box-shadow: #c4c4c4 -1px 1px 1px 0px;
+}
+
+a[img_delete]>div{
+    position: absolute;
+    float: left;
+    width: 10px;
+    height: 2px;
+    background-color: #efefef;
+    top: 7px;
+    left: 19%;
+}
+
+a[img_delete]>div:first-child{
+    transform: rotate(45deg);
+}
+
+div._all_image div._images_con[edit] div[checked] img{
+    filter: contrast(0.2);
+}
+
+div._all_image div._images_con[edit] div a[img_delete]{
+    width:24px;
+    height:24px;
+    background-color:transparent;
+    background-size:24px 24px;
+    border-radius: 12px;
+    background-image: url("Image/fatcow/radio_button.png");
+}
+
+div._all_image div._images_con[edit] div[checked] a[img_delete]{
+    background-image: url("Image/fatcow/tick_circle_frame.png");
+}
+
+div._all_image div._images_con[edit] a[img_delete]>div{
+    display: none;
+}
+
+a[img_delete]>div:nth-child(2){
+    transform: rotate(135deg);
+}
+
+div._all_image ._images_con img{
+    box-shadow:0px 1px 2px 0px #bdbdbd;
+    max-height: 40px;
+    margin-right: 5px;
+}
+
+div._all_image ._images_con2 img{
+    box-shadow:0px 1px 2px 0px #bdbdbd;
+    max-width: 50px;
+    margin-right: 10px;
+}
+
+/*edit*/
+div.asbox_con[edit]{
+    margin-bottom: 10px;
+}
+
+div.asbox_con[edit]>div.asbox{
+    overflow-wrap: break-word;
+}
+
+p[title]{
+    background-color: #eeeeee;
+}
+
+textarea{
+    font-family: "Cambria";
+    letter-spacing: 0.5px;
+    font-size: 17px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+p[console]{
+    font-size: 17px;
+    background-color: #fbf3d5;
+    border-bottom:1px solid #f1e5bc;
+    color:#333;
+}
+
+div.asbox{
+    padding:3px .8%;
+    background-color: #fdf7e2;
+    font-size: 17px;
+    color:#3b4045;
+}

@@ -1,0 +1,331 @@
+  div.selbar{
+    position: relative;
+    float:left;
+    margin:15px 0px 5px 0px;
+    width:100%;
+    height:auto;
+    border-bottom:1px solid #c4c4c4;
+  }
+
+  div.selbar>p{
+    position: relative;
+    float: left;
+    font-family: "SimSun";
+    font-size: 16px;
+    padding: 1px 3px 3px 3px;
+    margin: .3% 0px 0px 0px;
+    margin-left: 6px;
+    border-bottom:1px solid transparent;
+  }
+
+  div.selbar>p:hover{
+    color:#0366d6;
+    border-bottom: 1px solid #c4c4c4;
+    transition: all 0.2s ease 0s;
+  }
+
+  div.selbar>p.sel{
+    border-bottom: 1px solid #0366d6;
+  }
+
+  form>div.row{
+    margin-right: 15px;
+  }
+
+  div.row[autofill]{
+    width:96%;
+    width:-webkit-fill-available;
+    width:-moz-available;
+    width:-o-available;
+  }
+
+  div.row[autofill]>.asbox_con{
+    width:auto;
+  }
+
+  div.asbox_con {
+    position: relative;
+    float: left;
+    width: 100%;
+    height: auto;
+    border: 1px solid #c4c4c4;
+    background-color: white;
+    transition: all 0.3s ease 0s;
+    overflow: hidden;
+  }
+
+  div.asbox_con[edit]{
+    overflow:visible
+  }
+
+  div.asbox_con>select{
+    position:relative;
+    float:left;
+    width:100%;
+    padding:4px 1.2em 4px 0.3em;
+    border:0px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    font-family: "Cambria";
+    letter-spacing: 0.5px;
+    font-size: 16px;
+  }
+
+  div.asbox_con>span.sel{
+    position:absolute;
+    right:1px;
+    bottom:0;
+    user-select: none;
+    cursor: default;
+  }
+
+  div.radioCon{
+    position:relative;
+    float:left;
+    width:100%;
+    background-color: white;
+  }
+
+  .radioBox{
+    position:relative;
+    float:left;
+  }
+
+  .radioBox>*{
+    position:relative;
+    float:left;
+  }
+
+  form div.asbox_con{
+    background-color: #f0f0f0;
+  }
+
+  form input.asbox{
+    background-color: white;
+  }
+
+  div.asboxList_con{
+    position: relative;
+    float: left;
+    width: 100%;
+    height: auto;
+    border: 1px solid #c4c4c4;
+    border-radius: 3px;
+    background-color: white;
+    transition: all 0.1s ease 0s;
+    overflow: hidden;
+    z-index: 1;
+    box-shadow: #0000000f 0px 2px 5px 1px;
+  }
+
+  form {
+    position: relative;
+    float: left;
+    width: 100%;
+    height: auto;
+  }
+
+  form div.row{
+      min-width:36%;
+  }
+
+  input::-ms-clear{
+    width: 0;
+    height: 0;
+  }
+
+  input.asbox {
+    position: relative;
+    float: left;
+    width: 98.4%;
+    width:-webkit-fill-available;
+    width:-moz-available;
+    width:-o-available;
+    padding: 0px .8%;
+    height: 28px;
+    border: 0px;
+    outline: 0px;
+    font-family: "Cambria";
+    letter-spacing: 0.5px;
+    font-size: 17px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input.asbox_submit {
+    position: relative;
+    float: left;
+    width: inherit;
+    height: 28px;
+    border: 0px;
+    padding: 3px 4px 3px 3px;
+    cursor: pointer;
+    font-size: 17px;
+    background-color: #0366d6;
+    -webkit-appearance: none;
+    border-radius: 0px;
+    color: white;
+    outline: 0px;
+    transition: background-color 150ms ease 0s;
+  }
+
+  input.asbox_submit:active{
+      background-color: #454545;
+  }
+
+  button.asbox_submit{
+    position:relative;
+    float:left;
+    padding:0px;
+    border: 1px solid #c4c4c4;
+    background-color: #0366d6;
+  }
+
+  button.asbox_submit>span{
+    position: relative;
+    float: left;
+    width: inherit;
+    height: 26px;
+    border: 0px;
+    padding: 3px 4px 0px 3px;
+    font-size: 17px;
+    -webkit-appearance: none;
+    border-radius: 0px;
+    color: white;
+    outline: 0px;
+    transition: background-color 150ms ease 0s;
+  }
+
+  button.asbox_submit[shallow]{
+    background-color: #eee;
+  }
+
+  button.asbox_submit[shallow]>span{
+    color:#454545;
+  }
+
+  button.asbox_submit:active>span{
+    background-color: #454545;
+  }
+
+  button.asbox_submit[shallow]:active>span{
+    background-color: #454545;
+    color:white;
+  }
+
+/*self-defined checkbox*/
+  input.asbox[type="checkbox"]{
+    appearance: none;
+    -webkit-appearance: none;
+    outline:none;
+    display: block;
+    opacity: 0;
+    position: absolute;
+    z-index: 2;
+    width:auto;
+    min-width: 15px;
+    height:16px;
+  }
+
+  input.asbox[type="checkbox"]+span{
+    display: inline-block;
+    background-image: url("../Image/fatcow/check_box_uncheck.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    position: relative;
+    width: 16px;
+    height: 16px;
+  }
+
+  input.asbox[type="checkbox"]:disabled+span{
+    filter: grayscale(1) brightness(0.9);
+    -webkit-filter: grayscale(1) brightness(0.9);
+  }
+
+  input.asbox[type="checkbox"]:checked+span{
+    background-image: url("../Image/fatcow/check_box.png");
+  }
+
+  input.asbox[type="radio"]{
+    appearance: none;
+    -webkit-appearance: none;
+    outline:none;
+    display: block;
+    opacity: 0;
+    position: absolute;
+    z-index: 2;
+    width:auto;
+    min-width: 15px;
+    height:16px;
+  }
+
+  input.asbox[type="radio"]+span{
+    display: inline-block;
+    background-image: url("../Image/fatcow/radio_button.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    image-rendering: -webkit-optimize-contrast;
+    position: relative;
+    width: 16px;
+    height: 16px;
+  }
+
+  input.asbox[type="radio"]:checked+span{
+    background-image: url("../Image/fatcow/tick_circle_frame.png");
+  }
+
+  select{
+    width:fit-content;
+    max-width: 100px;
+    outline:0px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  textarea{
+    outline:0px;
+    width:97.75%;
+    max-width: 98.5%;
+    height:28px;
+    min-width: 97%;
+    min-height:210px;
+    padding:1.5% 2%;
+    margin:1px 4px;
+    padding:2px;
+    font-size:16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: fangsong;
+  }
+
+  input[type="number"]{
+    -webkit-appearance: textfield;
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+
+  /*MsgBox input*/
+  div.MsgBox div.split_input{
+    width:100%;
+    height:auto;
+  }
+
+  div.MsgBox div.split_input>div.asbox_con{
+    width: 60px;
+    margin-right: 17px;
+  }
+
+  div.MsgBox div.split_input>div.asbox_con:last-child{
+    margin-right: 0px;
+  }
+
+  div.MsgBox div.split_input>div.asbox_con>input.asbox{
+    width: 100%;
+    padding: 8px 0.8%;
+    font-size: 30px;
+    text-align: center;
+    color: transparent;
+    text-shadow: 0 0 0 #000;
+  }

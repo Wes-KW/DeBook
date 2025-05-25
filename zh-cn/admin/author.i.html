@@ -1,0 +1,94 @@
+<?php
+    include "../.phtml/admin.php";
+    $condata = getcon(getArray($_POST,"id"));
+    $data = (array) json_decode($condata["object"]);
+    $data = decodeTextInArr($data);
+?>
+
+<?php
+//preparing images
+$o = explode(":",$data["images"]);
+$bigImage_str = $o[0]==""?"Image/src/usr.png":"../Image/tmp/".$o[0]."/".urldecode(base64_decode($o[1]));
+//preparing all the data
+$an = $data["author_name"];
+$cn = $data["contents"];
+$bn = $data["books"]==""?"(空)":$data["books"];
+$si = $data["searchIndex"]==""?"(空)":$data["searchIndex"];
+$editText = isset($data["editId"])?"编辑作者":"添加作者";
+$usr = decodeInfo($condata["contributor"]);
+$email = $usr["email"]=="!"||$usr["email"]==""?"(匿名)":$usr["email"];
+$ip = $condata["ip"];
+$date = getLongDate($condata["date"]);
+$object = $condata["object"];
+$btn = $condata["status"]==0?'<button class="asbox_submit" id="but_continue"><span>继续</span></button><button class="asbox_submit" shallow id="but_ignore"><span>忽略</span></button><button class="asbox_submit" shallow id="but_cancel"><span>取消</span></button>':'<button class="asbox_submit" shallow id="but_cancel"><span>取消</span></button>';
+echo <<<PAGE
+        <div class="dcon" style="margin-top: 15px;" id="editBoard">
+            <div class="scon">
+                <div class="row">
+                    <div class="detail">
+                        <div class="whiteboard">
+                            <div class="pleft">
+                                <div class="headBox" style="margin-bottom: 2px;" id="imagebox">
+                                    <a edit tips="添加头像" href="javascript:;"><img src="$bigImage_str" alt="author"></a>
+                                </div>
+                                <div class="line"></div>
+                                <a style="color:#999">作者头像</a>
+                            </div>
+                            <div class="pright">
+                                <div class="asbox_con" edit>
+                                    <p title>&nbsp;作者名字*</p>
+                                    <input class="asbox" placeholder="作者名字" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="author_name" value="$an">
+                                </div>
+                                <div class="detail">
+                                    <div class="asbox_con" edit style="margin-bottom: 0px;overflow:hidden">
+                                        <p title>&nbsp;作者概要*&nbsp;<a>建议200字或以上</a></p>
+                                        <textarea class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" id="contents">$cn</textarea>
+                                    </div>
+                                </div>
+                                <div class="line"></div>
+                                <div class="detail">
+                                    <div class="asbox_con" edit>
+                                        <p title>&nbsp;作者作品</p>
+                                        <input class="asbox" placeholder="作者作品" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="books" value="$bn">
+                                    </div>
+                                    <div class="asbox_con" edit style="margin-bottom: 0px;">
+                                        <p title>&nbsp;搜索索引</p>
+                                        <input class="asbox" placeholder="搜索索引" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="search_index" value="$si">
+                                    </div>
+                                </div>
+                                <div class="line"></div>
+                                <p style="margin-bottom: 5px;"><b>已下为用户提交的数据</b></p>
+                                <div class="detail">
+                                    <div class="asbox_con" edit>
+                                        <p console>&nbsp;申请者邮箱</p>
+                                        <div class="asbox">$email</div>
+                                        <!--请求可以属于添加或修改-->
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p console>&nbsp;用户IP</p>
+                                        <div class="asbox">$ip</div>
+                                        <!--请求可以属于添加或修改-->
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p console>&nbsp;请求时间</p>
+                                        <div class="asbox">$date</div>
+                                        <!--请求可以属于添加或修改-->
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p console>&nbsp;此次请求属于以下行为</p>
+                                        <div class="asbox">$editText</div>
+                                        <!--请求可以属于添加或修改-->
+                                    </div>
+                                </div>
+                                <div class="line" style="margin:5px 0 15px 0;"></div>
+                                <div class="detail" style="margin-bottom: 20px;">
+                                    $btn
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+PAGE;
+?>

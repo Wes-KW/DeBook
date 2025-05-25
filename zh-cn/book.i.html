@@ -1,0 +1,621 @@
+<?php
+    include_once '.phtml/vrfylogin.php';
+    include_once '.phtml/apply.php';
+    include_once '.phtml/common.php';
+
+    /*
+        此页面要做的更改：
+        * 销售商只用一个选择框（上面销售商选择会影响下面详细信息）
+        * 销售商选择框添加筛选条件
+        * 销售商评价中，显示客户购买的是哪一本书
+        * 添加讨论页
+    */
+
+    function getAurNameByID($aurid){
+        $sql = "SELECT names FROM aurinfo WHERE aurid = '$aurid'";
+        $res = exeSql($sql);
+        while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+            return $row["names"];
+        }
+    }
+
+    function writeBokMain(){
+        echo <<<MAINPAGE
+        <div class="rcon" style="background:#f8f8ff;">
+            <div rconId="1" id="pic" style='background-image: url("Image/main/spine_of_book_711x466.png"); opacity: 1;'>
+            </div>
+            <div textArea>
+              <h2 style="font-size:40px;letter-spacing:0.15em;">书籍主页</h2>
+              <br>
+              <h3 style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;">点击以下按钮或搜索栏以搜索你想要找到的书籍。<br>遇到问题？访问<a xhr href="?help">帮助页面</a></h3>
+              <a class="btn" href="javascript:focusSearch()">开始搜索并购买</a>
+              <div class="break"></div>
+              <a class="btn" href="javascript:searchSell()">销售书籍</a>
+              <div class="break"></div>
+              <h3 style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;">或者，您也可以：</h3>
+              <div class="break"></div>
+              <a class="btn" href="javascript:showEdit();">录入书籍</a>
+              <div style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;padding:0px 10px">或</div>
+              <a class="btn" xhr href="?author#edit">添加作者</a>
+            </div>
+            <p id="page_title">DeBook: 书籍主页</p>
+        </div>
+        MAINPAGE;
+    }
+
+    function writeBook($bokkey){
+        $nA = rawurlencode($bokkey);
+        $res = exeSql("SELECT * FROM bokinfo WHERE bookid='$nA' or names='$nA'");
+        $d = array();
+        $c = 0;
+        $srcpicname = "";
+        $image_small_html = "";
+        while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+            $d = $row;
+            $c++;
+        }
+        if($c!=0){
+            $bookidA = $d["bookid"];
+            $images = $d["picpath"];
+            $name = urldecode($d["names"]);
+            $dis1 = array("%0A","%20");
+            $dis2 = array("\r\n"," ");
+            $contents = nl2br(urldecode($d["contents"]));
+            $idm = $d["bookid"];
+            $aplSelNum = 0;
+            $aplSelPrice = 0.00;
+            $btn1Style = "onclick='addToCart()'";
+            $btn2Style = "onclick='buy()'";
+            if($images==""){
+                $srcpicname = "Image/src/abb/0.jpg";
+                $image_small_html .= "<a style='color:#757575'>此书没有图片</a>";
+            }else{
+                $arrImage = explode(":",$images);
+                $firImage = $arrImage[0];
+                $srcpicname = "Image/book/$firImage";
+                $image_small_html .= "<div class=\"_images_con\" onclick=\"showAllPicture('$bookidA')\" tips=\"点击这里查看所有图像\" onmouseover=\"showTooltip(this)\" onmouseleave=\"hideTooltip(this)\">";
+                for($i=0;$i<sizeof($arrImage);$i++){
+                    $e = $arrImage[$i];
+                    $image_small_html .= "<div><img src=\"Image/book/$e\" alt=\"book_name_picture\"></div>";
+                }
+                $image_small_html .= "</div>";
+                $image_small_html .= "<a href=\"javascript:;\" onclick=\"showAllPicture('$bookidA');\">查看所有图像</a>";
+            }
+            $aur = explode(":",$d["authorid"]);
+            $aurhtml = "";
+            $meaur = "";
+            for($i=0;$i<sizeof($aur);$i++){
+                if(strpos($aur[$i],"id_")!==false){
+                    $aurid = substr($aur[$i],3,strlen($aur[$i])-3);
+                    $aurname = rawurldecode(getAurNameByID($aurid));
+                    $aurhtml .= "<a xhr href='?author/$aurid'>$aurname</a>";
+                    $meaur = $aurname;
+                }else{
+                    $aurid = rawurldecode($aur[$i]);
+                    $aurhtml .= "<a href='javascript:;' style='color:#757575'>$aurid</a>";
+                    $meaur = $aurid;
+                }
+            }
+            $label = explode(":",$d["label"]);
+            $labelhtml = "";
+            if($d["label"]!=""){
+                for($i=0;$i<sizeof($label);$i++){
+                    if(strpos($label[$i],"id")!==false){
+                        $labelid = substr($label[$i],3,strlen($label[$i])-3);
+                        $labelname = rawurldecode(getLabelNameByID($labelid));
+                        $labelhtml .= "<a xhr href='?search/labelid/$labelid' label>$labelname</a>";
+                    }else{
+                        $labelid = rawurldecode($label[$i]);
+                        $labelhtml .= "<a href='javascript:;' label>$labelid</a>";
+                    }
+                } 
+            }else{
+                $labelhtml = "无标签";
+            }
+            //generating lang html
+            $langhtml = "<div class='h3'>语言&nbsp;";
+            $res = exeSql("SELECT lang FROM aplinfo WHERE bookid = '$idm'");
+            $langList = array();
+            $lC = 0;
+            while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+                $mlang = rawurldecode(base64_decode($row["lang"]));
+                if(!in_array($mlang,$langList)){
+                    array_push($langList,$mlang);
+                    if($lC>3) continue;
+                    $langhtml .= "<font lang>$mlang</font>";
+                    $lC++;
+                }
+            }
+            if($lC>3){
+                $labelhtml .= "等";
+            }
+            if(sizeof($langList)==0) $langhtml .= "<font lang>暂无可用语言</font>";
+            //generating evaluation html
+            $res = exeSql("SELECT evanum FROM evainfo WHERE bookid = '$idm'");
+            $mEva = 0;
+            $mC = 0;
+            while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+                $mEva += $row["evanum"];
+                $mC++;
+            }
+            $starClassList = array("star0d0","star0d5","star1d0","star1d5","star2d0","star2d5","star3d0","star3d5","star4d0","star4d5","star5d0");
+            $evaWordList = array("非常差","很差","差","较差","中等偏差","中等","中等偏好","较好","良好","非常好","一级棒");
+            if($mC==0){
+                $langhtml .= "<i class='star0d0'></i>&nbsp;暂无评价</p></div>";
+            }else{
+                $mEva = round($mEva/$mC);
+                $starClass = $starClassList[$mEva];
+                $evaWord = $evaWordList[$mEva];
+                $langhtml .= "<i class='$starClass'></i>&nbsp;$evaWord</p></div>";
+            }
+            //look for all supplies available;
+            $fnBoxHtml = "";
+            $fnBox2Html = "";
+            $detailBoxHtml = "";
+            $styleButCon = "";
+            $applyArr = getBookApply($idm);
+            $redeemE = intval(countRedeem($bookidA))>0;
+            $redeemHtml = $redeemE?"style=\"cursor:pointer;\" onclick=\"redeemBook($bookidA)\"":"style=\"color:#757575\" ";
+            if(!is_array(getPhpUser())&&$redeemE){
+                $redeemHtml = "xhr href='?account#continue=?book/9#redeem'";
+            }
+            $redeemStr = $redeemE?"用DeCoins兑换此书":"此书不属于DeBook特别推荐书目";
+            if(sizeof($applyArr)==0){
+                $fnBoxHtml .= "<div class=\"asbox_con\" style=\"margin:0px 10px 8px 0px\" null><div><a class=\"tag\"><b>无货</b><font class=\"tag\"></font></a><a class=\"price\">没有销售商</a></div></div>";
+                $fnBox2Html .= "<div class=\"asbox_con\" tab style=\"margin-bottom:0;border-bottom:0\"><div><a class=\"tag\"><b>无货</b><font class=\"tag\"></font></a><a class=\"price\">没有销售商</a></div></div>";
+                $btn1Style = "disabled";
+                $btn2Style = "disabled";
+                $aplSelPrice = number_format(0,2);
+            }else{
+                $x = 0;
+                for($i=0;$i<sizeof($applyArr);$i++){
+                    $conflict = $applyArr[$i]["usr_conflict"];
+                    $musrid = $applyArr[$i]["usrid"];
+                    $memail = $applyArr[$i]["email"];
+                    $showHideTips = "onmouseover='showTooltip(this)' onmouseleave='hideTooltip(this)' tips='您是此商品的销售者，无法购买自己销售的商品。'";
+                    $mStyle = $x==0?"selected":"";
+                    $m2Style = $i==0?"selected":"";
+                    if(!$conflict){
+                        $x++;
+                        if($aplSelPrice==0.00){
+                            $aplSelPrice = number_format($applyArr[$i]["price"],2);
+                        }
+                    }
+                    if($conflict) $mStyle = "disabled";
+                    if(!$conflict) $showHideTips = "";
+                    $aplid = $applyArr[$i]["aplid"];
+                    $n = $i+1;
+                    $aplidc = $conflict?"":"goodsId='$aplid' onclick=\"selectApply('$aplid',this)\"";
+                    $lang = $applyArr[$i]["lang"];
+                    $price = number_format($applyArr[$i]["price"],2);
+                    $publish = $applyArr[$i]["publish"];
+                    $qua = $applyArr[$i]["quality"]["quality_value"];
+                    $fsStr = "";
+                    if($qua>=1){
+                        $fsStr = "全新";
+                    }else{
+                        $qua = round($qua*20)*5;
+                        $f = intval($qua/10);
+                        $s = $qua%10;
+                        $fsStr = $f . "成";
+                        if($s!=0) $fsStr.=$s;
+                        $fsStr.="新";
+                    }
+                    $fnBoxHtml .= "<div class=\"asbox_con\" $aplidc $mStyle $showHideTips><div class='num'>$n</div><div class='tagc'><a class=\"tag\"><b>$lang</b><font class=\"tag\">$publish</font></a><a class=\"price\">价格￥<font style='font-weight:lighter'>$price</font>&nbsp;&nbsp;$fsStr</a><div class=\"bottomA\"></div></div></div>";
+                    $fnBox2Html .= "<div class=\"asbox_con\" goodsId='$aplid' onclick=\"selectAplDsc('$aplid',this)\" tab style=\"margin-bottom:0;border-bottom:0\" $m2Style><div class='num'>$n</div><div class='tagc'><a class=\"tag\"><b>$lang</b><font class=\"tag\">$publish</font></a><a class=\"price\">价格￥<font style='font-weight:lighter'>$price</font>&nbsp;&nbsp;$fsStr</a><div class=\"bottomA\"></div></div></div>";
+                    if($i>0) continue;
+                    #Detail of Commodity
+                    $isbn = $applyArr[$i]["ISBN"];
+                    $pages = $applyArr[$i]["quality"]["pages"];
+                    $translator = $applyArr[$i]["translator"];
+                    $detailBoxHtml .= "<div class=\"detail\" whiteboard><div class=\"whiteboard\"><div class=\"row\" half><a class=\"sword\">语言</a><p class=\"sword\">$lang</p></div><div class=\"row\" half><a class=\"sword\">出版社</a><p class=\"sword\">$publish</p></div>";
+                    $detailBoxHtml .= "<div class=\"row\" half><a class=\"sword\">书本页数</a><p class=\"sword\">$pages</p></div>";
+                    if($isbn!="") $detailBoxHtml .= "<div class=\"row\" half><a class=\"sword\">ISBN</a><p class=\"sword\">$isbn</p></div>";
+                    if($translator!="") $detailBoxHtml .= "<div class=\"row\" half><a class=\"sword\">译者</a><p class=\"sword\">$translator</p></div>";
+                    $usrname = hideNameC($applyArr[$i]["udlvinfo"]["name"]);
+                    $usrclass = $starClassList[$applyArr[$i]["evanum"]];
+                    $usrword = $applyArr[$i]["empty_eva"]?"暂无评价":$evaWordList[$applyArr[$i]["evanum"]];
+                    $usreva = $applyArr[$i]["empty_eva"]?"(无)":number_format($applyArr[$i]["evanum"]/2,1);
+                    $dlvAddr = $applyArr[$i]["udlvinfo"]["address"];
+                    $tel = $applyArr[$i]["udlvinfo"]["phone_number"];
+                    $email = $applyArr[$i]["email"];
+                    $sch = $applyArr[$i]["udlvinfo"]["sch_allow"]?"允许":"不可用";
+                    $schHTML = $applyArr[$i]["udlvinfo"]["sch_allow"]?"<div class=\"row\" half><a class=\"sword\">学校发货地址</a><p class=\"sword\">".$applyArr[$i]["udlvinfo"]["sch"]."</p></div>":"";
+                    $sdays = $applyArr[$i]["udlvinfo"]["sdays"]?"<div class=\"row\" half><a class=\"sword\" green-white>七天无理由退货</a></div>":"";
+                    $imgHTML = "";
+                    $imgPath = $applyArr[$i]["images"]["Path"];
+                    foreach($applyArr[$i]["images"]["Images"] as $key=>$imgName){
+                        $imgHTML .= "<img src=\"Image/apply/$imgPath/$imgName\">";
+                    }
+                    $evaHtml = $applyArr[$i]["empty_eva"]?"<p style='position:relative;float:left;margin-left:5px;color:#202122;'>暂无评价</font>":"";
+                    if(!$applyArr[$i]["empty_eva"]){
+                        $aplEva = $applyArr[$i]["evaluations"];
+                        $usrid = $applyArr[$i]["evaluations"][0]["usrid"];
+                        for($x=0;$x<sizeof($aplEva);$x++){
+                            $com = rawurldecode($aplEva[$x]["contents"]);
+                            if($com=="") $com = "(此用户未写评价内容)";
+                            $usrname2 = $aplEva[$x]["usrname"];
+                            if($usrname2=="") $usrname2 = "<font style='color:#757575'>(匿名用户)</font>";
+                            $evanum = intval($aplEva[$x]["evanum"]);
+                            $className = $starClassList[$evanum];
+                            $starHtml = "<i class='$className'></i>";
+                            $confirmHtml = $aplEva[$x]["confirmed"]==1?"<font style='color:#800080;font-weight:bold'>确认收货</font>":"";
+                            $evaHtml .= "<div class=\"row\" style=\"margin-top:5px;\"><div><a class=\"sword\">$usrname2</a>$starHtml $confirmHtml</div><p>$com</p></div>";
+                        }
+                        $Tp = $applyArr[$i]["evaluation_page"];
+                        $Cp = 1;
+                        $Np = $Cp+1;
+                        $Pp = $Cp-1;
+                        $PagePrevAttr = $Cp>1?"onclick=\"showAplBookEva('$usrid',$Pp)\"":"disabled";
+                        $PageNextAttr = $Cp<$Tp?"onclick=\"showAplBookEva('$usrid',$Np)\"":"disabled";
+                        $PageLastAttr = $Cp<$Tp?"onclick=\"showAplBookEva('$usrid',$Tp)\"":"disabled";
+                        $evaHtml .= "<div class=\"row\" page style=\"margin-top: 10px\"><a $PagePrevAttr>上一页</a><a style=\"color:#202122\">第1页 共".$Tp."页</a><a $PageNextAttr>下一页</a>&nbsp;<a $PageLastAttr>转到最后一页</a></div>";
+                        $evaHtml = "<div class='evaluation' id='evaluation0'>".$evaHtml."</div>";
+                    }
+                    $abuseHtml = "";
+                    if(is_array(getPhpUser())){
+                        if(getPhpUser()["usrid"]!=$musrid) $abuseHtml = "&nbsp;<a href=\"javascript:;\" style=\"color:#800080\" onclick=\"reportAbuse('$memail',$aplid)\">投诉商家</a>";
+                    }
+                    $detailBoxHtml .= "<div class=\"line\" style=\"margin-top: 0px;\"></div><div class=\"row\" half><a class=\"sword\">供货商</a><p class=\"sword\">$usrname</p><a><i class=\"$usrclass\"></i>&nbsp;$usreva 分 $usrword</a></div><div class=\"row\" half><a class=\"sword\">发货地址</a><p class=\"sword\">$dlvAddr</p></div><div class=\"row\" half><a class=\"sword\">相同学校收货</a><p class=\"sword\">$sch</p></div>$schHTML $sdays<div class=\"row\" half><a class=\"sword\">新旧程度</a><p class=\"sword\">$fsStr</p></div><div class=\"row\" half><a class=\"sword\">联系方式 - 电话</p><a class=\"sword\">$tel</a></div><div class=\"row\" half><a class=\"sword\">联系方式 - 电子邮件</p><a class=\"sword\">$email</a></div><div class=\"row\" style=\"line-height: normal;\"><p class=\"sword\">实物图片&nbsp;<a href=\"javascript:;\" onclick=\"showApplyPicture('$aplid')\">查看书本图片及细则</a>$abuseHtml</p><div class=\"_all_image\" style=\"width:99.5%;margin-top: 0px;float: right;\"><div class=\"_images_con2\" onclick=\"showApplyPicture($aplid)\">$imgHTML</div></div></div><div class=\"line\" style=\"margin-top: 0px;\"></div><div class=\"row\"><a class=\"sword\" style='margin-left:0'>客户对供货商的评价</a><p class=\"sword\">$usrname</p></div>$evaHtml</div>";
+                    $detailBoxHtml .= "</div>";
+                }
+                if($x>0){
+                    $aplSelNum = 1;
+                }else{
+                    $btn1Style = "disabled";
+                    $btn2Style = "disabled";
+                }
+            }
+            if(sizeof($applyArr)<=2){
+                $styleButCon = "display:none";
+            }
+            //generating book evaluation
+            $data = getBookEvaluation($bookidA);
+            $bookEvaHtml = "";
+            $evaData = $data["data"];
+            if(sizeof($evaData)!=0){
+                for($i=0;$i<sizeof($evaData);$i++){
+                    $com = rawurldecode($evaData[$i]["contents"]);
+                    if($com=="") $com = "(此用户未写评价内容)";
+                    $usrname = $evaData[$i]["usrname"];
+                    if($usrname=="") $usrname = "<font style='color:#757575'>(匿名用户)</font>";
+                    $evanum = intval($evaData[$i]["evanum"]);
+                    $className = $starClassList[$evanum];
+                    $starHtml = "<i class='$className'></i>";
+                    $confirmHtml = $evaData[$i]["confirmed"]==1?"<font style='color:#800080;font-weight:bold'>确认收货</font>":"";
+                    $bookEvaHtml .= "<div class=\"row\" style=\"margin-top:5px;\"><div><a class=\"sword\">$usrname</a>$starHtml $confirmHtml</div><p>$com</p></div>";
+                }
+                $Tp = $data["page_count"];
+                $Cp = 1;
+                $Np = $Cp+1;
+                $Pp = $Cp-1;
+                $PagePrevAttr = $Cp>1?"onclick='showBookEva($bookidA,$Pp)'":"disabled";
+                $PageNextAttr = $Cp<$Tp?"onclick='showBookEva($bookidA,$Np)'":"disabled";
+                $PageLastAttr = $Cp<$Tp?"onclick='showBookEva($bookidA,$Tp)'":"disabled";
+                $bookEvaHtml .= "<div class=\"row\" page style=\"margin-top: 10px\"><a $PagePrevAttr>上一页</a><a style=\"color:#202122\">第1页 共".$Tp."页</a><a $PageNextAttr>下一页</a>&nbsp;<a $PageLastAttr>转到最后一页</a></div>";
+            }else{
+                $bookEvaHtml = "<div class='row'>(暂无评价)</div>";
+            }
+            $listhtml = "";
+            $res = exeSql("SELECT bklid,names FROM bklinfo WHERE bookid LIKE '%id_$bookidA%'");
+            while($row = mysqli_fetch_array($res,MYSQLI_ASSOC)){
+                $p = $row["bklid"];
+                $p2 = rawurldecode($row["names"]);
+                $listhtml .= "<li><a xhr href=\"?list/$p\">$p2</a></li>";
+            }
+            if($listhtml==""){
+                $listhtml = "<li><a xhr href=\"javascript:;\"></a><font composer>没有任何包含此书的书单</font></li>";
+            }
+            echo <<<BOOKPAGE
+            <div class="dcon" style="margin-top: 15px;">
+                <div class="scon">
+                    <div class="pleft">
+                        <div class="_image">
+                            <img src="$srcpicname" alt="book_name_picture">
+                        </div>
+                        <div class="_all_image">
+                            $image_small_html
+                        </div>
+                    </div>
+                    <div class="pright">
+                        <div class="title">
+                            <h3>$name</h3>
+                            <div class="h4"><p style="margin-right:5px;">作者</p>$aurhtml</div>
+                        </div>
+                        <div class="detail">
+                            $langhtml
+                        </div>
+                        <div class="detail" style="margin-top:5px">
+                            <p label>标签</p>$labelhtml
+                        </div>
+                        <div class="line"></div>
+                        <div class="detail" hidtext>
+                            $contents
+                        </div>
+                        <div class="detail">
+                            <a style="float:left;" onclick="bokShowAllContent(this)">显示所有内容</a>
+                        </div>
+                        <div class="line"></div>
+                        <div class="detail">
+                            <a class="sword" onclick="showEdit('$idm');" style="margin-left:0px;">更改书目介绍</a>
+                            <a class="sword" href="javascript:showEdit();">添加书目</a>
+                        </div>
+                        <div class="fnBox" h style="margin:10px 0 8px 0;" id='goodsItemBox'>
+                            $fnBoxHtml
+                        </div>
+                        <div class="fnBox" style="margin: 10px 0 0 0;" id="numAprice">
+                            <a style="text-decoration:none;color:#202122">选中数量:$aplSelNum | 价格</a>
+                            <div class="asbox_con" style="width: 80px;margin:0 10px 8px 0;">
+                                <input class="asbox" value="$aplSelPrice" type="number" style="width:90.4%;padding:0px 4.7%" autocomplete="off" disabled>
+                            </div>
+                            <div class="vline">
+                                <div point style="background-image:url('Image/fatcow/bullet_red.png')"></div>
+                                <div class="asbox_con" opa>
+                                    <button class="asbox" onclick=addAplinfo("$idm")>
+                                        <div class="big">申请供货</div>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="vline">
+                                <div point style="background-image:url('Image/fatcow/bullet_green.png')"></div>
+                                <div class="asbox_con" opa>
+                                    <button class="asbox" $btn1Style>
+                                        <div class="big">加入购物车</div>
+                                    </button>
+                                </div>
+                                <div class="asbox_con" opa>
+                                    <button class="asbox" $btn2Style>
+                                        <div class="big">立即购买</div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="line"></div>
+                <div class="scon">
+                    <div><a class="sword" style="margin:12px 8px 12px 0px"><font style="font-size:20px;">详细信息</font></a></div>
+                    <div class="fnBox" h style="margin-top:10px;">
+                        $fnBox2Html
+                    </div>
+                </div>
+                <div class="scon" id="detailCon">$detailBoxHtml</div>
+                <div class="line"></div>
+                <div class="scon">
+                    <div><a class="sword" style="margin:12px 8px 12px 0px"><font style="font-size:20px;">客户对此书的评论</font></a></div>
+                    <div class="detail">
+                        <div class="evaluation" id="evaluation1">
+                            $bookEvaHtml
+                        </div>
+                    </div>
+                </div>
+                <div class="line" style="margin-top:5px"></div>
+                <div class="scon">
+                    <div><a class="sword" style="margin:12px 8px 12px 0px"><font style="font-size:20px;">与此书有关的讨论</font></a></div>
+                    <div class="detail">
+                        <div class="row">(暂不可用)</div>
+                    </div>
+                </div>
+                <div class="line"></div>
+                <div class="scon">
+                    <div><a class="sword" style="margin:12px 8px 12px 0px"><font style="font-size:20px;">可能来自的书单</font></a></div>
+                    <div class="detail">
+                        <div class="row">
+                            <ul style="margin-top: 5px;">
+                                $listhtml
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="line"></div>
+                <div class="scon" id="redeemRowPrnt">
+                    <div><a class="sword" style="margin:12px 8px 12px 0px"><font style="font-size:20px;">兑换书目</font></a></div>
+                    <div class="detail" id='redeemRow'>
+                        <div class="row">
+                            <a $redeemHtml>$redeemStr</a>
+                        </div>
+                    </div>
+                </div>
+                <p id="page_title">DeBook: $name - $meaur 书籍详情</p>
+            </div>
+            BOOKPAGE;
+        }else{
+            writeBokLoss($bokkey);
+        }
+    }
+
+    function writeBokLoss($bokkey){
+        echo <<<BOOKPAGE
+        <div class="dcon" style="margin-top: 15px;">
+            <div style="position:relative;width:auto;margin:0px auto;padding:120px 0">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="128" height="96" viewBox="0 0 1024 768">
+                    <defs>
+                        <linearGradient id="b" x1="162.84" gradientUnits="userSpaceOnUse" x2="162.84" gradientTransform="matrix(.70233 0 0 .6756 -3.924 6.49)" y1="439.45" y2="228.35">
+                            <stop stop-color="#fdd835" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <filter id="g" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="2.186"></feGaussianBlur>
+                        </filter>
+                        <filter id="e" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="4.5"></feGaussianBlur>
+                        </filter>
+                        <filter id="k" width="1.026" y="-.165" x="-.013" height="1.331" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="3.687"></feGaussianBlur>
+                        </filter>
+                        <filter id="c" width="1.033" y="-.104" x="-.016" height="1.209" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="4.062"></feGaussianBlur>
+                        </filter>
+                        <linearGradient id="a">
+                            <stop stop-color="#fff" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fff" offset="1"></stop>
+                        </linearGradient>
+                        <filter id="n" width="1.026" y="-.165" x="-.013" height="1.331" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="3.687"></feGaussianBlur>
+                        </filter>
+                        <filter id="m" width="1.033" y="-.104" x="-.016" height="1.209" color-interpolation-filters="sRGB">
+                            <feGaussianBlur stdDeviation="4.062"></feGaussianBlur>
+                        </filter>
+                        <linearGradient id="d" y2="285.22" gradientUnits="userSpaceOnUse" x2="360.36" y1="283.79" x1="342.5">
+                            <stop offset="0"></stop>
+                            <stop stop-color="#ccc" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="f" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68228 0 0 1.2202 967.34 -126.44)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="h" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.70022 -.06541 -.01782 .44318 984.41 235.89)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="i" y2="445.22" xlink:href="#b" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71448 -.15435 .00897 -.31646 979.33 599.82)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="j" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71803 .08687 -.02422 -.31389 995.29 518.54)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="l" y2="445.22" xlink:href="#b" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71264 .17918 -.0368 -.30996 999.11 486.13)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="o" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.67271 -.05464 -.01387 .40326 955.28 281.41)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="p" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68869 .084 -.02555 -.28535 967.79 538.45)" y1="445.22" x1="564.42"></linearGradient>
+                        <linearGradient id="q" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68705 -.13544 .0063 -.28793 953.07 612.49)" y1="445.22" x1="564.42">
+                            <stop stop-color="#ffee58" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="r" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71448 .15435 .00897 .31646 970.76 250.51)" y1="445.22" x1="564.42">
+                            <stop stop-color="#ffee58" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="s" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.73092 .00801 -.05464 .31184 1010.7 281.9)" y1="445.22" x1="564.42">
+                            <stop stop-color="#ffee58" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="t" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.72479 .09476 -.01722 .31612 989.98 251.77)" y1="445.22" x1="564.42">
+                            <stop stop-color="#ffee58" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="u" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.72479 .09476 -.01722 .31612 995.87 238.35)" y1="445.22" x1="564.42">
+                            <stop stop-color="#ffee58" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <linearGradient id="v" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.73086 -.01204 -.05293 -.31214 1017.3 570.96)" y1="445.22" x1="564.42">
+                            <stop stop-color="#fdd835" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                        </linearGradient>
+                        <radialGradient id="w" gradientUnits="userSpaceOnUse" cy="133.61" cx="14.817" gradientTransform="matrix(2.8644 0 0 2.343 738.15 127.24)" r="40.913">
+                            <stop stop-color="#f6f6aa" offset="0"></stop>
+                            <stop stop-opacity="0" stop-color="#f8f8ac" offset="1"></stop>
+                        </radialGradient>
+                    </defs>
+                    <path d="M335.11 255.73l663.28-80.86L334.34 291.5z" transform="matrix(.68228 0 0 -1.2055 -212.275 413)" opacity=".363" fill="#ffee58" filter="url(#c)"></path>
+                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -287.17)" fill="none" stroke="#000" stroke-width=".792"></path>
+                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -274.9)" fill="none" stroke="#000" stroke-width=".792"></path>
+                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -260.97)" stroke="#000" stroke-width="1.266"></path>
+                    <path d="M477.98 260.36L442.8 755.71l71.61 11.07 8.39-516.6z" fill="#b3b3b3" stroke="#b3b3b3"></path>
+                    <path d="M522.98 250.36l40.714 6.429 27.143 503.57-76.071 7.142z" fill="#f2f2f2" stroke="#f2f2f2"></path>
+                    <path d="M563.69 256.78l20 12.857 41.071 481.07-33.75 9.464z" fill="#ececec" stroke="#ececec"></path>
+                    <path d="M468.69 270.36l9.286-8.571-35.536 493.93-19.464-8.215z" fill="#999" stroke="#b3b3b3"></path>
+                    <path d="M536.9 494.32l26.895.126-1.515 55.432z" fill="#b3b3b3"></path>
+                    <path d="M540.92 500.13l17.425.253.126 18.562-17.678-.127zm.05 20.93l17.425.253.126 18.562-17.678-.127zm-97.89 131.1l1.515-49.119 4.672-1.768-3.283 51.644zm15.59-199.06l1.515-49.119 4.672-1.768-3.283 51.644zm9.85-125.26l1.515-49.119 4.672-1.768-3.283 51.644z" stroke="#000"></path>
+                    <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -299.45)" fill="none" stroke="#000" stroke-width=".792"></path>
+                    <path d="M567.349 188.699a41.786 13.304 0 1 1-.004-.183"></path>
+                    <path d="M297.95 302.54c17.309-10.51 57.09-7.151 72.143.536v-25.18c-21.019-12.346-47.757-13.053-71.786-1.606z" fill="url(#d)" stroke="#000" stroke-width="2.2" transform="translate(191.55 -84.15)"></path>
+                    <path d="M485.03 248.35c17.309-10.51 66.019-8.937 81.071-1.25v-25.179c-18.16-11.63-58.11-14.3-80.71-1.6z" stroke="#000"></path>
+                    <path d="M513.07 160.21l13.036-10.714 11.964 11.071z" stroke="#000" stroke-linejoin="round"></path>
+                    <path d="M516.91 160l.357 16.071 16.43.536.535-16.25z" stroke="#000"></path>
+                    <path d="M525.84 152.86l.893-55.179M477.09 210.18l.536 34.107M462.26 224.64l.54 34.11m125.18-37.5l-.536 37.679M565.84 207.68l-.714 38.214" fill="none" stroke="#000"></path>
+                    <path d="M538.985 160.537a13.181 4.197 0 1 1-.001-.057"></path>
+                    <path d="M557.73 191.91l-6.566 22.728m-7.074-1.518l-6.06-26.264" fill="none" stroke="#000" stroke-width="2.3"></path>
+                    <path d="M1013.6 197.14l-658.29 84.542v14.496s662.99 98.569 658.29 93.904z" transform="matrix(-.68228 0 0 1.1507 711.32 -134.302)" opacity=".668" fill="none" stroke="#fff" stroke-width="4.048" filter="url(#e)"></path>
+                    <path d="M286.77 301.95l439.86 97.468v17.688l-439.86 114.58z" opacity=".668" fill="url(#f)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M1012.9 190.92l-657.59 94.611v5.7s660.74 108.96 656.04 104.29z" transform="matrix(-.68228 0 0 1.2202 711.32 -154.728)" opacity=".668" fill="none" stroke="#fff" stroke-width="4.048" filter="url(#g)"></path>
+                    <path d="M281.44 345.28l445.18 59.875v6.424l-450.25-1.9z" opacity=".668" fill="url(#h)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M265.33 331.8l461.3 91.787v-4.588l-459.59-146.78z" opacity=".49" fill="url(#i)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M360.24 384.45l637.23-203.31-628.3 233.59z" transform="matrix(.6533 -.34756 -.19671 -1.1543 -147.12 760.92)" opacity=".363" fill="#80ffe6" filter="url(#c)"></path>
+                    <path d="M269.5 490.25l457.12-78.122v-4.55L266 435.896z" opacity=".668" fill="url(#j)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M1015.4 297.01l-660.09-11.053v3.268l657.64 50.226z" transform="matrix(-.68228 0 0 1.2202 711.32 -154.728)" opacity=".313" fill="#fff" filter="url(#k)"></path>
+                    <path d="M281.24 466.99l445.38-46.915v-4.493l-452.31-6.95z" opacity=".413" fill="url(#l)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M335.11 255.73l690.19-66.12L334.34 291.5z" transform="matrix(.655 -.00473 -.00882 -1.0965 -201.033 430.01)" opacity=".363" fill="#ffee58" filter="url(#m)"></path>
+                    <path d="M1021.2 227.46l-692.97 45.145.044 3.267 690.48-5.972z" transform="matrix(-.655 .00473 .00893 1.1099 681.49 -92.81)" opacity=".313" fill="#fff" filter="url(#n)"></path>
+                    <path d="M281.22 385.8l445.4 37.255v5.846l-449.81 15.513z" opacity=".668" fill="url(#o)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M281.2 403.46l445.42 22.099v-2.652l-449.18-68.864z" opacity=".668" fill="url(#p)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M268.46 392.63l458.17 32.063v-4.174l-456.96-82.1z" opacity=".49" fill="url(#q)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M261.2 515.57l465.42-87.279v4.588l-463.71 142.27z" opacity=".49" fill="url(#r)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M262.43 391.94l464.19 27.007v4.52L267 453.625z" opacity=".49" fill="url(#s)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M260.94 457.27l465.68-29.23v4.583l-468.9 84.168z" opacity=".49" fill="url(#t)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M266.84 443.85l459.78-22.943v4.583l-463.01 77.881z" opacity=".49" fill="url(#u)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M269.64 449.38l456.98-17.832v-4.525l-466.93-36.415z" opacity=".49" fill="url(#v)" transform="translate(-257.72 -210.44)"></path>
+                    <path d="M897.77 440.28c0 52.925-52.449 95.838-117.16 95.854-64.709 0-117.18-42.881-117.22-95.822-.032-52.925 52.392-95.857 117.1-95.897 64.709-.04 117.21 42.828 117.28 95.753" opacity=".875" fill="url(#w)" transform="translate(-257.72 -210.44)"></path>
+                </svg>
+                <p class="loss_title">找不到您想要的书</p>
+                <p class="loss_detail">我们的书库里没有名字或ID为‘<b>$bokkey</b>’的书</p>
+                <p class="loss_detail">您可以<a xhr href="?search/$bokkey">搜索与‘<b>$bokkey</b>’有关的书</a>或为我们的书库<a href="javascript:showEdit();">添加名字为‘<b>$bokkey</b>’的书</a></p>
+            </div>
+            <p id="page_title">DeBook 二手书市场</p>
+        </div>
+        BOOKPAGE;
+    }
+
+    function writeBookEdit(){
+        echo <<<EDIT
+            <!--edit-->
+            <div class="dcon" style="margin-top: 15px;display: none;" id="editBoard">
+              <div class="scon">
+                <div class="pleft">
+                  <div class="_image" id="uploadImage">
+                    <a edit tips="添加图像" onmouseover="showTooltip(this)" onmouseleave="hideTooltip(this)" href="javascript:addMulImage();" style="float:none"><img src="Image/src/add.jpg" alt="book_name_picture"></a>
+                    <div class="line"></div>
+                    <a href="javascript:addMulImage();" style="float: left;">添加书籍图像</a>
+                  </div>
+                  <div class="_all_image">
+                    <div class="_images_con" id="uploadImageCon">
+                      <a edit tips="添加图像" onmouseover="showTooltip(this)" onmouseleave="hideTooltip(this)" href="javascript:addMulImage();"><img src="Image/src/add.jpg" alt="book_name_picture"></a>
+                    </div>
+                    <a href="javascript:editAllPicture();" style="margin-right:10px">编辑所有图像</a>
+                  </div>
+                </div>
+                <div class="pright">
+                  <div id="title_edit">
+                    <div class="asbox_con" edit>
+                      <p title>&nbsp;书本名称*</p>
+                      <input class="asbox" placeholder="书本名称" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="book_name">
+                    </div>
+                    <div class="asbox_con" edit>
+                      <p title>&nbsp;书本标签&nbsp;<a xhr href="?search/label/all/">所有标签</a></p>
+                      <input class="asbox" placeholder="书本标签" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="label_id">
+                      <div class="asboxList_con" style="position:absolute;top:50px;border-radius:0 0 3px 3px;border:1px solid #c4c4c4;box-shadow: 2px 2px 5px 0px #cecece;opacity: 0; height: 0px;">
+                        <ul></ul>
+                      </div>
+                    </div>
+                    <div class="asbox_con" edit style="margin-bottom: 0px;">
+                      <p title>&nbsp;作者名称*</p>
+                      <input class="asbox" placeholder="作者名称" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="author_name">
+                      <div class="asboxList_con" style="position:absolute;top:50px;border-radius:0 0 3px 3px;border:1px solid #c4c4c4;box-shadow: 2px 2px 5px 0px #cecece;opacity: 0; height: 0px;">
+                        <ul></ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="line"></div>
+                  <div class="detail">
+                    <div class="asbox_con" edit style="margin-bottom: 0px;">
+                      <p title>&nbsp;书本概要*&nbsp;<a>建议200字或以上</a></p>
+                      <textarea class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" id="contents"></textarea>
+                    </div>
+                  </div>
+                  <div class="line"></div>
+                  <div class="detail">
+                    <div class="asbox_con" edit style="margin-bottom: 0px;">
+                      <p title>&nbsp;搜索索引&nbsp;<a xhr href="?help/search_index">这是什么？</a></p>
+                      <input class="asbox" placeholder="搜索索引" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="search_index">
+                    </div>
+                  </div>
+                  <div class="line"></div>
+                  <div class="detail">
+                    <button class="asbox_submit" id="but_continue"><span>继续</span></button>
+                    <button class="asbox_submit" shallow onclick="hideEdit(true)" style="background-color: #eee;"><span>取消</span></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+        EDIT;
+    }
+
+    if(!isset($home)){
+        if(getArray($_POST,"bokkey")==""){
+            writeBokMain();
+        }else{
+            $bokkey = rawurldecode(getArray($_POST,"bokkey"));
+            writeBook($bokkey);
+        }
+        writeBookEdit();
+    }
+?>

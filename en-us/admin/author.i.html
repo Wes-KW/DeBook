@@ -1,0 +1,92 @@
+<?php 
+    include "../.phtml/admin.php"; 
+    $condata = getcon(getArray($_POST, "id")); 
+    $data = (array) json_decode($condata["object"]); 
+    $data = decodeTextInArr($data); 
+
+    //preparing images 
+    $o = explode(":", $data["images"]); 
+    $bigImage_str = $o[0] == "" ? "Image/src/usr.png" : "../Image/tmp/" . $o[0] . "/" . urldecode(base64_decode($o[1])); 
+    //preparing all the data 
+    $an = $data["author_name"]; 
+    $cn = $data["contents"]; 
+    $bn = $data["books"] == "" ? "(empty)" : $data["books"]; 
+    $si = $data["searchIndex"] == "" ? "(empty)" : $data["searchIndex"];
+    $editText = isset($data["editId"]) ? "Edit author" : "Add author";
+    $usr = decodeInfo($condata["contributor"]);
+    $email = $usr["email"] == "!" || $usr["email"] == "" ? "(anonymous)" : $usr["email"];
+    $ip = $condata["ip"];
+    $date = getLongDate($condata["date"]);
+    $object = $condata["object"];
+    $btn = $condata["status"] == 0 ? '<button class="asbox_submit" id="but_continue"><span>继续</span></button><button class="asbox_submit" shallow id="but_ignore"><span>Ignore</span></button><button class="asbox_submit" shallow id="but_cancel"><span>Cancel</span></button>' : '<button class="asbox_submit" shallow id="but_cancel"><span>Cancel</span></button>'; 
+    echo <<<PAGE
+        <div class="dcon" style="margin-top: 15px;" id="editBoard"> 
+            <div class="scon"> 
+                <div class="row">
+                    <div class="detail"> 
+                        <div class="whiteboard"> 
+                            <div class="pleft"> 
+                                <div class="headBox" style="margin-bottom: 2px;" id="imagebox"> 
+                                    <a edit tips="Add avatar" href="javascript:;"><img src="$bigImage_str" alt="author"></a> 
+                                </div> 
+                                <div class="line"></div>
+                                <a style="color:#999">Author's avatar</a>
+                            </div>
+                            <div class="pright">
+                                <div class="asbox_con" edit>
+                                    <p title>&nbsp;Author's name*</p>
+                                    <input class="asbox" placeholder="Author's name" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="author_name" value="$an">
+                                </div>
+                                <div class="detail">
+                                    <div class="asbox_con" edit style="margin-bottom: 0px;overflow:hidden">
+                                        <p title>&nbsp;Author's summary*&nbsp;<a>200 words or more are recommended</a></p>
+                                        <textarea class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" id="contents">$cn</textarea>
+                                    </div>
+                                </div>
+                                <div class="line"></div>
+                                <div class="detail">
+                                    <div class="asbox_con" edit>
+                                        <p title>&nbsp;Author's Works</p>
+                                        <input class="asbox" placeholder="Author's Works" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="books" value="$bn">
+                                    </div>
+                                    <div class="asbox_con" edit style="margin-bottom: 0px;">
+                                        <p title>&nbsp;Search Index</p>
+                                        <input class="asbox" placeholder="Search Index" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="search_index" value="$si">
+                                    </div>
+                                </div>
+                                <div class="line"></div>
+                                <p style="margin-bottom: 5px;"><b>The following is the data submitted by the user</b></p>
+                                <div class="detail">
+                                    <div class="asbox_con" edit>
+                                        <p console>&nbsp;Applicant's email</p>
+                                        <div class="asbox">$email</div>
+                                        <!--Requests can be added or modified-->
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p console>&nbsp;User IP</p>
+                                        <div class="asbox">$ip</div>
+                                        <!--Requests can be added or modified-->
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p console>&nbsp;Request time</p>
+                                        <div class="asbox">$date</div>
+                                        <!--Requests can be added or modified-->
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p console>&nbsp;This request belongs to the following behavior</p>
+                                        <div class="asbox">$editText</div>
+                                        <!--Request can be added or modified-->
+                                    </div>
+                                </div>
+                                <div class="line" style="margin:5px 0 15px 0;"></div>
+                                <div class="detail" style="margin-bottom: 20px;">
+                                    $btn
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    PAGE;
+?>

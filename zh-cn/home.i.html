@@ -1,0 +1,31 @@
+<?php
+    include_once ".phtml/mode.php";
+
+    function writeHome(){
+        echo <<<HOME
+            <div class="rcon">
+              <div rconId="1" id="pic">
+              </div>
+              <div textArea>
+                <h2 style="font-size:40px;letter-spacing:0.15em;">二手书</h2>
+                <h3 style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;">二手书对环境更加友好。<br>购买一本，销售一本，都能减少森林砍伐。</h3>
+                <a class="btn" href="javascript:focusSearch();">开始搜索并购买</a>
+                <div class="break"></div>
+                <a class="btn" href="javascript:searchSell();" id="sellbtn">销售书籍</a>
+                <div class="break"></div>
+                <h3 style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;">或者，您也可以：</h3>
+                <div class="break"></div>
+                <a class="btn" xhr href="?book#edit">录入书籍</a>
+                <div style="color:#454545;font-size:24px;font-weight: lighter;line-height:150%;padding:0px 10px">或</div>
+                <a class="btn" xhr href="?list#edit">添加作者</a>
+              </div>
+            </div>
+            <p id="page_title">DeBook 二手书市场</p>
+        HOME;
+    }
+
+    $homeKey = getArray($_POST,"homeKey");
+    if($homeKey=="write"){
+        writeHome();
+    }
+?>

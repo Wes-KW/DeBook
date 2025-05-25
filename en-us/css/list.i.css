@@ -1,0 +1,384 @@
+p[label]{
+    padding:0px 0 2px 0;
+    margin:0 5px 0 0;
+    color:#757575;
+}
+
+a[label]{
+    margin-right: 5px;
+    color: #228b22;
+    background-color: white;
+    padding: 0px 4px 1px 4px;
+    border-radius: 5px;
+    border: 1px solid #228b22;
+    font-size:14px;
+}
+
+span.icon16{
+    position:relative;
+    float:left;
+    margin:2px 4px 0 0;
+    width:20px;
+    height:20px;
+    background-repeat: no-repeat;
+    background-size:cover;
+    background-position: center;
+}
+
+div.row[hidtext] {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 12;
+    overflow: hidden;
+}
+
+div.pcon{
+    overflow: visible;
+}
+
+div.scon{
+    position:relative;
+    float:left;
+    width:100%;
+    height:auto;
+    text-align: left;
+}
+
+div.scon>*{
+    position: relative;
+    float:left;
+    width: 100%;
+}
+
+div.pleft{
+    position:relative;
+    float:left;
+    min-width:100px;
+    width:23%;
+    margin-top:10px;
+}
+
+div.pleft[s]{
+    width:100%;
+}
+
+div.pright{
+    position:relative;
+    float:right;
+    margin:0px;
+    width:72%;
+}
+
+div.pright[s]{
+    width: 100%;
+}
+
+div.pright>div{
+    position:relative;
+    float:left;
+    width: 100%;
+}
+
+div._image{
+    position:relative;
+    float:left;
+    width:100%;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+div.pleft[s] div._image img{
+    width: auto;
+    max-height: 240px;
+}
+
+div._image img{
+    width: 100%;
+    filter: drop-shadow(0px 1px 5px #bdbdbd);
+    -webkit-filter: drop-shadow(0px 1px 5px #bdbdbd);
+}
+
+div._all_image{
+    position:relative;
+    float:left;
+    width:100%;
+    margin-top: 12px;
+}
+
+div._images_con{
+    width:100%;
+    margin-bottom: 3px;
+}
+
+div._all_image ._images_con img{
+    box-shadow:0px 1px 2px 0px #bdbdbd;
+    max-width: 30px;
+    margin-right: 10px;
+}
+
+div._all_image ._images_con2 img{
+    box-shadow:0px 1px 2px 0px #bdbdbd;
+    max-width: 50px;
+    margin-right: 10px;
+}
+
+div.title>h3{
+    font-weight: normal;
+    font-size:40px;
+    color: #002020;
+}
+
+div.title>div.h4{
+    position: relative;
+    float:left;
+    height:auto;
+    color:#999;
+}
+
+div.title>div.h4>*{
+    position: relative;
+    font-weight:bold;
+    font-size: 18px;
+}
+
+div.title>div.h4>font[composer]{
+    font-size:16px;
+    font-weight: normal;
+    font-style:italic;
+}
+
+div.title>div.h4>p{
+    margin:0px 4px 3px;
+}
+
+div.detail>*{
+    position: relative;
+    float:left;
+}
+
+div.rtf_edit{
+    background-color:#eeeeee;
+}
+
+div.rtf_view{
+    margin:10px 0 5px 0;
+}
+
+div.rtf_view[hid]{
+    display: none;
+}
+
+p.sword{
+    color:#757575;
+}
+
+.sword{
+    margin: 2px 0px;
+    margin-left: 5px;
+    font-size:16px;
+}
+
+div.detail>.sword:first-child{
+    margin-left:0;
+}
+
+div.detail[billBoard]{
+    background-color: white;
+    border: 1px solid #c4c4c4;
+}
+
+div.billBoard{
+    position:relative;
+    float:left;
+    width:96%;
+    margin:4px 2%;
+    overflow: auto;
+}
+
+div.detail[whiteboard]{
+    background-color: white;
+    border: 1px solid #c4c4c4;
+}
+
+div.whiteboard{
+    position:relative;
+    float:left;
+    width:98%;
+    margin:4px 1%;
+}
+
+div.col{
+    position:relative;
+    float:left;
+    width:auto;
+    max-width: 160px;
+    margin-right: 20px;
+}
+
+div.col>*{
+    width:100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    line-height: 20px;
+}
+
+div.row{
+    position:relative;
+    float:left;
+    width:100%;
+    margin-bottom: 0px;
+    text-align: left;
+}
+
+div.row[scroll-row]{
+    overflow-y:hidden;
+    overflow-x:auto;
+    white-space: nowrap;
+    text-align: left;
+}
+
+div.row[scroll-row]>div[col]{
+    position:relative;
+    display: inline-block;
+    height:auto;
+    width:auto;
+}
+
+div.row>h3{
+    font-size: 28px;
+    text-align: left;
+    margin-bottom:10px;
+}
+
+div.row>h4{
+    font-size: 24px;
+    text-align: left;
+    margin-bottom:10px;
+}
+
+div.row[scroll-row]>div.bokinfo[col]{
+    margin-top: 2px;
+    width:120px;
+    height:auto;
+    margin-right: 24px;
+    overflow:hidden;
+}
+
+div.row[scroll-row]>div.bokinfo[col]:last-child{
+    margin-right: 4px;
+}
+
+p[bok-title]{
+    font-size:16px;
+    font-style:italic;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+font[lang]{
+    font-size:16px;
+    font-style: normal;
+    color:#757575;
+}
+
+div.price{
+    font-size:16px;
+    color:black;
+    font-weight: bold;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+div.bokinfo>a>img{
+    width:100%;
+    box-shadow:0px 1px 3px 0px #bdbdbd;
+}
+
+/*edit*/
+div.asbox_con[edit]{
+    margin-bottom: 10px;
+}
+
+p[title]{
+    background-color: #eeeeee;
+}
+
+textarea{
+    font-family: "Times New Roman";
+    letter-spacing: 0.5px;
+    font-size: 17px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+a[edit]{
+    transition: all 0.2s ease 0s;;
+}
+
+a[edit]:hover{
+    filter: contrast(0.8);
+}
+
+div.asboxList_con>ul{
+    position:relative;
+    float:left;
+    width:100%;
+    padding-left: 0px;
+    overflow: hidden;
+}
+
+div.asboxList_con>ul>li{
+    position:relative;
+    float:left;
+    width: 100%;
+    font-size:17px;
+    padding:1px 6px 2px 6px;
+    list-style-type: none;
+    color:#454545;
+    user-select: none;
+    cursor:pointer;
+}
+
+div.asboxList_con>ul>li:hover,li[selected]{
+    text-decoration: underline;
+    color:#333;
+    background-color: #dbdbdb;
+}
+
+a.mulBtn{
+    float:left;
+    width:22px;
+    height:22px;
+    margin: 4px 6px 2px 0px;
+    padding:4px;
+    border-radius: 6px;
+    transition:all 0.1s ease 0s;
+}
+
+a.mulBtn:active{
+    background-color: #bdbdbd;
+}
+
+a.mulBtn>img{
+    width:22px;
+    height:22px;
+}
+
+p.loss_title{
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color:#333;
+}
+
+p.loss_detail{
+    margin-top: 15px;
+    font-size: 16px;
+    color:#454545;
+}
+
+#list_books{
+    transition:all 0.2s ease 0s;
+}

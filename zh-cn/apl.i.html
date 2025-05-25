@@ -1,0 +1,594 @@
+<?php
+    include_once ".phtml/vrfylogin.php";
+    include_once ".phtml/search.php";
+    
+    function JSJudge($aplbookid){
+        $usr = getPhpUser();
+        if($usr==null){
+            requireLogin();
+            return;
+        }
+        if($aplbookid==""){
+            funcFail();
+        }else{
+            if(bookExist($aplbookid)==1){
+                //detect user sender's address
+                $reDeliverInfo = true;
+                $usrdi = $usr["deliver_info"];
+                if($usrdi!=""){
+                    $arr = decodeInfo($usrdi);
+                    $c = 0;
+                    foreach($arr as $key=>$value){
+                        if($c>2) break;
+                        if($arr[$key]==""){
+                            $reDeliverInfo = false;
+                            break;
+                        }
+                        $c++;
+                    }
+                }
+                if(!$reDeliverInfo||$usrdi==""){
+                    requireDeliverInfo();
+                }else{
+                    startSupply($aplbookid);
+                }
+            }else{
+                funcFail();
+            }
+        }
+    }
+
+    function startSupply($aplbookid){
+        $usr = getPhpUser();
+        $step = "0";
+        $e = "";
+        $f = "disabled";
+        if($usr["noSellTermMsg"]==1){
+            $a = "normal";
+            $b = "bold";
+            $c = "none";
+            $d = "block";
+            $e = "checked";
+            $f = "";
+            $step = "1";
+        }else{
+            $a = "bold";
+            $b = "normal";
+            $c = "block";
+            $d = "none";
+        }
+        $bookname = "";
+        $authornameRaw = "";
+        $authorname = "";
+        $res = exeSql("SELECT names,authorid FROM bokinfo WHERE bookid='$aplbookid'");
+        while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+            $bookname = rawurldecode($row["names"]);
+            $authornameRaw = rawurldecode($row["authorid"]);
+            break;
+        }
+        $authornameArr = explode(":",$authornameRaw);
+        for($i=0;$i<sizeof($authornameArr);$i++){
+            $split_name = $authornameArr[$i];
+            if($split_name!=""){
+                if(strpos($split_name,"id_")!==false){
+                    $aurid = substr($split_name,3);
+                    $res2 = exeSql("SELECT names FROM aurinfo WHERE aurid='$aurid'");
+                    while($row=mysqli_fetch_array($res2,MYSQLI_ASSOC)){
+                        $authorname .= rawurldecode($row["names"]).";";
+                        break;
+                    }
+                }else{
+                    $authorname .= rawurldecode($split_name).";";
+                }
+            }
+        }
+        echo <<<PAGELOGIN
+        <div class="dcon" style="margin-top: 15px;">
+            <div class="scon" id="continue">
+                <div class="scon">
+                    <div class="pleft">
+                        <div class="list_con">
+                            <h4>申请供货</h4>
+                            <ul id="applymenu">
+                                <li style="font-weight:$a"><a href="javascript:;">供货条款</a></li>
+                                <li style="font-weight:$b"><a href="javascript:;">完善书籍信息</a></li>
+                                <li><a href="javascript:;">验证书本质量</a></li>
+                                <li><a href="javascript:;">上传书籍图片</a></li>
+                                <li><a href="javascript:;">核对所有信息</a></li>
+                                <li><a href="javascript:;">完成申请</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="pright" step="$step" id="applycon">
+                        <div class="rcon" style="display:$c">
+                            <div class="rinnerCon">
+                                <h3 style="margin-bottom: 10px;">供货条款</h3>
+                                <div class="textarea" style="margin-bottom: 8px;" id="termsBox">
+                                    <p>
+                                        中文简体<br/>
+                                        <br/>
+                                        DeBook 二手书交易市场<br/>
+                                        DeBook 供货条款<br/>
+                                        供在使用DeBook进行供货时使用<br/>
+                                        <br/>
+                                        <u>在使用DeBook进行卖书之前，请仔细阅读DeBook供货条款。阁下一使用DeBook进行供货，即表示同意接受本条款的各条约束。如阁下不同意DeBook供货条款，请勿继续使用DeBook进行供货，并且（如有提供选择“同意”或“不同意”条款）点击“不同意”键。</u><br/>
+                                        <br/>
+                                        <u>1.书籍质量。</u><br/>
+                                        A.在供货之前填写所有的供货信息（包括书籍名称，作者（翻译），出版社，语言版本，书籍原价，ISBN，书籍总页数）必须符合要提供的书的真实信息。所有需要提供的图片（包括封面、背面以及抽检图片）必须为书籍原件的真实图片。供货的信息如不符合真实书籍情况，买家有投诉商家书籍质量的权利，并导致<a xhr href="?help/seller/honesty">商家诚信度</a>下降，且DeBook二手书平台有权封锁用户的售卖能力。详情封锁条例请见<a xhr href="?help/seller/selling_blocking">商家售卖封锁条款</a>。<br/>
+                                        <br/>
+                                        B.在书籍完成申请后，阁下需要保证书籍不会再被继续使用，破坏，丢弃，销售或捐赠给任何非DeBook平台的买家。书籍必须原封不动地保存，直到有买家愿意购买商品。书籍途中如果被继续使用，破坏，丢弃，销售或捐赠给任何非DeBook平台的买家，则需要用户及时删除在DeBook的供货信息。如果没有及时删除，买家有投诉商家无货未上报的权力，并导致<a xhr href="?help/seller/honesty">商家诚信度</a>下降。<br/>
+                                        <br/>
+                                        <u>2.支付，价格与运费。</u><br/>
+                                        A.DeBook支持DeCoins（DeCoins为DeBook平台上的优惠券，详情请看<a xhr href="?help/payment/decoins">DeCoins积分的使用规则</a>），<a xhr href="?help/payment/other_pay#wechatpay">微信支付</a>以及<a xhr href="?help/payment/other_pay#alipay">支付宝支付。在使用任何非DeCoins积分的方式进行收款前，阁下必须确保商品符合所有<a xhr href="?help/payment/transaction_rule">二手书交易条件</a>，并请确保买家能够联系到阁下。（比如在使用微信支付进行收款前，请阁下确保买家能够通过电话号码加微信）。因阁下与买家联系失败而导致的损失需阁下自行承担。<br/>
+                                        <br/>
+                                        B.在填写“验证书本质量”时对评价标准有疑问，可以参考<a xhr href="?help/apply/book_standard">DeBook 二手书籍质量评价表</a>。在填写完“验证书本质量”的信息后，（在保证书籍信息真实的情况下）DeBook将会如实向你提供书本的建议售卖价。阁下必须确保二手书书籍的售卖价格与建议售卖价相差不到30%。任何过高价格或过低价格导致的无法售卖的情况，请阁下自行承担责任。书籍的运费请在与买家联系后确认由哪一方承担。<br/>
+                                        <br/>
+                                        <u>3.付款，发货与退款</u><br/>
+                                        A.在书籍被用户购买之后，必须按照买家指定的支付方式收款。在买家选中购买指定书籍后，您的书籍会被锁定，无法被任何选中的此书的其他买家继续购买，除非买家主动取消订单。<br/>
+                                        <br/>
+                                        B.在被告知买家支付了书籍费用后，请阁下（<a xhr href="?help/payment/check_pay">检查已经收到了买家的付款</a>），否则不要发货。如果确认买家已经发货，则阁下需要尽快获取DeBook唯一识别码并发货。发货时请务必将DeBook唯一识别码写在纸条上并夹在书页中，任何识别码（有意或无意）的错误或书中识别码的缺失（除非识别码在快递运输过程中丢失），将会造成<a xhr href="?help/seller/honesty">商家诚信度</a>下降。请阁下务必在联系时提供真实准确的发货信息，任何信息填写（非有意或有意）的错误，除非书籍已经无货，将会导致阁下<a xhr href="?help/seller/honesty">商家诚信度</a>损失。买家有权知道商品发货的运单号，有权确认订单真实性，且买家有权投诉卖家。买家在确认收货后，对书籍的评价不是必须的。阁下无权强制用户对商品进行评价。<br/>
+                                        <br/>
+                                        C.阁下可以选择接受<a xhr href="?help/order/7_days_return">7天无理由退货</a>。阁下在DeBook销售的任何书籍都有可能被买家退货退款。书籍的运费请在与买家联系后确认由哪一方承担。阁下在接受退货前需要要求买家发送退款前书籍的真实照片，如果阁下在退货未让马家发送退款前书籍的真实照片，后果需要阁下自己承担。阁下切勿在未收到买家退的货前进行退款操作（除非阁下认为买家私自毁坏商品，并提供买家毁坏商品的证据）。在买家退货后，阁下需要在货物寄回后24小时内进行退款。如果阁下未及时退款，买家有权利投诉卖家，并可能影响商家诚信度，详情请看<a xhr href="?help/order/return_payment">退货退款细则</a>。<br/>
+                                        <br/>
+                                        D.如果阁下与买家均确认货物并非遭到任何一方的恶意损坏（包括但不限于撕毁，丢弃，浸泡），并确认货物在运输途中遭到破坏，DeBook平台不负任何责任。请阁下与买家联系，并对相应的快递公司进行投诉。<br/>
+                                        <br/>
+                                        如有更多问题请查看<a xhr href="?help/order/">订单帮助</a>和<a xhre href="?help/payment">支付帮助</a>。感谢您对DeBook平台的支持。
+                                    </p>
+                                </div>
+                                <form style="margin-bottom:16px" onsubmit="return false">
+                                    <div class="asbox_con" style="width:120px;text-align: left;">
+                                        <input type="checkbox" id="check0" class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" style="height:100%" $e>
+                                        <span style="top:2px"></span>
+                                        <button a="" type="button" style="padding:0px" onclick="this.parentElement.children[0].checked=!this.parentElement.children[0].checked">以后不再提示</button>
+                                    </div>
+                                    <div style="position:relative;float:left;width:100%;margin-bottom:8px;"></div>
+                                    <button class="asbox_submit" cancel id="cancel0"><span>我不同意</span></button>
+                                    <button class="asbox_submit" id="submit0" $f><span>我同意</span></button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="rcon" style="display: $d;">
+                            <div class="rinnerCon">
+                                <h3 style="margin-bottom:0">完善书籍信息</h3>
+                                <p style="color:#0366d6">标有“*”号的为必填信息</p>
+                            </div>
+                            <div class="rinnerCon">
+                                <form onsubmit="return false;">
+                                    <div class="asbox_con" edit>
+                                        <p>&nbsp;书本名称*&nbsp;<a href="javascript:searchSell();">修改</a></p>
+                                        <input class="asbox" placeholder="书本名称" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" readonly value="$bookname">
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p>&nbsp;作者名称 <font style="color:#202122;font-weight:lighter">(自动)</font></p>
+                                        <input class="asbox" placeholder="作者名称" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" readonly value="$authorname">
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p>&nbsp;译者名称&nbsp;<u>如有多位译者用‘;’隔开</u></p>
+                                        <input class="asbox" placeholder="译者名称" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" name="translator">
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p>&nbsp;出版社*</p>
+                                        <input class="asbox" placeholder="出版社" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" name="publish">
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p style="float:left;line-height:21px;">&nbsp;ISBN-10/13&nbsp;</p><div circle-border tips="&lt;div style='text-align:center'&gt;&lt;img style='margin: 5px auto 0px auto;width: 180px;padding: 2px 5px;image-rendering: pixelated;background:#fff;' src='Image/src/barcode.gif'&gt;&lt;p&gt;ISBN一般位于书本的背面下方&lt;/p&gt;&lt;/div&gt;" onmouseover="showTooltip(this,true)" onmouseleave="hideTooltip()">?</div>&nbsp;<a xhr href="?help/book/isbn">什么是ISBN?</a>
+                                        <input class="asbox" type="number" placeholder="ISBN" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" name="isbn">
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p style="position:relative;float:left;">&nbsp;书本语言*&nbsp;</p><div circle-border tips="比如:&lt;p&gt;简体中文&lt;br/&gt;繁体中文&lt;br/&gt;英文、法语等&lt;/p&gt;" onmouseover="showTooltip(this,true)" onmouseleave="hideTooltip()">?</div><p>&nbsp;<u>如有多种语言用‘;’隔开</u></p>
+                                        <input class="asbox" placeholder="书本语言" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" name="lang"">
+                                    </div>
+                                    <div class="detail">
+                                        <button class="asbox_submit" cancel id="cancel1"><span>上一步</span></button>
+                                        <button class="asbox_submit" id="submit1"><span>下一步</span></button>
+                                        <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="rcon" style="display: none;">
+                            <div class="rinnerCon">
+                                <h3 style="margin-bottom:0">验证书本质量</h3>
+                                <p>回答以下问题以获得书本的建议售卖价</p>
+                                <div class="progressBar">
+                                    <div class="progressInner" style="width:0%">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rinnerCon" h>
+                                <div horizontal style="left:0%;" id="slider">
+                                    <div style="opacity:1">
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;书本属于下面哪一类?</p>
+                                            <div class="radioCon" name="bookType">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookType" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>精装书</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookType" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>平装书</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookType" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>线装书</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookType" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>其他</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npPage(-1)" cancel><span>上一步</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;书本封面，书脊和背面是否有掉色?</p>
+                                            <div class="radioCon" name="bookCoverColor">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookCoverColor" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>没有掉色</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookCoverColor" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>有点掉色</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookCoverColor" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>掉色较多</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookCoverColor" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>掉色严重</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>上一步</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;书本中是否存在整个或局部书页被撕毁的情况?</p>
+                                            <div class="radioCon" name="bookPageMiss">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageMiss" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>没有</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageMiss" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>3页或以下有残缺或损坏</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageMiss" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>3页以上，10页或以下有残缺或损坏</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageMiss" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>10页以上有残缺或损坏</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>上一步</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;书本是否有褶皱或折痕(包括书页边角折起)?</p>
+                                            <div class="radioCon" name="bookPageWrinkle">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageWrinkle" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>没有褶皱或折痕</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageWrinkle" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>10页或以内有褶皱或折痕</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageWrinkle" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>10页以上，25页或以下有褶皱或折痕</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageWrinkle" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>25页以上有褶皱或折痕</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>上一步</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;书本纸张是否有泛黄?</p>
+                                            <div class="radioCon" name="bookPageYellow">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageYellow" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>没有</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageYellow" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>轻微泛黄</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageYellow" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>中等泛黄</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageYellow" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>严重泛黄</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>上一步</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;书本纸张是否有额外书写的字迹(包括笔记、图画等)?</p>
+                                            <div class="radioCon" name="bookPageNote">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageNote" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>没有</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageNote" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>书内仅有工整的笔记或图画，不影响阅读</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageNote" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>书内除笔记或画图外，有无关画痕</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageNote" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>书内有大量的无关画痕</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>上一步</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p>请填写书本页数和参考/买入价<a xhr="" href="?help/apply/price">(什么是参考价?)</a>以继续。</p>
+                                        <div class="asbox_con" edit style="margin-bottom: 8px;">
+                                            <p>&nbsp;书本页数*</p>
+                                            <input class="asbox" placeholder="书本页数" type="number" min="5" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" pattern="[0-9]*" id="bookPageNum" name="page">
+                                        </div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;参考价或买入价*&nbsp;<a xhr href="?help/apply/price">什么是参考价?</a></p>
+                                            <input class="asbox" placeholder="参考价或买入价" type="number" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="bookPrice" name="retail_price">
+                                        </div>
+                                        <p style="margin-bottom:0"><a xhr href="?help/apply/price#no_price_found">无法找到相对应的价格?</a></p>
+                                        <div class="detail" style="margin-top:5px">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>上一步</span></button>
+                                            <button class="asbox_submit" onclick="vrfy()"><span>下一步</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                        </div>
+                                    </div>
+                                </div>  
+                            </div>
+                            <style>
+                                div[circle-border]{
+                                    position:relative;
+                                    float:left;
+                                    margin:3px 2px 1px 0;
+                                    width:14px;
+                                    height:14px;
+                                    text-align:center;
+                                    font-size:smaller;
+                                    border-radius: 50%;
+                                    background-color:#0366d6;
+                                    color:white;
+                                    font-weight: bold;
+                                    cursor:pointer;
+                                }
+                            </style>
+                        </div>
+                        <!--js: after verifying the price a suggested price should be given-->
+                        <div class="rcon" style="display: none;">
+                            <div class="rinnerCon">
+                                <h3>上传书籍图片</h3>
+                                <p style="color:#311031" id="pageNum"></p>
+                            </div>
+                            <div class="rinnerCon" upload id="pageUploaders">
+                            </div>
+                            <div class="rinnerCon">
+                                <div class="detail" style="margin-bottom: 20px;">
+                                    <button class="asbox_submit" cancel onclick="npPage(-1)"><span>上一步</span></button>
+                                    <button class="asbox_submit" onclick="vrfyPic()"><span>下一步</span></button>
+                                    <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rcon" style="display: none;">
+                            <div class="rinnerCon">
+                                <h3 style="margin-bottom: 0px;">核对所有信息</h3>
+                                <p>请检查所有信息并确认无误后提交</p>
+                            </div>
+                            <div class="rinnerCon">
+                                <table class="confirm">
+                                    <thead>
+                                        <th>属性</th>
+                                        <th>值</th>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" g>基本信息</td>
+                                        </tr>
+                                        <tr>
+                                            <td>书本名称*&nbsp;<a href="javascript:searchSell();">修改</a></td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="书本名称" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" readonly value="$bookname"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>作者名称 <font style="color:#202122;font-weight:lighter">(自动)</font></td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="作者名称" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" readonly value="$authorname"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>译者名称</td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="译者名称" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" name="translator"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>出版社*</td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="出版社" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" name="publish"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>ISBN-10/13</td>
+                                            <td><div class="asbox_con"><input class="asbox" type="nunmber" placeholder="ISBN" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" name="isbn"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>书本语言*</td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="书本语言" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" name="lang"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>书本页数*</td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="书本页数" type="number" min="5" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" pattern="[0-9]*" readonly name="page"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" g>质量与定价&nbsp;<a href="javascript:reverifyqua();">重新验证质量并定价</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>质量</td>
+                                            <td><div class="asbox_con"><input class="asbox" name="quality" placeholder="质量" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" readonly></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>参考价或买入价</td>
+                                            <td><div class="asbox_con"><input class="asbox" type="number" placeholder="参考价或买入价" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" readonly name="retail_price"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>售卖价</td>
+                                            <td><div class="asbox_con"><input class="asbox" type="number" placeholder="售卖价" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" readonly name="final_price"></div></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="detail" style="margin-bottom: 15px;">
+                                    <button class="asbox_submit" cancel onclick="npPage(-1)"><span>上一步</span></button>
+                                    <button class="asbox_submit" id="submit1" onclick="finish()"><span>完成</span></button>
+                                    <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rcon" style="display: none;">
+                            <div class="rinnerCon">
+                                <h3 style="margin-bottom: 5px;">完成申请</h3>
+                                <div class="cbox">
+                                    <div class="icon" style="background-image:url('Image/fatcow/accept_button.png')"></div>
+                                    <div class="text">
+                                        <h4 style="font-size:18px;font-weight: normal;margin-bottom: 2px">您已成功申请供货</h4>
+                                        <p>恭喜，您已成功申请售卖书籍‘<i id='bookNameBox'>$bookname</i>’<br/>感谢您对DeBook的支持</p>
+                                    </div>
+                                </div>
+                                <ul class="cbox">
+                                    <li><p>若需要继续申请对同一本书籍的供货<a xhr href="" id="lastAddressBox">点击这里</a>。</p></li>
+                                    <li><p>若需要申请对不同书籍的供货，则<a href="javascript:searchSell();">点击这里</a>。</p></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p id="page_title">DeBook 申请供货</p>
+        </div>
+        PAGELOGIN;
+        return;
+    }
+
+    function requireDeliverInfo(){
+        echo <<<PAGERECEIPT
+        <div class="dcon" style="margin-top: 15px;">
+            <div class="scon">
+                <div class="rcon" style="display: block;">
+                    <div class="rinnerCon">
+                        <h3 style="margin-bottom: 5px;">完善信息以继续供货</h3>
+                        <p>由于您的发货人信息为空或不完整，您需要填写用户中的<a xhr href="?account#dlv_settings">发货人信息</a>才可以供货。</p>
+                        <p>请<a target="_new" href="?account#dlv_settings">点击这里访问您的账户</a>，并通过菜单寻找<b>收发货设置</b>中的<b>发货人信息</b>，然后点击添加信息。</p>
+                        <p>请务必检查以下项目填写完整且正确：</p>
+                        <ul style="padding-left:20px;margin:5px 0">
+                            <li>姓名</li>
+                            <li>手机号码</li>
+                            <li>发货地址</li>
+                        </ul>
+                        <p>完善信息后再返回此页并刷新以继续。</p>
+                    </div>
+                </div>
+            </div>
+            <p id="page_title">DeBook 申请供货</p>
+        </div>
+        PAGERECEIPT;
+        return;
+    }
+
+    function funcFail(){
+        echo <<<PAGESELECT
+        <div class="dcon" style="margin-top: 15px;">
+            <div class="scon">
+                <div class="rcon" style="display: block;">
+                    <div class="rinnerCon">
+                        <h3 style="margin-bottom: 5px;">选择一本书以继续</h3>
+                        <p>请先选择一本需要进行供货的书籍，然后继续。</p>
+                        <p>没有提示框显示指引？<a href="javascript:searchSell();">点击这里</a>，然后输入关键词搜索并选择您想要提供的书籍。</p>
+                    </div>
+                </div>
+            </div>
+            <p id="page_title">DeBook 申请供货</p>
+        </div>
+        PAGESELECT;
+        return;
+    }
+
+    function requireLogin(){
+        $aplbookid = getArray($_POST,"aplKey");
+        echo <<<PAGELOGIN
+        <div class="dcon" style="margin-top: 15px;">
+            <div class="scon">
+                <div class="rcon" style="display: block;">
+                    <div class="rinnerCon">
+                        <h3 style="margin-bottom: 5px;">为DeBook供货需要登录</h3>
+                        <p>请阁下先<a xhr href="?account#continue=?apply/$aplbookid">登录到DeBook网站</a>然后继续为供货做准备。</p>
+                    </div>
+                </div>
+            </div>
+            <p id="page_title">DeBook 申请供货</p>
+        </div>
+        PAGELOGIN;
+        return;
+    }
+
+    if(!isset($home)){
+        JSJudge(getArray($_POST,"aplKey"));
+    }
+?>

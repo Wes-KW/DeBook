@@ -1,0 +1,107 @@
+div.scon{
+    position:relative;
+    float:left;
+    width:100%;
+    height:auto;
+    text-align: left;
+}
+
+div.scon>*{
+    position: relative;
+    float:left;
+    width: 100%;
+}
+
+div.pleft{
+    position:relative;
+    float:left;
+    min-width:100px;
+    width:23%;
+    margin-top:10px;
+}
+
+div.pright{
+    position:relative;
+    float:right;
+    margin:0px;
+    width:72%;
+}
+
+div.pright>div{
+    position:relative;
+    float:left;
+    width: 100%;
+}
+
+div._image{
+    position:relative;
+    float:left;
+    width:100%;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+div._image img{
+    width: 100%;
+    filter: drop-shadow(0px 1px 5px #bdbdbd);
+    -webkit-filter: drop-shadow(0px 1px 5px #bdbdbd);
+}
+
+div._all_image{
+    position:relative;
+    float:left;
+    width:100%;
+    margin-top: 12px;
+}
+
+div._images_con{
+    width:100%;
+    margin-bottom: 3px;
+}
+
+div._all_image ._images_con img{
+    box-shadow:0px 1px 2px 0px #bdbdbd;
+    max-width: 30px;
+    margin-right: 10px;
+}
+
+div._all_image ._images_con2 img{
+    box-shadow:0px 1px 2px 0px #bdbdbd;
+    max-width: 50px;
+    margin-right: 10px;
+}
+
+/*edit*/
+div.asbox_con[edit]{
+    margin-bottom: 10px;
+}
+
+div.asbox_con[edit]>div.asbox{
+    overflow-wrap: break-word;
+}
+
+p[title]{
+    background-color: #eeeeee;
+}
+
+textarea{
+    font-family: "Cambria";
+    letter-spacing: 0.5px;
+    font-size: 17px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+p[console]{
+    font-size: 17px;
+    background-color: #fbf3d5;
+    border-bottom:1px solid #f1e5bc;
+    color:#333;
+}
+
+div.asbox{
+    padding:3px .8%;
+    background-color: #fdf7e2;
+    font-size: 17px;
+    color:#3b4045;
+}

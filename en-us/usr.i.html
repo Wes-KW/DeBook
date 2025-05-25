@@ -1,0 +1,649 @@
+<?php
+    include_once ".phtml/vrfylogin.php";
+    include_once ".phtml/deliver.php";
+    
+    function getCnDateTime($date){
+      return date("Y年m月d日 H:i:s",$date);
+    }
+
+    function writeUsrPage(){
+      //data preload
+      $usr = getPhpUser();
+      $deliverInfo = array("name"=>"","phone_number"=>"","address"=>"","sch_allow"=>"","sch"=>"");
+      $receiptInfo = array();
+      $dlvEmpty = false;
+      $clickRow = 'onclick="edSelect(this.parentElement.children[0].children[0],1)"';
+      if(is_array($usr)){
+        //initialize deliver_info
+        if($usr["deliver_info"]==""){
+          $dlvEmpty = true;
+          $usr["deliver_info"] = '{"name":"","phone_number":"","address":"","sch_allow":"","sch":""}';
+          $deliverInfo = json_decode($usr["deliver_info"],true);
+        }else{
+          $deliverInfo = decodeInfo($usr["deliver_info"]);
+        }
+
+        //initialize receipt_info
+        if($usr["receipt_info"]!=""){
+          $tmp = explode(":",$usr["receipt_info"]);
+          for($i=0;$i<count($tmp);$i++){
+            if($tmp[$i]!=""){
+              $receiptInfo[$i] = decodeInfo($tmp[$i]);
+            }
+          }
+        }
+      }
+      //buy
+      $buyHtml = "";
+      $buyPageRl = 10;
+      $data = getToUsrDlv(getPhpUser()["usrid"]);
+      $date = "";
+      $hideCount = 0;
+      for($i=0;$i<$data["rlen"];$i++){
+        if($data[$i]["status"]==-1){
+          $hideCount++;
+          continue;
+        }
+        $idate = $data[$i]["date"];
+        $cdate = date("Y_m_d",$idate);
+        if($cdate!=$date){
+          $dateStr = date("Y-m-d",$idate);
+          $buyHtml.="<td colspan=\"6\" style=\"text-align: center;background-color: #0366d6;color:#fff;padding:3px 0\">下单时间: $dateStr</td>";
+          $date = $cdate;
+        }
+        $bookid = $data[$i]["bookid"];
+        $bookname = $data[$i]["names"];
+        $bookAuthor = $data[$i]["author"][0];
+        $bookAurLink = $data[$i]["authorLink"][0];
+        $bookAuthorHtml = $bookAurLink==""?$bookAuthor:"<a xhr href=\"?author/$bookAurLink\">$bookAuthor</a>";
+        $datem = getCnDateTime($data[$i]["date"]);
+        if(sizeof($data[$i]["author"])>1) $bookAuthorHtml.="等";
+        $lang = $data[$i]["aplinfo"]["lang"];
+        $dlvid = $data[$i]["dlvid"];
+        $dlvonclick = $data[$i]["status"]==-1?"disabled":"onclick=\"selectDlvApl($dlvid,this)\"";
+        $comj = $data[$i]["evaid"]==""||strpos($data[$i]["evaid"],"auto_")!==false;
+        $comonclick = $comj?"onclick='comment($dlvid)'":"";
+        $comstyle = $comj?"":"style='color:#757575'";
+        $comstr = $comj?"Write an review":"You have provided an review";
+        $buyConfirm = "onclick=\"buyConfirm($dlvid)\"";
+        $name = $data[$i]["aplinfo"]["udlvinfo"]["name"];
+        if($data[$i]["aplinfo"]["usrid"]=="SPECIAL"){
+          $name = "DeBook Official Account";
+        }
+        $staHtml = "";
+        $cmdHtml = "";
+        $ostyle = $data[$i]["status"]==-1?"disabled style='background-color:#e0e0e0;color:#757575'":"";
+        if($data[$i]["status"]==-1){
+          $staHtml = "Cancelled";
+          $cmdHtml = "<a style='color:#757575'>Cancelled</a>";
+        }else if($data[$i]["status"]==0){
+          $staHtml = "Payment and Delivery Pending";
+          $cmdHtml = "<a onclick='cancelOrder($dlvid)'>Cancel</a><br/><a $dlvonclick>Detail</a>";
+        }else if($data[$i]["status"]==1){
+          $staHtml = "Shipped";
+          $cmdHtml = "<a $buyConfirm>Order Received</a><br/><a $dlvonclick>Detail</a>";
+        }else if($data[$i]["status"]==2){
+          $staHtml = "Completed";
+          $cmdHtml = "<a $comonclick $comstyle>$comstr</a>|<a onclick=\"returnOrder($dlvid)\">Request Return</a><br/><a $dlvonclick>Detail</a>";
+        }else if($data[$i]["status"]==3){
+          if($data[$i]["returnStatus"]==0){
+            $staHtml = "Return Requested";
+            $cmdHtml = "<a onclick='canReturnOrder($dlvid)'>Cancel Return</a><br/><a $dlvonclick>Detail</a>";
+          }else if($data[$i]["returnStatus"]==1){
+            $staHtml = "Returning";
+            $cmdHtml = "<a style='color:#757575'>Return Processing</a><br/><a $dlvonclick>Detail</a>";
+          }else if($data[$i]["returnStatus"]==2){
+            $staHtml = "Returning";
+            $price = number_format($data[$i]["aplinfo"]["price"],2);
+            $cmdHtml = "<a onclick='cfmPayback($dlvid,$price)'>Refund Received</a><br/><a $dlvonclick>Detail</a>";
+          }else if($data[$i]["returnStatus"]==3){
+            $staHtml = "Returned";
+            $cmdHtml = "<a $dlvonclick>Detail</a>";
+          }
+        }
+        $buyHtml .= "<tr $ostyle><td><input type=\"checkbox\" class=\"asbox\" type=\"checkbox\" $dlvonclick><span></span></td><td><a xhr href=\"?book/$bookid\">$bookname</a>($lang)&nbsp($bookAuthorHtml)</td><td><a class=\"contact\">$name</a></td><td>$datem</td><td>$staHtml</td><td>$cmdHtml</td></tr>";
+      }
+      if($data["len"]-$hideCount==0){
+        $buyHtml = "<td colspan=\"6\" style=\"text-align: center;background-color: #f2f4f6;\">(No order)</td>";
+      }
+      $buyTp = intval($data["len"]/$buyPageRl);
+      $buyTp += $data["len"]%$buyPageRl==0?0:1;
+      $buyCp = 1;
+      $buyNp = $buyCp+1;
+      $buyPp = $buyCp-1;
+      $buyPagePrevAttr = $buyCp>1?"onclick='showBuyOrder(null,null,$buyPp)'":"disabled";
+      $buyPageNextAttr = $buyCp<$buyTp?"onclick='showBuyOrder(null,null,$buyNp)'":"disabled";
+      $buyPageHtml = "<a $buyPagePrevAttr>Previous</a><a style=\"color:#202122\">Page ".$buyCp." of ".$buyTp."</a><a $buyPageNextAttr>Next</a><a onclick=\"showBuyOrder(null,null,null,null,1);\">Show the ".$hideCount." cancelled orders</a>";
+      //sell
+      $sellHtml = "";
+      $sellPageRl = 10;
+      $data = getFromUsrDlv(getPhpUser()["usrid"]);
+      $date = "";
+      $hideCount = 0;
+      for($i=0;$i<$data["rlen"];$i++){
+        if($data[$i]["status"]==-1){
+          $hideCount++;
+          continue;
+        }
+        $idate = $data[$i]["date"];
+        $cdate = date("Y_m_d",$idate);
+        if($cdate!=$date){
+          $dateStr = date("Y-m-d",$idate);
+          $sellHtml .= "<td colspan=\"6\" style=\"text-align: center;background-color: #0366d6;color:#fff;padding:3px 0\">Ordered on: $dateStr</td>";
+          $date = $cdate;
+        }
+        $bookid = $data[$i]["bookid"];
+        $bookname = $data[$i]["names"];
+        $bookAuthor = $data[$i]["author"][0];
+        $bookAurLink = $data[$i]["authorLink"][0];
+        $bookAuthorHtml = $bookAurLink==""?$bookAuthor:"<a xhr href=\"?author/$bookAurLink\">$bookAuthor</a>";
+        $datem = getCnDateTime($data[$i]["date"]);
+        if(sizeof($data[$i]["author"])>1) $bookAuthorHtml.=" and more";
+        $lang = $data[$i]["aplinfo"]["lang"];
+        $dlvid = $data[$i]["dlvid"];
+        $dlvonclick = "onclick=\"selectDlvApl($dlvid,this,1)\"";
+        $name = decodeInfo2($data[$i]["rcpt_info"])["name"];
+        $staHtml = "";
+        $cmdHtml = "";
+        $ostyle = $data[$i]["status"]==-1?"disabled style='background-color:#e0e0e0;color:#757575'":"";
+        if($data[$i]["status"]==-1){
+          $staHtml = "Cancelled";
+          $cmdHtml = "<a style='color:#757575'>Cancelled</a>";
+        }else if($data[$i]["status"]==0){
+          $staHtml = "Payment and Delivery Pending";
+          $cmdHtml = "<a onclick=\"setDlvUID($dlvid)\">I have delivered</a>|<a onclick='cancelOrder($dlvid)'>Cancel Order</a><br/><a $dlvonclick>Detail</a>";
+        }else if($data[$i]["status"]==1){
+          $staHtml = "Shipped";
+          $cmdHtml = "<a style='color:#757575'>Pending</a><br/><a $dlvonclick>Detail</a>";
+        }else if($data[$i]["status"]==2){
+          $staHtml = "Completed";
+          $cmdHtml = "<a $dlvonclick>Detail</a>";
+        }else if($data[$i]["status"]==3){
+          if($data[$i]["returnStatus"]==0){
+            $staHtml = "Return Requested";
+            $cmdHtml = "<a onclick='cfmReturnOrder($dlvid)'>Approve</a>|<a onclick='canReturnOrder($dlvid)'>Deny</a><br/><a $dlvonclick>Detail</a>";
+          }else if($data[$i]["returnStatus"]==1){
+            $staHtml = "Returning";
+            $cmdHtml = "<a onclick='cfmRcvRtnOrder($dlvid)'>I have returned</a><br/><a $dlvonclick>Detail</a>";
+          }else if($data[$i]["returnStatus"]==2){
+            $staHtml = "Returning";
+            $cmdHtml = "<a style='color:#757575'>Refund Processing</a><br/><a $dlvonclick>Detail</a>";
+          }else if($data[$i]["returnStatus"]==3){
+            $staHtml = "退货完成";
+            $cmdHtml = "<a $dlvonclick>Detail</a>";
+          }
+        }
+        $sellHtml .= "<tr $ostyle><td><input type=\"checkbox\" class=\"asbox\" type=\"checkbox\" $dlvonclick><span></span></td><td><a xhr href=\"?book/$bookid\">$bookname</a>($lang)&nbsp;$bookAuthorHtml(著)</td><td><a class=\"contact\">$name</a></td><td>$datem</td><td>$staHtml</td><td>$cmdHtml</td></tr>";
+      }
+      if($data["len"]-$hideCount==0){
+        $sellHtml = "<td colspan=\"6\" style=\"text-align: center;background-color: #f2f4f6;\">(No order)</td>";
+      }
+      $sellTp = intval($data["len"]/$sellPageRl);
+      $sellTp += $data["len"]%$sellPageRl==0?0:1;
+      $sellCp = 1;
+      $sellNp = $sellCp+1;
+      $sellPp = $sellCp-1;
+      $sellPagePrevAttr = $sellCp>1?"onclick='showSellOrder(null,null,$sellPp)'":"disabled";
+      $sellPageNextAttr = $sellCp<$sellTp?"onclick='showSellOrder(null,null,$sellNp)'":"disabled";
+      $sellPageHtml = "<a $sellPagePrevAttr>Previous</a><a style=\"color:#202122\">Page ".$sellCp." of ".$sellTp."</a><a $sellPageNextAttr>Next</a><a onclick=\"showSellOrder(null,null,null,null,1);\">Show the cancelled ".$hideCount." orders</a>";
+      //receipt
+      $receiptHtml = "";
+      if(count($receiptInfo)==0){
+        $receiptHtml = '<tr empty><td colspan="5" style="text-align: center;background-color: #f2f4f6;">(No address)</td></tr>';
+      }else{
+        //start table
+        for($i=0;$i<count($receiptInfo);$i++){
+          $receiptHtml .= "<tr id='" . $receiptInfo[$i]["id"] . "'>";
+          $receiptHtml .= "<td><input type=\"checkbox\" class=\"asbox\"><span></span></td>";
+          $receiptHtml .= "<td $clickRow><a>" . $receiptInfo[$i]["address"] ."</a>";
+          if(strpos($receiptInfo[$i]["id"],"A")>0){
+            $receiptHtml .= "<font class=\"default\">(Default)</font></td>";
+          }else{
+            $receiptHtml .= "</td>";
+          }
+          $receiptHtml .= "<td $clickRow>" . $receiptInfo[$i]["name"] . "</td>";
+          $receiptHtml .= "<td $clickRow>Tel:" . $receiptInfo[$i]["tele"] . "<br>Email:" . $receiptInfo[$i]["email"] . "</td>";
+          $receiptHtml .= "<td><a onclick=\"removeReceiptMethod('" . $receiptInfo[$i]["id"] . "');\">Remove</a> | <a onclick=\"showUpdateReceiptMethod('" . $receiptInfo[$i]["id"] . "');\">Edit</a></td>";
+          $receiptHtml .= "</tr>";
+        }
+      }
+      //sent
+      $sentH3Button = "Add/Edit Address";
+      $sentName = writeInfo($deliverInfo["name"]);
+      $sentTele = writeInfo($deliverInfo['phone_number']);
+      $sentAddress = writeInfo($deliverInfo['address']);
+      $sentSch = writeInfo($deliverInfo['sch_allow'])=="1"?"Yes":"No";
+      $sentSchAddr = writeInfo($deliverInfo['sch']);
+      $sent7days = writeInfo(arrm($deliverInfo,'sdays'))=="1"?"Yes":"No";
+      //usr
+      $usr_usrid = $usr['usrid'];
+      $usr_email = $usr['email'];
+      $usr_nickname = $usr['nickname']==""?"(none)":$usr['nickname'];
+      $pwdd = $usr["pwd"];
+      $paypwd = strpos($pwdd,':')+1==strlen($pwdd)?'Add payment passkey':'Edit payment passkey';
+      $coins = sprintf("%.2f",$usr['coins']);
+      //trans
+      $transHtml = "";
+      $data = getTransaction(getPhpUser()["usrid"],null);
+      $trans = $data["trans"];
+      $c = 0;
+      for($i=0;$i<sizeof($trans);$i++){
+        $contents = rawurldecode($trans[$i]["content"]);
+        $value = $trans[$i]["value"];
+        $value = number_format($value,2);
+        if($trans[$i]["toUsrid"]!=getPhpUser()["usrid"]){
+          $value*=-1;
+        }else{
+          $value = "+$value";
+        }
+        $mdate = getCnDateTime($trans[$i]["date"]);
+        $type = $trans[$i]["toUsrid"]==getPhpUser()["usrid"]?"Receiving":"Paying";
+        $transHtml .= "<tr><td><input type=\"checkbox\" class=\"asbox\" onclick=\"edSelect(this)\"><span style=\"top:3px\"></span></td><td>$contents</td><td style=\"width:140px\">$type</td><td style=\"width:200px\">$value</td><td style=\"width:390px\">$mdate</td><td style=\"width:100px\"><font style='color:#757575'>(No Actions Available)</font></td></tr>";
+        $c++;
+      }
+      if($c==0){
+        $transHtml = "<td colspan=\"6\" style=\"text-align: center;background-color: #f2f4f6;\">(No Decoins)</td>";
+      }
+      $usrid = $usr['usrid'];
+      $trsTp = $data["page_count"];
+      $trsCp = 1;
+      $trsNp = $trsCp+1;
+      $trsPp = $trsCp-1;
+      $trsPagePrevAttr = $trsCp>1?"onclick=\"showTrsinfo('$usrid',$trsPp)\"":"disabled";
+      $trsPageNextAttr = $trsCp<$trsTp?"onclick=\"showTrsinfo('$usrid',$trsNp)\"":"disabled";
+      $transPageHtml = "<a $trsPagePrevAttr>Previous</a><a style=\"color:#202122\">Page ".$trsCp." of ".$trsTp."</a><a $trsPageNextAttr>Next</a>";
+      //apply
+      $aplHtml = "";
+      $usrid = $usr['usrid'];
+      $res = exeSql("SELECT evanum FROM evainfo WHERE usrid = '$usrid'");
+      $mEva = 0;
+      $mEva2 = 0;
+      $mC = 0;
+      while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+          $mEva += $row["evanum"];
+          $mC++;
+      }
+      $starClassList = array("star0d0","star0d5","star1d0","star1d5","star2d0","star2d5","star3d0","star3d5","star4d0","star4d5","star5d0");
+      $evaWordList = array("Extremely Poor","Very Poor","Poor","A bit poor","Not good","Moderate","Not bad","Good","Very Good","Excellent","Perfect");
+      $evahtml = "";
+      $evaWord = "";
+      if($mC==0){
+          $evahtml .= "<i class='star0d0'></i>";
+          $evaWord = "&nbsp;No Reviews";
+      }else{
+          $mEva2 = $mEva/$mC;
+          $mEva = round($mEva/$mC);
+          $starClass = $starClassList[$mEva];
+          $evaWord = $evaWordList[$mEva];
+          $evahtml .= "<i class='$starClass'></i>";
+      }
+      $mEva2 = number_format($mEva2/2,1);
+      $aplHtml .= $evahtml;
+      $aplHtml .= "<span style=\"font-family: 'Consolas';font-size: 32px;position: absolute;right: 15px;top: 16px;color: white;margin:0 6px;float: right;\">$mEva2</span>";
+      $aplHtml .= "<span style=\"font-family: 'Consolas';font-size: 16px;position: absolute;right: 16px;top: 56px;color: white;margin:0 6px;float: right;\">$evaWord</span>";
+      $aplTableHtml = "";
+      $edSel = "onclick=\"this.parentElement.children[0].children[0].click()\"";
+      $res = exeSql("SELECT aplid,bookid,lang,publish,price,aplSta FROM aplinfo WHERE usrid='$usrid'");
+      $count = 0;
+      while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+        $aplid = $row["aplid"];
+        $bookid = $row["bookid"];
+        $res2 = exeSql("SELECT names FROM bokinfo WHERE bookid='$bookid'");
+        $names = "";
+        while($row2=mysqli_fetch_array($res2,MYSQLI_ASSOC)){
+          $names = rawurldecode($row2["names"]);
+        }
+        $lang = rawurldecode(base64_decode($row["lang"]));
+        $publish = rawurldecode(base64_decode($row["publish"]));
+        $price = number_format($row["price"],2);
+        $sta = $row["aplSta"];
+        $toolbar = "";
+        if($sta==1){
+          $toolbar = "<a onclick=\"updateAplPic($aplid)\">Modify Photos</a> | <a onclick=\"updateAplPrice(this,$aplid)\">Modify Price</a> | <a class=\"del\" onclick=\"delApply(this,$aplid)\">Remove</a>";
+          $sta = "Unsold";
+        }else if($sta==0){
+          $toolbar = "<font color=\"#757575\">No Actions Available</font>";
+          $sta = "Sold";
+        }
+        $aplTableHtml .= "<tr id=\"$aplid\"><td><input type=\"checkbox\" class=\"asbox\" type=\"checkbox\"><span></span></td><td><a xhr href=\"?book/$bookid\">$names</a></td><td $edSel>$publish</td><td $edSel>$lang</td><td $edSel>￥$price</td><td $edSel>$sta</td><td>$toolbar</td></tr>";
+        $count++;
+      }
+      if($count==0) $aplTableHtml = "<tr empty><td colspan=\"7\" style=\"text-align: center;background-color: #f2f4f6;\">(No Listing)</td></tr>";
+      //contribution
+      $conHtml = "";
+      $f = base64_encode($usr['email']);
+      $res = exeSql("SELECT conid,date,object,status,contributor FROM coninfo");
+      $c = 0;
+      while($row = mysqli_fetch_array($res,MYSQLI_ASSOC)){
+        if(decodeInfo($row["contributor"])["usrid"]!=$usr_usrid) continue;
+        $cdate = date("Y-m-d",$row["date"]);
+        $csta = "";
+        if($row['status']=='0'){
+          $csta = "Under Review";
+        }else if($row['status']=='1'){
+          $csta = "Approved";
+        }else if($row['status']=='2'){
+          $csta = "Rejected";
+        }
+        $title_me = "";
+        $obj = (array) json_decode($row["object"]);
+        $property = "";
+        $val = "";
+        foreach($obj as $key=>$value){
+          $property = $key;
+          $val = urldecode(base64_decode($value));
+          if(strlen($val)>50) $val = mb_substr($val,0,10,"UTF-8") . "...";
+          break;
+        }
+        $pk = "";
+        if($property=="author_name"){
+          $pk = "Author";
+        }else if($property=="book_name"){
+          $pk = "Book";
+        }else if($property=="list_name"){
+          $pk = "Booklist";
+        }
+        $em = "Add";
+        if(isset($obj["editId"])){
+          $em = "Edit";
+        }
+        $em .= $pk . "‘<a>$val</a>" . "’";
+        $meid = $row["conid"];
+        $opa = "<font color='#757575'>No Actions Available</font>";
+        $conHtml .= "<tr><td><input type=\"checkbox\" class=\"asbox\" type=\"checkbox\"><span></span></td><td $clickRow><p>$em</p></td><td $clickRow>$cdate</td><td $clickRow>$csta</td><td $clickRow>$opa</td></tr>";
+        $c++;
+      }
+      if($c==0){
+        $conHtml = "<tr empty><td colspan=\"5\" style=\"text-align: center;background-color: #f2f4f6;\">(No Entries)</td></tr>";
+      }
+      //start writing
+      echo <<<USER
+        <div class="dcon" style="margin-top: 10px;padding-top: 5px;">
+          <div class="scon">
+              <button class="btn" previous onclick="menuScroll(-1)"><</button>
+              <div class="menu">Menu |
+                <a href="javascript:;" onclick="signout()"><b>Log Out</b></a> |
+                <a href="javascript:;" onclick="usrpage(0)">My Purchase</a>
+                <a href="javascript:;" onclick="usrpage(1)">My Selling</a> |
+                <a href="javascript:;" onclick="usrpage(2)">Shipping</a> |
+                <a href="javascript:;" onclick="usrpage(3)">Security</a> |
+                <a href="javascript:;" onclick="usrpage(4)">Payout and Payment</a> |
+                <a href="javascript:;" onclick="usrpage(5)">My Listing</a> |
+                <a href="javascript:;" onclick="usrpage(6)">More Information</a>
+              </div>
+              <button class="btn" next onclick="menuScroll(1)">></button>
+          </div>
+          <div class="scon">
+              <div class="pleft">
+                  <div class="list_con">
+                      <h4>My Account</h4>
+                      <ul>
+                          <li><a href="javascript:;" onclick="usrpage(0)">My Purchase</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(1)">My Selling</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(2)">Shipping</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(3)">Security</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(4)">Payout and Payment</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(5)">My Listing</a></li>
+                          <li><a href="javascript:;" onclick="usrpage(6)">More Information</a></li>
+                      </ul>
+                  </div>
+              </div>
+              <div class="pright">
+                  <div class="rcon" style="background-image:-webkit-linear-gradient(top,#e0e0e0 -50%,#f9fbe7 50%,#fff 100%);">
+                      <div class="rinnerCon" id="buyOrderCon">
+                          <h3>My Purchases</h3>
+                          <div class="fnBox" style="margin-top:10px;">
+                              <div class="asbox_con" tab selected>
+                                  <button class="asbox" tab-selected onclick="showBuyOrder(this)">
+                                      <div class="tag"><b>Show All Orders</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showBuyOrder(this,0,null)">
+                                      <div class="tag"><b>Payment and Delivery Pending</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showBuyOrder(this,1,null)">
+                                      <div class="tag"><b>Shipped</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showBuyOrder(this,2,null)">
+                                      <div class="tag"><b>Completed</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showBuyOrder(this,3,null)">
+                                      <div class="tag"><b>Returned Or Returning</b></div>
+                                  </button>
+                              </div>
+                          </div>
+                          <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="buy_item_table">
+                            <thead>
+                              <tr title>
+                                <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px" onclick="return false;" disabled><span style="top:3px"></span></th>
+                                <th>Book</th>
+                                <th>Seller</th>
+                                <th>Date Ordered</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                $buyHtml
+                            </tbody>
+                          </table>
+                          <div class="line" style="margin: 8px 0 10px 0;">
+                            $buyPageHtml
+                            <div class="filBox">
+                                <p>Ordered on:&nbsp;</p>
+                                <div class="asbox_con" style="width: auto;">
+                                  <select id="select1" onchange="showBuyOrder(null,null,null,getOptionTime(this))" class="selbox" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" style="color:#202122;background-color:#fff;font-size: 15px;">
+                                    <option value="1">In 3 Months</option>
+                                    <option value="2">In 6 Months</option>
+                                    <option value="3">In an Year</option>
+                                    <option value="4" selected>Any Time</option>
+                                  </select>
+                                  <span class="sel" onclick="this.parentElement.children[0].focus();">⇲</span>
+                                </div>
+                            </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;background-image: -webkit-linear-gradient(top,#e0e0e0 -50%,#ebf3fc 50%,#fff 100%);">
+                      <div class="rinnerCon" id="sellOrderCon">
+                          <h3>My Selling</h3>
+                          <div class="fnBox" style="margin-top:10px;">
+                              <div class="asbox_con" tab selected>
+                                  <button class="asbox" tab-selected onclick="showSellOrder(this)">
+                                      <div class="tag"><b>Show All Orders</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showSellOrder(this,0,null)">
+                                      <div class="tag"><b>Payment and Delivery Pending</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showSellOrder(this,1,null)">
+                                      <div class="tag"><b>Shipped</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showSellOrder(this,2,null)">
+                                      <div class="tag"><b>Completed</b></div>
+                                  </button>
+                              </div>
+                              <div class="asbox_con" tab>
+                                  <button class="asbox" tab onclick="showSellOrder(this,3,null)">
+                                      <div class="tag"><b>Returned Or Returning</b></div>
+                                  </button>
+                              </div>
+                          </div>
+                          <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="sell_item_table">
+                            <thead>
+                              <tr title>
+                                <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px" onclick="return false;" disabled><span style="top:3px"></span></th>
+                                <th>Book</th>
+                                <th>Buyer</th>
+                                <th>Date Ordered</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              $sellHtml                              
+                            </tbody>
+                          </table>
+                          <div class="line" style="margin: 8px 0 10px 0;">
+                            $sellPageHtml
+                            <div class="filBox">
+                                <p>Date Ordered:&nbsp;</p>
+                                <div class="asbox_con" style="width: auto;">
+                                  <select id="select2" onchange="showSellOrder(null,null,null,getOptionTime(this))" class="selbox" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" style="color:#202122;background-color:#fff;font-size: 15px;">
+                                    <option value="1">In 3 Months</option>
+                                    <option value="2">In 6 Months</option>
+                                    <option value="3">In an Year</option>
+                                    <option value="4" selected>Any Time</option>
+                                  </select>
+                                  <span class="sel" onclick="this.parentElement.children[0].focus();">⇲</span>
+                                </div>
+                            </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;">
+                      <div class="rinnerCon">
+                          <h3>Shipping Address</h3>
+                          <h3>Delivery Information&nbsp;
+                              <a style="font-size: 16px;font-weight:normal;" href="javascript:showUpdateReceiptMethod();">Add Shipping Information</a>
+                              <a style="font-size: 16px;font-weight:normal;" href="javascript:removeSelectedReceiptMethod()">Remove Shipping Information</a>
+                          </h3>
+                          <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;margin-bottom: 10px;" id="receipt_info_table">
+                              <thead>
+                                <tr>
+                                  <th><input type="checkbox" class="asbox" type="checkbox" style="top:7px"><span style="top:3px"></span></th>
+                                  <th>Shipping Address</th>
+                                  <th>Recipient</th>
+                                  <th>Contact</th>
+                                  <th style="min-width:70px">Action</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                  $receiptHtml
+                              </tbody>
+                          </table>
+                          <h3 style="margin:10px 0 0 0;">Ship From Information&nbsp;<a style="font-size: 16px;font-weight:normal;" href="javascript:showUpdateSentInfo();">$sentH3Button</a></h3>
+                          <p class="r" id="dlv_name">Name: <font color="#454545">$sentName</font></p>
+                          <p class="r" id="dlv_pn">Phone Number: <font color="#454545">$sentTele</font></p>
+                          <p class="r" id="dlv_adrs">Ship From Address: <font color="#454545">$sentAddress</font></p>
+                          <p class="r" id="dlv_sch_allow">Ship From School: <font color="#454545">$sentSch</font></p>
+                          <p class="r" id="dlv_sch">School Address: <font color="#454545">$sentSchAddr</font></p>
+                          <p class="r" id="dlv_sdays">7-Day Return Supported: <font color="#454545">$sent7days</font></p>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;">
+                      <div class="rinnerCon">
+                          <h3>Security</h3>
+                          <p class="r">DeBook ID: <font color="#454545">$usr_usrid</font></p>
+                          <p class="r" id="label_email">Email: <font color="#454545">$usr_email</font><a class="btn" href="javascript:showUpdateEmail();">Edit</a></p>
+                          <div class="r" id="nickname">Nickname: <font color="#454545">$usr_nickname</font>
+                            <div class="asbox_con" style="float:none;width:150px;display:none;margin-bottom: -4px;">
+                              <input class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="Nickname">
+                            </div>
+                            <a class="btn" style="display:none;margin-left: 5px;">Cancel</a>
+                            <a class="btn" onclick="showUpdateNickname()">OK</a>
+                          </div>
+                          <h3 style="position:relative;float:left;margin-top:10px;width: 100%;">Danger Zone</h3>
+                          <p class="r">Sign-In Password: <font color="#454545">*</font> <a class="btn" onclick="showUpdatePassword0()">Change</a></p>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;">
+                      <div class="rinnerCon" id='trsinfo'>
+                          <h3>Payment and Payout</h3>
+                          <p class="r">Payment and Payout Password: <font color="#454545">*</font> <a class="btn" onclick="showUpdatePassword1()">$paypwd</a></p>
+                          <p class="r">DeCoins Remaining&nbsp;<a circle-border tips="DeCoins can be used to redeem books sold by official DeBook account" onmouseover="showTooltip(this,true)" onmouseleave="hideTooltip()">?</a>: <font color="#454545" style="font-family: consolas;">$coins</font><a class="btn" href='javascript:focusSearch();'>Redeem a book</a></p>
+                          <h3 style="position:relative;float:left;margin:12px 0 6px;width: 100%;">DeCoins Flow Record</h3>
+                          <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;margin-bottom: 5px;" id="transaction_table">
+                            <thead>
+                              <tr>
+                                <th><input type="checkbox" class="asbox" style="top:11px" onclick="edSelectAll(this)"><span style="top:3px"></span></th>
+                                <th style="width:32%">*</th>
+                                <th>Type</th>
+                                <th>DeCoins</th>
+                                <th>Date</th>
+                                <th style="width:20%">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              $transHtml
+                            </tbody>
+                        </table>
+                        <div class="line" style="margin: 0 0 10px 0;">
+                          $transPageHtml
+                        </div>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;">
+                      <div class="rinnerCon">
+                          <h3>My Listing</h3>
+                          <div class="rcon" style="display: block;background-image: -webkit-linear-gradient(45deg,#3949ab,#303f9f);height: 96px;">
+                            <div class="rinnerCon">
+                              <h3 style="position:relative;float:left;width: 100%;color: white;margin-bottom: 10px;">My Reviews</h3>
+                              <div>
+                                $aplHtml
+                              </div>
+                            </div>
+                          </div>
+                          <h3>Listings
+                              <a style="font-size: 16px;font-weight:normal;" href="javascript:searchSell();">Sell a book</a>
+                              <a style="font-size: 16px;font-weight:normal;" href="javascript:deleteAplSelect();">Remove selected items</a>
+                          </h3>
+                          <table class="tb" id="apply_table" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;margin-bottom: 20px;" id="apply_item_table">
+                              <thead>
+                                <tr>
+                                  <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                  <th>Book</th>
+                                  <th>Publisher</th>
+                                  <th>Language</th>
+                                  <th>Price</th>
+                                  <th>Status</th>
+                                  <th>Action</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                $aplTableHtml
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+                  <div class="rcon" style="display: none;">
+                      <div class="rinnerCon">
+                          <h3>Entry Editing</h3>
+                          <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;margin-bottom: 20px;" id="contribution_table">
+                            <thead>
+                              <tr>
+                                <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                <th style="width:32%">Entry</th>
+                                <th>Date</a></th>
+                                <th>Status</a></th>
+                                <th style="width:20%">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              $conHtml
+                            </tbody>
+                          </table>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+      USER;
+    }
+
+    if(!isset($home)){
+      writeUsrPage();
+    }
+?>

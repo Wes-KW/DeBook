@@ -1,0 +1,233 @@
+div.rcon>div.innercon {
+    width: 92%;
+    margin: 0px 4%;
+    padding: 30px 0px;
+    height: auto;
+}
+
+a.extraAur{
+    margin-right: 8px;
+}
+
+div.pleft{
+    position:relative;
+    float:left;
+    min-width:100px;
+    width:23%;
+    margin-top:10px;
+}
+
+div.pleft>div{
+    position:relative;
+    float:left;
+    width: 100%;
+}
+
+div.pright{
+    position:relative;
+    float:right;
+    margin:0px;
+    width:72%;
+}
+
+div.pright>div{
+    position:relative;
+    float:left;
+    width: 100%;
+}
+
+div.headBox{
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+div.headBox img{
+    position:relative;
+    float:left;
+    width:100%;
+}
+
+div.detail{
+    position:relative;
+    float:left;
+    width:100%;
+}
+
+div.detail>*{
+    position: relative;
+    float:left;
+}
+
+div.detail[whiteboard]{
+    background-color: white;
+    border: 1px solid #c4c4c4;
+}
+
+div.whiteboard{
+    position:relative;
+    float:left;
+    width:98%;
+    margin:4px 1%;
+}
+
+div.row{
+    position:relative;
+    float:left;
+    width:100%;
+    margin-bottom: 0px;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: left;
+}
+
+div.row[hidtext]{
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 8;
+    overflow: hidden;
+}
+
+div.row[scroll-row]{
+    overflow-y:hidden;
+    overflow-x:auto;
+    white-space: nowrap;
+    text-align: left;
+    margin-bottom:20px;
+}
+
+div.row>div.row[scroll-row]:last-child{
+    margin-bottom: 0;
+}
+
+div.row[scroll-row]>div[col]{
+    position:relative;
+    display: inline-block;
+    height:auto;
+    width:auto;
+}
+
+div.row>h3{
+    font-size: 28px;
+    text-align: left;
+    margin-bottom:10px;
+}
+
+div.row>h4{
+    font-size: 24px;
+    text-align: left;
+    margin-bottom:10px;
+}
+
+div.row[scroll-row]>div.bokinfo[col]{
+    margin-top: 2px;
+    width:120px;
+    height:auto;
+    margin-right: 24px;
+    overflow:hidden;
+}
+
+div.row[scroll-row]>div.bokinfo[col]:last-child{
+    margin-right: 4px;
+}
+
+p[bok-title]{
+    font-size:16px;
+    font-style:italic;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+font[lang]{
+    font-size:16px;
+    font-style: normal;
+    color:#757575;
+}
+
+div.price{
+    font-size:16px;
+    color:black;
+    font-weight: bold;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+div.bokinfo>a>img{
+    width:100%;
+    box-shadow:0px 1px 3px 0px #bdbdbd;
+}
+
+*[hidtext]{
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+a[extraAur]{
+    margin-right: 5px;
+}
+
+/*edit*/
+div.asbox_con[edit]{
+    margin-bottom: 10px;
+}
+
+p[title]{
+    background-color: #eeeeee;
+}
+
+textarea{
+    font-family: "Times New Roman";
+    letter-spacing: 0.5px;
+    font-size: 17px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+a[edit]{
+    transition: all 0.2s ease 0s;;
+}
+
+a[edit]:hover{
+    filter: contrast(0.8);
+}
+div.asboxList_con>ul{
+    position:relative;
+    float:left;
+    width:100%;
+    padding-left: 0px;
+    overflow: hidden;
+}
+
+div.asboxList_con>ul>li{
+    position:relative;
+    float:left;
+    width: 100%;
+    font-size:17px;
+    padding:1px 6px 2px 6px;
+    list-style-type: none;
+    color:#454545;
+    user-select: none;
+    cursor:pointer;
+}
+
+div.asboxList_con>ul>li:hover,li[selected]{
+    text-decoration: underline;
+    color:#333;
+    background-color: #dbdbdb;
+}
+
+p.loss_title{
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color:#333;
+}
+
+p.loss_detail{
+    margin-top: 15px;
+    font-size: 16px;
+    color:#454545;
+}
+
+#author_books{
+    transition:all 0.2s ease 0s;
+}

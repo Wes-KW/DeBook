@@ -1,0 +1,594 @@
+<?php
+    include_once ".phtml/vrfylogin.php";
+    include_once ".phtml/search.php";
+    
+    function JSJudge($aplbookid){
+        $usr = getPhpUser();
+        if($usr==null){
+            requireLogin();
+            return;
+        }
+        if($aplbookid==""){
+            funcFail();
+        }else{
+            if(bookExist($aplbookid)==1){
+                //detect user sender's address
+                $reDeliverInfo = true;
+                $usrdi = $usr["deliver_info"];
+                if($usrdi!=""){
+                    $arr = decodeInfo($usrdi);
+                    $c = 0;
+                    foreach($arr as $key=>$value){
+                        if($c>2) break;
+                        if($arr[$key]==""){
+                            $reDeliverInfo = false;
+                            break;
+                        }
+                        $c++;
+                    }
+                }
+                if(!$reDeliverInfo||$usrdi==""){
+                    requireDeliverInfo();
+                }else{
+                    startSupply($aplbookid);
+                }
+            }else{
+                funcFail();
+            }
+        }
+    }
+
+    function startSupply($aplbookid){
+        $usr = getPhpUser();
+        $step = "0";
+        $e = "";
+        $f = "disabled";
+        if($usr["noSellTermMsg"]==1){
+            $a = "normal";
+            $b = "bold";
+            $c = "none";
+            $d = "block";
+            $e = "checked";
+            $f = "";
+            $step = "1";
+        }else{
+            $a = "bold";
+            $b = "normal";
+            $c = "block";
+            $d = "none";
+        }
+        $bookname = "";
+        $authornameRaw = "";
+        $authorname = "";
+        $res = exeSql("SELECT names,authorid FROM bokinfo WHERE bookid='$aplbookid'");
+        while($row=mysqli_fetch_array($res,MYSQLI_ASSOC)){
+            $bookname = rawurldecode($row["names"]);
+            $authornameRaw = rawurldecode($row["authorid"]);
+            break;
+        }
+        $authornameArr = explode(":",$authornameRaw);
+        for($i=0;$i<sizeof($authornameArr);$i++){
+            $split_name = $authornameArr[$i];
+            if($split_name!=""){
+                if(strpos($split_name,"id_")!==false){
+                    $aurid = substr($split_name,3);
+                    $res2 = exeSql("SELECT names FROM aurinfo WHERE aurid='$aurid'");
+                    while($row=mysqli_fetch_array($res2,MYSQLI_ASSOC)){
+                        $authorname .= rawurldecode($row["names"]).";";
+                        break;
+                    }
+                }else{
+                    $authorname .= rawurldecode($split_name).";";
+                }
+            }
+        }
+        echo <<<PAGELOGIN
+        <div class="dcon" style="margin-top: 15px;">
+            <div class="scon" id="continue">
+                <div class="scon">
+                    <div class="pleft">
+                        <div class="list_con">
+                            <h4>List an item</h4>
+                            <ul id="applymenu">
+                                <li style="font-weight:$a"><a href="javascript:;">Selling Terms</a></li>
+                                <li style="font-weight:$b"><a href="javascript:;">Complete Item Information</a></li>
+                                <li><a href="javascript:;">Track the item quality</a></li>
+                                <li><a href="javascript:;">Upload photos of your item</a></li>
+                                <li><a href="javascript:;">Verify all the information</a></li>
+                                <li><a href="javascript:;">Finalizing</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="pright" step="$step" id="applycon">
+                        <div class="rcon" style="display:$c">
+                            <div class="rinnerCon">
+                                <h3 style="margin-bottom: 10px;">Selling Agreement</h3>
+                                <div class="textarea" style="margin-bottom: 8px;" id="termsBox">
+                                    <p>
+                                        English<br/>
+                                        <br/>
+                                        DeBook - Used Book Store<br/>
+                                        DeBook Selling Terms<br/>
+                                        For use when using DeBook for selling<br/>
+                                        <br/>
+                                        <u>Please read the DeBook Selling Terms carefully before using DeBook to sell books. Once you use DeBook for selling, you agree to be bound by all the terms of this clause. If you do not agree to the DeBook Selling Terms, please do not continue to use DeBook to sell, and (if there is a choice of "agree" or "disagree" terms) click the "disagree" button. </u><br/>
+                                        <br/>
+                                        <u>1. Book quality. </u><br/>
+                                        A. Before listing, all supply information (including book name, author (translation), publisher, language version, original price of the book, ISBN, total number of pages of the book) must be consistent with the real information of the book to be provided. All pictures required to be provided (including cover, back and sample pictures) must be true pictures of the original book. If the listing information does not match with the actual book, the buyer has the right to complain about the quality of the merchant's books, which will lead to a decrease in the merchant's integrity, and DeBook has the right to block the user's ability to sell. For detailed blocking regulations, please see the <a xhr href="?help/seller/selling_blocking">Merchant Selling Blocking Terms</a>. <br/>
+                                        <br/>
+                                        B. After the book is applied for, you need to ensure that the book will not be used, damaged, discarded, sold or donated to any buyer who is not on the DeBook platform. The book must be kept intact until a buyer is willing to purchase the product. If the book is used, damaged, discarded, sold or donated to any buyer who is not on the DeBook platform, the user needs to delete the supply information on DeBook in a timely manner. If it is not deleted in time, the buyer has the right to complain to the merchant for not reporting that the goods are out of stock, and the <a xhr href="?help/seller/honesty">merchant's integrity</a> will be reduced. <br/>
+                                        <br/>
+                                        <u>2. Payment, price and shipping. </u><br/>
+                                        A. DeBook supports DeCoins (DeCoins are coupons on the DeBook platform, please see <a xhr href="?help/payment/decoins">DeCoins Points Usage Rules</a> for details), <a xhr href="?help/payment/other_pay#wechatpay">WeChat Pay</a> and <a xhr href="?help/payment/other_pay#alipay">Alipay. Before using any non-DeCoins points method to receive payment, you must ensure that the product meets all <a xhr href="?help/payment/transaction_rule">second-hand book transaction conditions</a> and ensure that the buyer can contact you. (For example, before using WeChat Pay to receive payment, please ensure that the buyer can add WeChat via phone number). You will be responsible for any losses caused by your failure to contact the buyer. <br/>
+                                        <br/>
+                                        B. If you have any questions about the evaluation criteria when filling in "Verify Book Quality", you can refer to <a xhr href="?help/apply/book_standard">DeBook Second-hand Book Quality Evaluation Form</a>. After filling in the information for "Verify Book Quality", DeBook will provide you with the suggested selling price of the book truthfully (provided that the book information is true). You must ensure that the selling price of the second-hand book is less than 30% different from the suggested selling price. You are responsible for any situation where the book cannot be sold due to excessively high or low prices. Please contact the buyer to confirm which party will bear the shipping cost of the book. <br/>
+                                        <br/>
+                                        <u>3. Payment, Shipping and Refund</u><br/>
+                                        A. After the book is purchased by the user, the payment must be collected according to the payment method specified by the buyer. After the buyer selects to purchase the specified book, your book will be locked and cannot be purchased by any other buyer of the selected book unless the buyer actively cancels the order. <br/>
+                                        <br/>
+                                        B. After being informed that the buyer has paid for the book, please (<a xhr href="?help/payment/check_pay">check that the buyer's payment has been received</a>), otherwise do not ship the book. If it is confirmed that the buyer has shipped the book, you need to obtain the DeBook unique identification code as soon as possible and ship the book. When shipping, please be sure to write the DeBook unique identification code on a piece of paper and clip it between the pages of the book. Any error in the identification code (intentional or unintentional) or the lack of the identification code in the book (unless the identification code is lost during express delivery) will cause the <a xhr href="?help/seller/honesty">merchant integrity</a> to decline. Please be sure to provide true and accurate shipping information when contacting. Any error in the information (intentional or unintentional) will cause the <a xhr href="?help/seller/honesty">merchant integrity</a> to lose, unless the book is out of stock. The buyer has the right to know the waybill number of the goods shipped, the right to confirm the authenticity of the order, and the buyer has the right to complain to the seller. After confirming receipt, the buyer is not required to evaluate the book. You have no right to force users to rate products. <br/>
+                                        <br/>
+                                        C. You can choose to accept <a xhr href="?help/order/7_days_return">7-day unconditional return</a>. Any books you sell on DeBook may be returned by the buyer for a refund. Please contact the buyer to confirm which party will bear the shipping costs of the books. Before accepting the return, you need to ask the buyer to send real photos of the books before the refund. If you do not ask Ma Jia to send real photos of the books before the refund, you will have to bear the consequences. Do not refund before receiving the returned goods from the buyer (unless you believe that the buyer has privately destroyed the goods and provide evidence of the buyer's destruction of the goods). After the buyer returns the goods, you need to refund within 24 hours after the goods are sent back. If you do not refund in time, the buyer has the right to complain to the seller, and it may affect the merchant's integrity. For details, please see <a xhr href="?help/order/return_payment">Return and Refund Rules</a>. <br/>
+                                        <br/>
+                                        D. If you and the buyer confirm that the goods have not been maliciously damaged by any party (including but not limited to tearing, discarding, soaking), and confirm that the goods have been damaged during transportation, DeBook platform will not bear any responsibility. Please contact the buyer and file a complaint with the corresponding courier company. <br/>
+                                        <br/>
+                                        If you have more questions, please check <a xhr href="?help/order/">Order Help</a> and <a xhre href="?help/payment">Payment Help</a>. Thank you for your support of DeBook platform.
+                                    </p>
+                                </div>
+                                <form style="margin-bottom:16px" onsubmit="return false">
+                                    <div class="asbox_con" style="width:120px;text-align: left;">
+                                        <input type="checkbox" id="check0" class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" style="height:100%" $e>
+                                        <span style="top:2px"></span>
+                                        <button a="" type="button" style="padding:0px" onclick="this.parentElement.children[0].checked=!this.parentElement.children[0].checked">以后不再提示</button>
+                                    </div>
+                                    <div style="position:relative;float:left;width:100%;margin-bottom:8px;"></div>
+                                    <button class="asbox_submit" cancel id="cancel0"><span>Disagree</span></button>
+                                    <button class="asbox_submit" id="submit0" $f><span>Agree</span></button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="rcon" style="display: $d;">
+                            <div class="rinnerCon">
+                                <h3 style="margin-bottom:0">Complete Item Information</h3>
+                                <p style="color:#0366d6">Fields marked with "*" are required</p>
+                            </div>
+                            <div class="rinnerCon">
+                                <form onsubmit="return false;">
+                                    <div class="asbox_con" edit>
+                                        <p>&nbsp;Title*&nbsp;<a href="javascript:searchSell();">Change</a></p>
+                                        <input class="asbox" placeholder="Title" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" readonly value="$bookname">
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p>&nbsp;Author&nbsp;<font style="color:#202122;font-weight:lighter">(Auto)</font></p>
+                                        <input class="asbox" placeholder="Author" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" readonly value="$authorname">
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p>&nbsp;Translator&nbsp;<u>Use ';' to separate between multiple translators</u></p>
+                                        <input class="asbox" placeholder="Translator" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" name="translator">
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p>&nbsp;Publisher*</p>
+                                        <input class="asbox" placeholder="Publisher" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" name="publish">
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p style="float:left;line-height:21px;">&nbsp;ISBN-10/13&nbsp;</p><div circle-border tips="&lt;div style='text-align:center'&gt;&lt;img style='margin: 5px auto 0px auto;width: 180px;padding: 2px 5px;image-rendering: pixelated;background:#fff;' src='Image/src/barcode.gif'&gt;&lt;p&gt;ISBN一般位于书本的背面下方&lt;/p&gt;&lt;/div&gt;" onmouseover="showTooltip(this,true)" onmouseleave="hideTooltip()">?</div>&nbsp;<a xhr href="?help/book/isbn">What is ISBN?</a>
+                                        <input class="asbox" type="number" placeholder="ISBN" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" name="isbn">
+                                    </div>
+                                    <div class="asbox_con" edit>
+                                        <p style="position:relative;float:left;">&nbsp;Language*&nbsp;</p><div circle-border tips="Example:&lt;p&gt;Simplified Chinese&lt;br/&gt;Traditional Chinese&lt;br/&gt;English&lt;/p&gt;" onmouseover="showTooltip(this,true)" onmouseleave="hideTooltip()">?</div><p>&nbsp;<u>Use ';' to separate multiple languages/u></p>
+                                        <input class="asbox" placeholder="Language" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" name="lang"">
+                                    </div>
+                                    <div class="detail">
+                                        <button class="asbox_submit" cancel id="cancel1"><span>Back</span></button>
+                                        <button class="asbox_submit" id="submit1"><span>Next</span></button>
+                                        <button class="asbox_submit" cancel button-type="cancel"><span>Cancel</span></button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="rcon" style="display: none;">
+                            <div class="rinnerCon">
+                                <h3 style="margin-bottom:0">Track the item quality</h3>
+                                <p>Complete the following to help estimate the price</p>
+                                <div class="progressBar">
+                                    <div class="progressInner" style="width:0%">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rinnerCon" h>
+                                <div horizontal style="left:0%;" id="slider">
+                                    <div style="opacity:1">
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;Which type of book is it?</p>
+                                            <div class="radioCon" name="bookType">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookType" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>Hardcover</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookType" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>Paperback</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookType" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>Thread-bound books</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookType" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>Other</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npPage(-1)" cancel><span>Back</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>Cancel</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;Is there any discoloration on the cover, spine, and back of the book?</p>
+                                            <div class="radioCon" name="bookCoverColor">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookCoverColor" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>Not at all</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookCoverColor" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>A little</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookCoverColor" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>Quite a bit</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookCoverColor" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>A lot</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>Back</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>Cancel</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;Are there any pages torn out in whole or in part?</p>
+                                            <div class="radioCon" name="bookPageMiss">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageMiss" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>No</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageMiss" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>3 pages or less are missing or damaged</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageMiss" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>More than 3 pages but less than 10 pages are missing or damaged</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageMiss" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>More than 10 pages are missing or damaged</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>Back</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>Cancel</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;Does the book have any wrinkles or creases (including folded corners)?</p>
+                                            <div class="radioCon" name="bookPageWrinkle">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageWrinkle" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>No wrinkles or creases</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageWrinkle" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>10 pages or less with wrinkles or creases</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageWrinkle" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>More than 10 pages, 25 pages or less with wrinkles or creases</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageWrinkle" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>More than 25 pages have wrinkles or creases</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>Back</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>Cancel</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;Is the book paper yellowing?</p>
+                                            <div class="radioCon" name="bookPageYellow">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageYellow" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>No</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageYellow" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>Slightly</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageYellow" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>Quite a bit</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageYellow" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>A lot</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>上一步</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>取消</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;Is there any additional writing on the book pages (including notes, drawings, etc.)?</p>
+                                            <div class="radioCon" name="bookPageNote">
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageNote" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>No</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageNote" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>There are only neat notes or drawings in the book, which do not affect reading.</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageNote" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>Apart from notes or drawings, there are no traces of irrelevant drawings in the book.</p>
+                                                </a>
+                                                <a class="radioBox" href="javascript:;" onclick="selectRadio(this)">
+                                                    <input class="asbox" type="radio" name="bookPageNote" onclick="selectRadio(this.parentElement)">
+                                                    <span></span>
+                                                    <p>There are a lot of irrelevant drawings in the book</p>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>Back</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>Cancel</span></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p>Please fill in the number of pages and the &nbsp;<a xhr="" href="?help/apply/price">reference price</a></p>
+                                        <div class="asbox_con" edit style="margin-bottom: 8px;">
+                                            <p>&nbsp;Page Number*</p>
+                                            <input class="asbox" placeholder="Page Number" type="number" min="5" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" pattern="[0-9]*" id="bookPageNum" name="page">
+                                        </div>
+                                        <div class="asbox_con" edit>
+                                            <p>&nbsp;<a xhr href="?help/apply/price">Reference Price</a>*</p>
+                                            <input class="asbox" placeholder="Reference Price" type="number" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="bookPrice" name="retail_price">
+                                        </div>
+                                        <p style="margin-bottom:0"><a xhr href="?help/apply/price#no_price_found">Can't find reference price?</a></p>
+                                        <div class="detail" style="margin-top:5px">
+                                            <button class="asbox_submit" onclick="npSlide('-1')" cancel><span>Back</span></button>
+                                            <button class="asbox_submit" onclick="vrfy()"><span>Next</span></button>
+                                            <button class="asbox_submit" cancel button-type="cancel"><span>Cancel</span></button>
+                                        </div>
+                                    </div>
+                                </div>  
+                            </div>
+                            <style>
+                                div[circle-border]{
+                                    position:relative;
+                                    float:left;
+                                    margin:3px 2px 1px 0;
+                                    width:14px;
+                                    height:14px;
+                                    text-align:center;
+                                    font-size:smaller;
+                                    border-radius: 50%;
+                                    background-color:#0366d6;
+                                    color:white;
+                                    font-weight: bold;
+                                    cursor:pointer;
+                                }
+                            </style>
+                        </div>
+                        <!--js: after verifying the price a suggested price should be given-->
+                        <div class="rcon" style="display: none;">
+                            <div class="rinnerCon">
+                                <h3>Upload photos of your item</h3>
+                                <p style="color:#311031" id="pageNum"></p>
+                            </div>
+                            <div class="rinnerCon" upload id="pageUploaders">
+                            </div>
+                            <div class="rinnerCon">
+                                <div class="detail" style="margin-bottom: 20px;">
+                                    <button class="asbox_submit" cancel onclick="npPage(-1)"><span>Back</span></button>
+                                    <button class="asbox_submit" onclick="vrfyPic()"><span>Next</span></button>
+                                    <button class="asbox_submit" cancel button-type="cancel"><span>Cancel</span></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rcon" style="display: none;">
+                            <div class="rinnerCon">
+                                <h3 style="margin-bottom: 0px;">Verify all the information</h3>
+                                <p>Please check your information</p>
+                            </div>
+                            <div class="rinnerCon">
+                                <table class="confirm">
+                                    <thead>
+                                        <th>Property</th>
+                                        <th>Value</th>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2" g>Basic Information</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Title*&nbsp;<a href="javascript:searchSell();">Change</a></td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="Title" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" readonly value="$bookname"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Author&nbsp;<font style="color:#202122;font-weight:lighter">(Auto)</font></td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="Author" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" readonly value="$authorname"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Translator</td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="Translator" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" name="translator"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Publisher*</td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="Publisher" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" name="publish"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>ISBN-10/13</td>
+                                            <td><div class="asbox_con"><input class="asbox" type="nunmber" placeholder="ISBN" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" name="isbn"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Language*</td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="Language" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" name="lang"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Page Number*</td>
+                                            <td><div class="asbox_con"><input class="asbox" placeholder="Page Number" type="number" min="5" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" pattern="[0-9]*" readonly name="page"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" g>Quality and Price&nbsp;<a href="javascript:reverifyqua();">Estimate Price Again</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Quality</td>
+                                            <td><div class="asbox_con"><input class="asbox" name="quality" placeholder="Quality" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" readonly></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Reference Price</td>
+                                            <td><div class="asbox_con"><input class="asbox" type="number" placeholder="Reference Price" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" readonly name="retail_price"></div></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sales Price</td>
+                                            <td><div class="asbox_con"><input class="asbox" type="number" placeholder="Sales Price" onfocus="boxstyle(this.parentElement,1);" onblur="boxstyle(this.parentElement,0);" readonly name="final_price"></div></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div class="detail" style="margin-bottom: 15px;">
+                                    <button class="asbox_submit" cancel onclick="npPage(-1)"><span>Back</span></button>
+                                    <button class="asbox_submit" id="submit1" onclick="finish()"><span>Done</span></button>
+                                    <button class="asbox_submit" cancel button-type="cancel"><span>Cancel</span></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rcon" style="display: none;">
+                            <div class="rinnerCon">
+                                <h3 style="margin-bottom: 5px;">Listing Complete</h3>
+                                <div class="cbox">
+                                    <div class="icon" style="background-image:url('Image/fatcow/accept_button.png')"></div>
+                                    <div class="text">
+                                        <h4 style="font-size:18px;font-weight: normal;margin-bottom: 2px">Your item has been listed</h4>
+                                        <p>Congratulation ‘<i id='bookNameBox'>$bookname</i>’ has been listed.<br/>Thank you for your support to DeBook</p>
+                                    </div>
+                                </div>
+                                <ul class="cbox">
+                                    <li><p><a xhr href="" id="lastAddressBox">Click here</a>&nbsp;to list a similar item.</p></li>
+                                    <li><p><a href="javascript:searchSell();">Click here</a>&nbsp;for a different item.</p></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p id="page_title">DeBook - Selling</p>
+        </div>
+        PAGELOGIN;
+        return;
+    }
+
+    function requireDeliverInfo(){
+        echo <<<PAGERECEIPT
+        <div class="dcon" style="margin-top: 15px;">
+            <div class="scon">
+                <div class="rcon" style="display: block;">
+                    <div class="rinnerCon">
+                        <h3 style="margin-bottom: 5px;">Fill in your information to list your item</h3>
+                        <p>You would need to fill in <a xhr href="?account#dlv_settings">seller's infromation</a>&nbsp;to continue</p>
+                        <p><a target="_new" href="?account#dlv_settings">Click here to access your account&nbsp;</a>find&nbsp;<b>Ship from Address</b>&nbsp;from&nbsp;<b>addresses</b>, and click add address</p>
+                        <p>Please check if you have fill in the following information</p>
+                        <ul style="padding-left:20px;margin:5px 0">
+                            <li>Name</li>
+                            <li>Telephone</li>
+                            <li>Ship from Address</li>
+                        </ul>
+                        <p>Get back here after completing the required information</p>
+                    </div>
+                </div>
+            </div>
+            <p id="page_title">DeBook - Selling</p>
+        </div>
+        PAGERECEIPT;
+        return;
+    }
+
+    function funcFail(){
+        echo <<<PAGESELECT
+        <div class="dcon" style="margin-top: 15px;">
+            <div class="scon">
+                <div class="rcon" style="display: block;">
+                    <div class="rinnerCon">
+                        <h3 style="margin-bottom: 5px;">Select a book to continue</h3>
+                        <p>Select a book you wish to sell, and continue</p>
+                        <p>Can't select?&nbsp;<a href="javascript:searchSell();">click here</a>, enter keyword and select a book you wish to sell</p>
+                    </div>
+                </div>
+            </div>
+            <p id="page_title">DeBook - Selling</p>
+        </div>
+        PAGESELECT;
+        return;
+    }
+
+    function requireLogin(){
+        $aplbookid = getArray($_POST,"aplKey");
+        echo <<<PAGELOGIN
+        <div class="dcon" style="margin-top: 15px;">
+            <div class="scon">
+                <div class="rcon" style="display: block;">
+                    <div class="rinnerCon">
+                        <h3 style="margin-bottom: 5px;">Signing in is required to sell a book</h3>
+                        <p><a xhr href="?account#continue=?apply/$aplbookid">Sign in</a> to sell a book</p>
+                    </div>
+                </div>
+            </div>
+            <p id="page_title">DeBook - Selling</p>
+        </div>
+        PAGELOGIN;
+        return;
+    }
+
+    if(!isset($home)){
+        JSJudge(getArray($_POST,"aplKey"));
+    }
+?>

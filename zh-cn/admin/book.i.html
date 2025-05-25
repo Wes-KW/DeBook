@@ -1,0 +1,110 @@
+<?php
+    include "../.phtml/admin.php";
+    $condata = getcon(getArray($_POST,"id"));
+    $data = (array) json_decode($condata["object"]);
+    $data = decodeTextInArr($data);
+?>
+
+<?php
+//preparing images
+$o = explode(":",$data["images"]);
+$image_str = "";
+$randAddr = $o[0];
+$editText = isset($data["editId"])?"编辑书籍":"添加书籍";
+for($i=0;$i<sizeof($o)-1;$i++){
+    $jpg = urldecode(base64_decode($o[$i+1]));
+    $image_str .= "<a edit title=\"书籍图像\"><img src=\"../Image/tmp/$randAddr/$jpg\" alt=\"book_name_picture\"></a>";
+}
+$bigImage_str = "";
+if($o[0]!=""){
+    $o[1] = urldecode(base64_decode($o[1]));
+    $bigImage_str = "<div class=\"_image\"><a edit title=\"书籍图像\" style=\"float:none\"><img src=\"../Image/tmp/$o[0]/$o[1]\" alt=\"book_name_picture\"></a><div class=\"line\"></div><a style=\"color:#999;float:left\">书籍图像</a></div>";
+}else{
+    $bigImage_str = "<div class=\"_image\"><a style=\"color:#999;float:left\">申请者没有上传任何图像</a><div class=\"line\"></div></div>";
+}
+//preparing all the data
+$bn = $data["book_name"];
+$ln = $data["book_label"]==""?"(空)":$data["book_label"];
+$an = $data["author_name"];
+$cn = $data["contents"];
+$si = $data["searchIndex"]==""?"(空)":$data["searchIndex"];
+$usr = decodeInfo($condata["contributor"]);
+$email = $usr["email"]=="!"||$usr["email"]==""?"(匿名)":$usr["email"];
+$ip = $condata["ip"];
+$date = getLongDate($condata["date"]);
+$object = $condata["object"];
+$btn = $condata["status"]==0?'<button class="asbox_submit" id="but_continue"><span>继续</span></button><button class="asbox_submit" shallow id="but_ignore"><span>忽略</span></button><button class="asbox_submit" shallow id="but_cancel"><span>取消</span></button>':'<button class="asbox_submit" shallow id="but_cancel"><span>取消</span></button>';
+echo <<<PAGE
+        <div class="dcon" style="margin-top: 15px;" id="editBoard">
+            <div class="scon">
+                <div class="pleft">
+                    $bigImage_str
+                    <div class="_all_image">
+                        <div class="_images_con">
+                            $image_str
+                        </div>
+                        <a style="color:#999">书籍图像</a>
+                    </div>
+                </div>
+                <div class="pright">
+                    <div class="title">
+                        <div class="asbox_con" edit>
+                            <p title>&nbsp;书本名称*</p>
+                            <input class="asbox" placeholder="书本名称" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="book_name" value="$bn">
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p title>&nbsp;书本标签&nbsp;<a xhr href="../?search/label/all">所有标签</a></p>
+                            <input class="asbox" placeholder="书本标签" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="label_id" value="$ln">
+                        </div>
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;作者名称*</p>
+                            <input class="asbox" placeholder="作者名称" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="author_name" value="$an">
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="detail">
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;书本概要*&nbsp;<a>建议200字或以上</a></p>
+                            <textarea class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" id="contents">$cn</textarea>
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="detail">
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;搜索索引&nbsp;<a xhr href="../?help/search_index">这是什么？</a></p>
+                            <input class="asbox" placeholder="搜索索引" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="search_index" value="$si">
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                        <p style="margin-bottom: 5px;"><b>已下为用户提交的数据</b></p>
+                        <div class="detail">
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;申请者邮箱</p>
+                            <div class="asbox">$email</div>
+                            <!--请求可以属于添加或修改-->
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;用户IP</p>
+                            <div class="asbox">$ip</div>
+                            <!--请求可以属于添加或修改-->
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;请求时间</p>
+                            <div class="asbox">$date</div>
+                            <!--请求可以属于添加或修改-->
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;此次请求属于以下行为</p>
+                            <div class="asbox">$editText</div>
+                            <!--请求可以属于添加或修改-->
+                        </div>
+                    </div>
+                    <div class="line" style="margin:5px 0 15px 0;"></div>
+                    <div class="detail" style="margin-bottom: 20px;">
+                        $btn
+                    </div>
+                </div>
+            </div>
+        </div>
+PAGE;
+?>

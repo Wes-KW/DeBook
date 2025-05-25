@@ -1,0 +1,15 @@
+<?php
+	include_once 'email.php';
+	include_once 'more/mode.php';
+	
+	$emailKey = getArray($_POST,"emailKey");
+	if($emailKey=="go"){
+		$mail = getArray($_POST,"MAIL");
+		$Body = getArray($_POST,"HTML");
+		$AltBody = getArray($_POST,"ALT");
+		$Rcname = $mail;
+		$Receiver = $mail;
+		$Subject = getArray($_POST,"SUBJECT");
+		echo sendEmail($Receiver,$Rcname,$Subject,$Body,$AltBody);
+	}
+?>

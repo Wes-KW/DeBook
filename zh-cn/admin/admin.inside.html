@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html>
+    <?php
+        date_default_timezone_set("Asia/Shanghai");
+        session_start();
+
+        function decodeText($text){
+            return urldecode(base64_decode($text));
+        }
+
+        function decodeInfo2($json){
+            return (array)json_decode(rawurldecode(base64_decode($json)));
+        }
+    ?>
+
+    <body>
+        <?php
+            include "../.phtml/more/echoSql.phtml";
+            include "../.phtml/more/readDir.phtml";
+            ob_start();
+            $isk = "onclick='edSelect(this.parentElement.children[0].children[0],1)'";
+            function getLongDate($myDateInt){
+                return date("Y-m-d H:i:s",(int)$myDateInt);
+            }
+        ?>
+        <div class="MsgBox" style="top:-100%;"><div class="middle_area"></div></div>
+        <div class="MsgBox" style="top:-100%;"><div class="middle_area"></div></div>
+        <div class="waitDiv">
+            <a>
+                <span class="wait" style="width:23px;"></span>
+                正在处理请求
+            </a>
+        </div>
+        <div id="sectionCon" style="height:100%">
+            <div class="con" style="margin-top: 25px">
+                <p class="menu" style="position:relative;float:left;">操作 | 
+                    <a href="javascript:exit();">登出</a> | <a href="../">回到主页</a>
+                </p>
+                <div id="box" style="height:8px;border-radius: 4px;display: none;">
+                    <p style="font-size:10px">上传中:&nbsp;</p>
+                    <div progress-bar style="width:200px"><div style="width:100%"></div></div>
+                </div>
+            </div>
+            <div class="section" style="height:100%">
+                <div class="rcon">
+                    <div class="pcon">
+                        <h2>管理DeBook二手书市场</h2>
+                        <h4><a style="font-family: consolas;">admin@debook.nawaski.com</a></h4>
+                    </div>
+                    <div class="dcon" style="padding-top:0;" id="adminCon">
+                        <div class="vcon">
+                            <div class="tabBar">
+                                <div class="tab" onclick="adminSel(0)" selected><span>用户反馈</span></div>
+                                <div class="tab" onclick="adminSel(1)"><span>编辑审核</span></div>
+                                <div class="tab" onclick="adminSel(2)"><span>投诉管理</span></div>
+                                <div class="tab" onclick="adminSel(3)"><span>帮助页管理</span></div>
+                                <div class="tab" onclick="adminSel(4)"><span>网站通知</span></div>
+                                <div class="tab" onclick="adminSel(5)"><span>标签管理</span></div>
+                                <div class="tab" onclick="adminSel(6)"><span>文件系统</span></div>
+                            </div>
+                            <div class="pcon" style="display:block">
+                                <div class="line" style="margin-top: 0px;" id="fbktablebar">
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="showFeedbackTable();fbksel(this)" sel>所有反馈</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="showFeedbackTable('waiting');fbksel(this)">未处理</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="showFeedbackTable('done');fbksel(this)">已回复</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="showFeedbackTable('ignored');fbksel(this)">已忽略</a>｜
+                                </div>
+                                <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="fbkinfo_table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                            <th>反馈内容</th>
+                                            <th>反馈日期</th>
+                                            <th>回复方式</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      <?php
+                                        $labels = array();
+                                        $data = exeSql('SELECT * FROM fbkinfo');
+                                        $x = 0;
+                                        while($row=mysqli_fetch_array($data,MYSQLI_ASSOC)){
+                                            $labels[$x] = $row;
+                                            $x++;
+                                        }
+                                        if(count($labels)!=0){
+                                            for($i=0;$i<count($labels);$i++){
+                                                $id = $labels[$i]['fbkid'];
+                                                $fbk = decodeInfo2($labels[$i]['content']);
+                                                $quesPos = (int)strpos($fbk["location"],"?");
+                                                $search_hash = $quesPos<0?"":substr($fbk["location"],$quesPos+1);
+                                                $hashPos = (int)strpos($fbk["location"],"#");
+                                                $hash = $hashPos<0?"":substr($fbk["location"],$hashPos+1);
+                                                $search = substr($search_hash,0,$hashPos<0?strlen($search_hash)-strlen($hash):strlen($search_hash)-strlen($hash)-1);
+                                                if($search==""){
+                                                    $fbk["location2"]="Home";
+                                                }else{
+                                                    $fbk["location2"] = $fbk["location"];
+                                                }
+                                                $location = $fbk["location2"];
+                                                $contentStr = "网址: <a target='_blank' href='../".$fbk["location"]."'>".$fbk["location2"]."</a>"."<br/>问题: ".$fbk["problem"];
+                                                $date = getLongDate($labels[$i]['date']);
+                                                $email = $labels[$i]['contributor'];
+                                                if(substr($email,0,1)=="!") $email = "";
+                                                echo "<tr id='$id'><td><input type='checkbox' class='asbox' onclick='edSelect(this)'><span></span></td><td $isk><div>$contentStr</div></td><td $isk>$date</td><td $isk>$email</td><td><a onclick=\"sendFbk('$id','$email')\">处理</a> | <a onclick='ignoreFbk(\"$id\")'>忽略</a></td></tr>";
+                                            }
+                                        }else{
+                                            echo <<<TR
+                                                <tr empty="">
+                                                    <td colspan="5" style="text-align: center;background-color: #f2f4f6;">(没有任何反馈)</td>
+                                                </tr>
+                                            TR;
+                                        }
+                                      ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pcon" style="display:none">
+                                <div class="line" style="margin-top: 0px;">
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="showContributionTable();fbksel(this)" sel>所有贡献</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="showContributionTable('waiting');fbksel(this)">未处理</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="showContributionTable('done');fbksel(this)">已处理</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="showContributionTable('ignored');fbksel(this)">已忽略</a>
+                                </div>
+                                <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="coninfo_table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                            <th>编辑内容</th>
+                                            <th>请求IP</th>
+                                            <th>贡献日期</th>
+                                            <th>回复方式</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      <?php
+                                        $labels = array();
+                                        $data = exeSql('SELECT * FROM coninfo');
+                                        $x = 0;
+                                        while($row=mysqli_fetch_array($data,MYSQLI_ASSOC)){
+                                            $labels[$x] = $row;
+                                            $x++;
+                                        }
+                                        if(count($labels)!=0){
+                                            for($i=0;$i<count($labels);$i++){
+                                                $id = $labels[$i]['conid'];
+                                                $content = "<a onclick=\"showCon('" . $id . "')\">显示内容</a>";
+                                                $date = getLongDate($labels[$i]['date']);
+                                                $status = decodeInfo($labels[$i]['contributor'])["email"];
+                                                $ip = $labels[$i]['ip'];
+                                                $butText = "";
+                                                if($labels[$i]['status']==0){
+                                                    $butText = "<a onclick='showCon(\"$id\")'>处理</a>";
+                                                }else{
+                                                    $butText = "（无可用操作）";
+                                                }
+                                                echo "<tr id='$id'><td><input type='checkbox' class='asbox' onclick='edSelect(this)'><span></span></td><td>$content</td><td $isk>$ip</td><td $isk>$date</td><td $isk>$status</td><td>$butText</td></tr>";
+                                            }
+                                        }else{
+                                            echo <<<TR
+                                                <tr empty="">
+                                                    <td colspan="5" style="text-align: center;background-color: #f2f4f6;">(没有任何贡献)</td>
+                                                </tr>
+                                            TR;
+                                        }
+                                      ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pcon" style="display:none">
+                                <div class="line" style="margin-top: 0px;">
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="" sel>所有投诉</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="">已处理</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="">待处理</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="">已忽略</a>
+                                </div>
+                                <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="absinfo_table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                            <th>投诉人</th>
+                                            <th>被投诉人</th>
+                                            <th>投诉内容</th>
+                                            <th>投诉日期</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <td colspan="6" style="text-align: center;background-color: #f2f4f6;">(没有属于此类的投诉)</td>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pcon" style="display:none">
+                                <div class="line" style="margin-top: 0px;">
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="">添加页面</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="">添加目录</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" onclick="">删除所选页面/目录</a>
+                                </div>
+                                <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="help_table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:18px;"><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                            <th></th>
+                                            <th>页面/目录</th>
+                                            <th>编辑日期</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <td colspan="5" style="text-align: center;background-color: #f2f4f6;">(没有帮助页面)</td>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pcon" style="display:none">
+                                <div class="line" style="margin-top: 0px;">
+                                    <a style="font-size: 16px;font-weight:normal;" href="javascript:updateMsg();">添加通知</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" href="javascript:removeMsgs();">删除选中通知</a>
+                                </div>
+                                <style>
+                                    table#msginfo_table>tbody>tr>td:nth-child(1){
+                                        width: 50px;
+                                    }
+                                
+                                    table#msginfo_table>tbody>tr>td:nth-child(3){
+                                        max-width: 80px;
+                                        width:9%;
+                                    }
+                                
+                                    table#msginfo_table>tbody>tr>td:nth-child(4){
+                                        max-width: 165px;
+                                        width:10%;
+                                    }
+                                </style>
+                                <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="msginfo_table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                            <th>通知内容</th>
+                                            <th>启用状态</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      <?php
+                                        $labels = array();
+                                        $data = exeSql('SELECT * FROM msginfo');
+                                        $x = 0;
+                                        while($row=mysqli_fetch_array($data,MYSQLI_ASSOC)){
+                                            $labels[$x] = $row;
+                                            $x++;
+                                        }
+                                        if(count($labels)!=0){
+                                            for($i=0;$i<count($labels);$i++){
+                                                $id = $labels[$i]['msgid'];
+                                                $name = urldecode(base64_decode($labels[$i]['innerHTML']));
+                                                $status = $labels[$i]['status'];
+                                                echo "<tr id='$id'><td><input type='checkbox' class='asbox' onclick='edSelect(this)'><span></span></td><td $isk>$name</td><td $isk>$status</td><td><a onclick='updateMsg(\"$id\")'>修改通知</a> | <a onclick='removeMsg(\"$id\")'>删除通知</a></td></tr>";
+                                            }
+                                        }else{
+                                            echo <<<TR
+                                                <tr empty="">
+                                                    <td colspan="5" style="text-align: center;background-color: #f2f4f6;">(没有任何通知)</td>
+                                                </tr>
+                                            TR;
+                                        }
+                                      ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pcon" style="display:none">
+                                <div class="line" style="margin-top: 0px;">
+                                    <a style="font-size: 16px;font-weight:normal;" href="javascript:updateLabel()">添加标签</a>｜
+                                    <a style="font-size: 16px;font-weight:normal;" href="javascript:removeLabels();">删除选中标签</a>
+                                </div>
+                                <style>
+                                    table#labels_table>tbody>tr>td:nth-child(1){
+                                        width: 50px;
+                                    }
+                                
+                                    table#labels_table>tbody>tr>td:nth-child(3){
+                                        width: 165px;
+                                    }
+                                </style>
+                                <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="labels_table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                            <th>标签</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      <?php
+                                        $labels = array();
+                                        $data = exeSql('SELECT * FROM lblinfo');
+                                        $x = 0;
+                                        while($row=mysqli_fetch_array($data,MYSQLI_ASSOC)){
+                                            $labels[$x] = $row;
+                                            $x++;
+                                        }
+                                        if(count($labels)!=0){
+                                            for($i=0;$i<count($labels);$i++){
+                                                $id = $labels[$i]['labelid'];
+                                                $name = rawurldecode($labels[$i]['label_name']);
+                                                echo "<tr id='$id'><td><input type='checkbox' class='asbox' onclick='edSelect(this)'><span></span></td><td $isk>$name</td><td><a onclick='updateLabel(\"$id\")'>修改标签</a> | <a onclick='removeLabel(\"$id\")'>删除标签</a></td></tr>";
+                                            }
+                                        }else{
+                                            echo <<<TR
+                                                <tr empty="">
+                                                    <td colspan="5" style="text-align: center;background-color: #f2f4f6;">(没有任何标签)</td>
+                                                </tr>
+                                            TR;
+                                        }
+                                      ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pcon" style="display:none">
+                                <h4 style="margin-top: 10px;" id="pathIndicator">
+                                    当前路径：
+                                    <a onclick="absGoTo('')">debook.nawaski.com/</a>
+                                    <a >返回上一级</a>
+                                </h4>
+                                <div class="line" style="margin-top: 0px;">
+                                    <a onclick="uploadFile()">上传文件</a>｜
+                                    <a onclick="new_folder()">新建文件夹</a>｜
+                                    <a onclick="deleteFilesFromTable()">删除选中文件/文件夹</a>｜
+                                    <a onclick="mFiles()">移动选中文件/文件夹</a>｜
+                                    <a onclick="mFiles()">复制选中文件/文件夹</a>
+                                </div>
+                                <style>
+                                    table#files_table>tbody>tr>td:nth-child(1){
+                                        width: 20px;
+                                    }
+                                
+                                    table#files_table>tbody>tr>td:nth-child(2){
+                                        width: 20px;
+                                    }
+                                
+                                    table#files_table>tbody>tr>td:nth-child(4){
+                                        width: 100px;
+                                    }
+                                
+                                    table#files_table>tbody>tr>td:nth-child(6){
+                                        width: 80px;
+                                    }
+                                </style>
+                                <table class="tb" style="font-family: 'system-ui';font-family: 'fangsong';font-size:16px;" id="files_table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" class="asbox" type="checkbox" style="top:6px"><span style="top:3px"></span></th>
+                                            <th></th>
+                                            <th>文件名/文件夹名</th>
+                                            <th>文件类型</th>
+                                            <th>上传日期</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      <?php
+                                        //获取当前文件所在的绝对目录
+                                        $dir =  dirname(FBASE."0");
+                                        $mydir = FBASE;
+                                        $myPicDir = "../Image/fatcow/";
+                                        //扫描文件夹
+                                        $files = scandir($dir);
+                                        //显示
+                                        foreach($files as $file){
+                                            if($file!="."&&$file!=".."){
+                                                if($file[0]==".") continue;
+                                                $isfolder = is_dir($mydir . $file);
+                                                $filetype = is_dir($mydir . $file)?"文件夹":getFileType($file);
+                                                $iconp = $isfolder?"../Image/fatcow/folder.png":$myPicDir . getFilePic($filetype);
+                                                $datel = date("Y-m-d H:i:s",filemtime($mydir . $file));
+                                                $comd = $isfolder?"goTo('$file')":"fopen('$file')";
+                                                echo "<tr id='$file'><td><input type='checkbox' class='asbox' onclick='edSelect(this)'><span></span></td><td $isk><div class='tb_icon' style='background-image:url(\"$iconp\")'></div></td><td><a href=\"javascript:;\" onclick=\"$comd\">$file</a></td><td $isk>$filetype</td><td $isk>$datel</td><td><a href='javascript:;'>(空)</a></td></tr>";
+                                            }
+                                        }
+                                      ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="view_panel">
+            <div class="rcon">
+                <div class="pcon">
+                    <h2>文件名称</h2>
+                    <div class="line" style="margin-top: 10px;">
+                        <a>下载文件</a>
+                    </div>
+                </div>
+                <div class="pcon" id="view_box">
+                    <span class="wait"></span>
+                </div>
+            </div>
+            <div class="close_con"><div class="close_button" onclick="hideRes()"><div></div><div></div></div></div>
+        </div>
+        <div id="preview_con" style="top:0px">
+            <div id="topbar">
+                <div class="con">
+                    <p id="title"></p>
+                    <div class="close_con" title="取消"><div class="close_button" onclick="hideRes()"><div></div><div></div></div></div>
+                </div>
+            </div>
+            <div id="sect">
+
+            </div>
+            <style>
+                div.asbox_con{
+                    margin-bottom: 8px;
+                }
+
+                div.asbox_con>select {
+                    width: 100%;
+                    padding: 5px 2.8% 4px 0.8%;
+                    max-width: none;
+                    font-size: 16px;
+                }
+
+                div.asbox_con>span.sel{
+                    bottom: 0px;
+                    right: 4px;
+                }
+            </style>
+        </div>
+        <?php
+            $browser = browse_info();
+            $bool = getArray($_SESSION,"ADMIN_LOGIN");
+            if(getArray($_POST,"allow")!="1"||getArray($_SESSION,"admin_db_$browser")==""){
+                ob_clean();
+                ob_end_flush();
+            }
+        ?>
+    </body>
+
+    <style>
+        span.wait{
+            background-image:url('Image/src/ajax_clock_small.gif');
+            position:relative;
+            width:16px;
+            height:16px;
+            margin:-2px;
+            margin-left: 0px;
+            image-rendering:-webkit-optimize-contrast;
+            display: inline-block;
+            background-position: left;
+            background-repeat: no-repeat;
+        }
+
+        a[sel]{
+            color:white;
+            background-color:#0366d6;
+            padding:1px 4px;
+        }
+
+        div.line{
+            color: #c4c4c4;
+        }
+
+        div.asbox_con{
+            background-color: #f0f0f0;
+        }
+
+        div#box{
+            position:relative;
+            float:right;
+            width:auto;
+            height:100%;
+        }
+
+        div#box>*{
+            position: relative;
+            float:left;
+            width:auto;
+        }
+
+        /*msgbox*/
+        div.MsgBox
+		{
+			position:fixed;
+			float:left;
+			width:auto;
+            left:50%;
+			width:480px;
+            margin-left: -240px;
+			height:auto;
+			max-height:360px;
+            overflow-y:auto;
+			filter:drop-shadow(0px 0px 2.5px #aaa);
+			background-color:#efefef;
+            z-index: 20;
+            transition:all 0.8s ease 0s;
+            text-align: left;
+		}
+
+        div.MsgBox a.btn{
+            font-size: 15px;
+            padding: 1px 3px;
+            margin: .3% 0px;
+            margin-left: 6px;
+        }
+		
+		div.middle_area
+		{
+			position: relative;
+			float: left;
+			width: 97%;
+			height: auto;
+			margin: 1% 1.5%;
+		}
+
+        .MsgBox *{
+            position:relative;
+            float:left;
+            height:auto;
+        }
+
+        div.MsgBox *[right]{
+            float:right;
+        }
+
+        .MsgBox div.asbox_con>p[console]{
+            width:100%;
+        }
+
+        .MsgBox div.asbox_con>div.asbox{
+            width: 96.4%;
+            padding:3px 1.8%;
+        }
+
+        .MsgBox b,.MsgBox i,.MsgBox font,.MsgBox text,.MsgBox span,.MsgBox u{
+            position:relative;
+            float:none;
+            height:auto;
+        }
+
+        .break{
+            width:100%;
+            height:1px;
+            background-color: #bdbdbd;
+            margin:2px 0px;
+        }
+
+        *[autofill]{
+            float:right;
+            width:-webkit-fill-available;
+            width:-moz-available;
+            width:-o-available;
+        }
+
+        *[small-text]{
+            font-size:14px;
+            margin: 2px 0px;
+        }
+
+        *[smaller-text]{
+            font-size:12px;
+            margin: 1px 0px;
+            float:right;
+        }
+
+        div[progress-bar]{
+            height:100%;
+            margin:4px 0px;
+            border-radius:4px;
+            overflow: hidden;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        div[progress-bar]>div{
+            position:absolute;
+            float:left;
+            height:100%;
+            border-radius: 3px;
+            background-color: #0071E3;
+            background-image:-webkit-linear-gradient(left, #0071E3 10%, #2196f3 50%,#1e88e5 100%);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        /*scroll bar*/
+        div, textarea{
+            scrollbar-face-color: white;
+            scrollbar-track-color: #606060;
+            scrollbar-arrow-color: white;
+        }
+
+        div::-webkit-scrollbar, textarea::-webkit-scrollbar{
+          width:6px;
+            height:6px;
+            background-color: transparent;
+        }
+
+        div::-webkit-scrollbar-thumb, textarea::-webkit-scrollbar-thumb{
+            border-radius: 3px;
+            background-color: #c4c4c4;
+        }
+
+        div::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover{
+            background-color: #a4a4a4;
+        }
+
+        div::-webkit-scrollbar-button, textarea::-webkit-scrollbar-button{
+            background-color:#fff;
+            width:0px;
+            height:0px;
+        }
+
+        div.vcon{
+            width:calc(100% - 2px);
+            border:1px solid #c4c4c4;
+            padding-bottom:15px;
+        }
+
+        div.vcon>.pcon{
+            width:97%;
+            margin:0 auto;
+        }
+
+        /*tabbar*/
+        div.tabBar{
+            position: relative;
+            float:left;
+            width: 100%;
+            background-color: #eaecf0;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        div.tabBar>div.tab{
+            position:relative;
+            float:left;
+            width:auto;
+            margin: 6px 0 0 6px;
+            padding: 0 8px;
+            border-color: transparent;
+            border-style: solid;
+            font-weight: bold;
+            line-height: 1;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        div.tabBar>div.tab>span{
+            position:relative;
+            float:left;
+            width:auto;
+            padding: 6px 5px 4px;
+            color:#404244;
+        }
+
+        div.tabBar>div.tab:hover{
+            background-color: rgba(255,255,255,0.3);
+            color: #202122;
+        }
+
+        div.tabBar>div.tab[selected]{
+            background-color: white;
+        }
+
+        /*wait panel*/
+        body{
+            text-align: center;
+            /*overflow: hidden;*/
+        }
+
+        div.waitDiv{
+            position:fixed;
+            z-index: 100;
+            height:21px;
+            margin: 0px auto;
+            left:0px;
+            right:0px;
+            top:-24px;
+            bottom:0px;
+            font-size: 16px;
+            font-weight:normal;
+            color:#606060;
+            transition: top 0.2s ease 0s;
+        }
+
+        div.waitDiv>a{
+            position:relative;
+            background-color: #fff;
+            padding:2px 5px;
+            border:1px solid #c4c4c4;
+            border-top:0px;
+            border-radius: 0px 0px 5px 5px;
+        }
+
+        div.tb_icon{
+            width:16px;
+            height:16px;
+            background-size: 16px 16px;
+            margin-top:2px;
+            background-position: 0px 0px;
+            background-repeat: no-repeat;
+        }
+
+        /*view panel*/
+        div#view_panel{
+            position:fixed;
+            float:left;
+            z-index: 0;
+            width:100%;
+            height:100%;
+            background-color: #f0f0f0E1;
+            overflow: hidden;
+            display: none;
+        }
+
+        div#view_panel[text-mode]{
+            overflow: auto;
+        }
+
+        div#view_panel>div.rcon{
+            margin-top: 40px;
+            margin-bottom: 40px;
+            max-height: 80%;
+            overflow: auto;
+        }
+
+        div#view_panel[text-mode]>div.rcon{
+            max-height: none;
+        }
+
+        div#view_panel>div.close_con{
+            position:fixed;
+            right:10px;
+            top:20px;
+            margin:0px;
+            height:auto;
+            width: auto;
+        }
+
+        div#view_panel>div.close_con>div.close_button{
+            width:25px;
+            height:25px;
+        }
+
+        div#view_panel>div.close_con>div.close_button>div{
+            width:20px;
+        }
+
+        div#view_box{
+            max-height: 84%;
+        }
+        
+        div#view_panel[text-mode] div#view_box{
+            max-height: none;
+        }
+
+        div#view_box>img{
+            max-height: 1080px;
+        }
+
+        div#view_box>video{
+            max-height: 640px;
+            height:50%;
+            width:100%;
+        }
+
+        div#view_box>audio{
+            width:100%;
+        }
+
+        div#preview_con{
+            position:fixed;
+            float:left;
+            z-index: 0;
+            width:100%;
+            height:100%;
+            background-color: white;
+            overflow: hidden;
+            display: none;
+        }
+
+        div#preview_con #topbar{
+            position:absolute;
+        }
+
+        #preview_con .con>*{
+            position:relative;
+            float:left;
+        }
+
+        div.fnbar{
+            margin:4px 8px 4px 16px;
+        }
+
+        div#preview_con p#title{
+            margin:8px 8px 8px 0;
+            font-size:20px;
+            font-weight:bold;
+            color:#454545;
+        }
+
+        div#preview_con p#title>font{
+            color:#888;
+            font-weight: normal;
+            letter-spacing: .5px;
+        }
+
+        div#preview_con p#title a{
+            color:#0366d6;
+            font-weight: normal;
+        }
+
+        a.mulBtn{
+            float:left;
+            width:24px;
+            height:24px;
+            margin: 4px 8px 0 0;
+            padding:3px;
+            border-radius: 6px;
+            transition:all 0.1s ease 0s;
+        }
+
+        a.mulBtn:active{
+            background-color: #bdbdbd;
+        }
+
+        a.mulBtn>img{
+            width:100%;
+            height:100%;
+        }
+
+        div#preview_con div.close_con{
+            position:relative;
+            float:right;
+            top:23px;
+            margin:0px;
+            height:auto;
+            width: auto;
+        }
+
+        div#preview_con div.close_con>div.close_button{
+            width:25px;
+            height:25px;
+        }
+
+        div#preview_con div.close_con>div.close_button>div{
+            width:20px;
+        }
+
+        div#preview_con #sect{
+            position:relative;
+            float:left;
+            width:100%;
+            margin-top: 44px;
+            height:-webkit-fill-available;
+            height:-moz-available;
+            height:-o-available;
+            overflow: auto;
+        }
+
+        div#preview_con #sect .asbox_submit{
+            margin-right: 10px;
+        }
+
+        div.notice[IE-only], div.notice[non-IE-only]{
+            display: block;
+        }
+
+        @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none)  {
+            div#view_panel{
+                background-color: #fff;
+            }
+        }
+    </style>
+
+    <script>
+        if(typeof fopen=="undefined"){
+            window.location = "../admin/";
+        }
+    </script>
+</html>

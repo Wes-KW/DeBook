@@ -1,0 +1,370 @@
+<?php
+    include_once ".phtml/mode.php";
+
+    function writeHelpMain(){
+        echo <<<MAINPAGE
+        <div class="dcon">
+            <div class="innercon">
+                <div style="width:65%;z-index: 1;text-align: left;">
+                    <h2 class="l" style="margin-bottom: 8px;">DeBook帮助与支持</h2>
+                    <p class="l">欢迎使用DeBook帮助与支持。<br/>从这里开始了解网站的各种功能，以及获取我们的帮助与支持。</p>
+                    <a class="btn" onclick="focusSearch('help:')">开始搜索帮助</a>
+                </div>
+                <div k style="position:absolute;top:-24px;width:300px">
+                    <svg style="position:relative;float:left;width:90%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 768 576">
+                        <defs>
+                            <linearGradient id="b" x1="162.84" gradientUnits="userSpaceOnUse" x2="162.84" gradientTransform="matrix(.70233 0 0 .6756 -3.924 6.49)" y1="439.45" y2="228.35">
+                                <stop stop-color="#fdd835" offset="0"></stop>
+                                <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                            </linearGradient>
+                            <filter id="g" color-interpolation-filters="sRGB">
+                                <feGaussianBlur stdDeviation="2.186"></feGaussianBlur>
+                            </filter>
+                            <filter id="e" color-interpolation-filters="sRGB">
+                                <feGaussianBlur stdDeviation="4.5"></feGaussianBlur>
+                            </filter>
+                            <filter id="k" width="1.026" y="-.165" x="-.013" height="1.331" color-interpolation-filters="sRGB">
+                                <feGaussianBlur stdDeviation="3.687"></feGaussianBlur>
+                            </filter>
+                            <filter id="c" width="1.033" y="-.104" x="-.016" height="1.209" color-interpolation-filters="sRGB">
+                                <feGaussianBlur stdDeviation="4.062"></feGaussianBlur>
+                            </filter>
+                            <linearGradient id="a">
+                                <stop stop-color="#fff" offset="0"></stop>
+                                <stop stop-opacity="0" stop-color="#fff" offset="1"></stop>
+                            </linearGradient>
+                            <filter id="n" width="1.026" y="-.165" x="-.013" height="1.331" color-interpolation-filters="sRGB">
+                                <feGaussianBlur stdDeviation="3.687"></feGaussianBlur>
+                            </filter>
+                            <filter id="m" width="1.033" y="-.104" x="-.016" height="1.209" color-interpolation-filters="sRGB">
+                                <feGaussianBlur stdDeviation="4.062"></feGaussianBlur>
+                            </filter>
+                            <linearGradient id="d" y2="285.22" gradientUnits="userSpaceOnUse" x2="360.36" y1="283.79" x1="342.5">
+                                <stop offset="0"></stop>
+                                <stop stop-color="#ccc" offset="1"></stop>
+                            </linearGradient>
+                            <linearGradient id="f" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68228 0 0 1.2202 967.34 -126.44)" y1="445.22" x1="564.42"></linearGradient>
+                            <linearGradient id="h" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.70022 -.06541 -.01782 .44318 984.41 235.89)" y1="445.22" x1="564.42"></linearGradient>
+                            <linearGradient id="i" y2="445.22" xlink:href="#b" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71448 -.15435 .00897 -.31646 979.33 599.82)" y1="445.22" x1="564.42"></linearGradient>
+                            <linearGradient id="j" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71803 .08687 -.02422 -.31389 995.29 518.54)" y1="445.22" x1="564.42"></linearGradient>
+                            <linearGradient id="l" y2="445.22" xlink:href="#b" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71264 .17918 -.0368 -.30996 999.11 486.13)" y1="445.22" x1="564.42"></linearGradient>
+                            <linearGradient id="o" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.67271 -.05464 -.01387 .40326 955.28 281.41)" y1="445.22" x1="564.42"></linearGradient>
+                            <linearGradient id="p" y2="445.22" xlink:href="#a" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68869 .084 -.02555 -.28535 967.79 538.45)" y1="445.22" x1="564.42"></linearGradient>
+                            <linearGradient id="q" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.68705 -.13544 .0063 -.28793 953.07 612.49)" y1="445.22" x1="564.42">
+                                <stop stop-color="#ffee58" offset="0"></stop>
+                                <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                            </linearGradient>
+                            <linearGradient id="r" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.71448 .15435 .00897 .31646 970.76 250.51)" y1="445.22" x1="564.42">
+                                <stop stop-color="#ffee58" offset="0"></stop>
+                                <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                            </linearGradient>
+                            <linearGradient id="s" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.73092 .00801 -.05464 .31184 1010.7 281.9)" y1="445.22" x1="564.42">
+                                <stop stop-color="#ffee58" offset="0"></stop>
+                                <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                            </linearGradient>
+                            <linearGradient id="t" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.72479 .09476 -.01722 .31612 989.98 251.77)" y1="445.22" x1="564.42">
+                                <stop stop-color="#ffee58" offset="0"></stop>
+                                <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                            </linearGradient>
+                            <linearGradient id="u" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.72479 .09476 -.01722 .31612 995.87 238.35)" y1="445.22" x1="564.42">
+                                <stop stop-color="#ffee58" offset="0"></stop>
+                                <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                            </linearGradient>
+                            <linearGradient id="v" y2="445.22" gradientUnits="userSpaceOnUse" x2="1188.2" gradientTransform="matrix(-.73086 -.01204 -.05293 -.31214 1017.3 570.96)" y1="445.22" x1="564.42">
+                                <stop stop-color="#fdd835" offset="0"></stop>
+                                <stop stop-opacity="0" stop-color="#fdd835" offset="1"></stop>
+                            </linearGradient>
+                            <radialGradient id="w" gradientUnits="userSpaceOnUse" cy="133.61" cx="14.817" gradientTransform="matrix(2.8644 0 0 2.343 738.15 127.24)" r="40.913">
+                                <stop stop-color="#f6f6aa" offset="0"></stop>
+                                <stop stop-opacity="0" stop-color="#f8f8ac" offset="1"></stop>
+                            </radialGradient>
+                        </defs>
+                        <path d="M335.11 255.73l663.28-80.86L334.34 291.5z" transform="matrix(.68228 0 0 -1.2055 -212.275 413)" opacity=".363" fill="#ffee58" filter="url(#c)"></path>
+                        <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -287.17)" fill="none" stroke="#000" stroke-width=".792"></path>
+                        <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -274.9)" fill="none" stroke="#000" stroke-width=".792"></path>
+                        <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -260.97)" stroke="#000" stroke-width="1.266"></path>
+                        <path d="M477.98 260.36L442.8 755.71l71.61 11.07 8.39-516.6z" fill="#b3b3b3" stroke="#b3b3b3"></path>
+                        <path d="M522.98 250.36l40.714 6.429 27.143 503.57-76.071 7.142z" fill="#f2f2f2" stroke="#f2f2f2"></path>
+                        <path d="M563.69 256.78l20 12.857 41.071 481.07-33.75 9.464z" fill="#ececec" stroke="#ececec"></path>
+                        <path d="M468.69 270.36l9.286-8.571-35.536 493.93-19.464-8.215z" fill="#999" stroke="#b3b3b3"></path>
+                        <path d="M536.9 494.32l26.895.126-1.515 55.432z" fill="#b3b3b3"></path>
+                        <path d="M540.92 500.13l17.425.253.126 18.562-17.678-.127zm.05 20.93l17.425.253.126 18.562-17.678-.127zm-97.89 131.1l1.515-49.119 4.672-1.768-3.283 51.644zm15.59-199.06l1.515-49.119 4.672-1.768-3.283 51.644zm9.85-125.26l1.515-49.119 4.672-1.768-3.283 51.644z" stroke="#000"></path>
+                        <path d="M396.25 308.52a66.875 12.589 0 1 1-.006-.173" transform="matrix(.94034 0 0 1.6973 215.844 -299.45)" fill="none" stroke="#000" stroke-width=".792"></path>
+                        <path d="M567.349 188.699a41.786 13.304 0 1 1-.004-.183"></path>
+                        <path d="M297.95 302.54c17.309-10.51 57.09-7.151 72.143.536v-25.18c-21.019-12.346-47.757-13.053-71.786-1.606z" fill="url(#d)" stroke="#000" stroke-width="2.2" transform="translate(191.55 -84.15)"></path>
+                        <path d="M485.03 248.35c17.309-10.51 66.019-8.937 81.071-1.25v-25.179c-18.16-11.63-58.11-14.3-80.71-1.6z" stroke="#000"></path>
+                        <path d="M513.07 160.21l13.036-10.714 11.964 11.071z" stroke="#000" stroke-linejoin="round"></path>
+                        <path d="M516.91 160l.357 16.071 16.43.536.535-16.25z" stroke="#000"></path>
+                        <path d="M525.84 152.86l.893-55.179M477.09 210.18l.536 34.107M462.26 224.64l.54 34.11m125.18-37.5l-.536 37.679M565.84 207.68l-.714 38.214" fill="none" stroke="#000"></path>
+                        <path d="M538.985 160.537a13.181 4.197 0 1 1-.001-.057"></path>
+                        <path d="M557.73 191.91l-6.566 22.728m-7.074-1.518l-6.06-26.264" fill="none" stroke="#000" stroke-width="2.3"></path>
+                        <path d="M1013.6 197.14l-658.29 84.542v14.496s662.99 98.569 658.29 93.904z" transform="matrix(-.68228 0 0 1.1507 711.32 -134.302)" opacity=".668" fill="none" stroke="#fff" stroke-width="4.048" filter="url(#e)"></path>
+                        <path d="M286.77 301.95l439.86 97.468v17.688l-439.86 114.58z" opacity=".668" fill="url(#f)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M1012.9 190.92l-657.59 94.611v5.7s660.74 108.96 656.04 104.29z" transform="matrix(-.68228 0 0 1.2202 711.32 -154.728)" opacity=".668" fill="none" stroke="#fff" stroke-width="4.048" filter="url(#g)"></path>
+                        <path d="M281.44 345.28l445.18 59.875v6.424l-450.25-1.9z" opacity=".668" fill="url(#h)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M265.33 331.8l461.3 91.787v-4.588l-459.59-146.78z" opacity=".49" fill="url(#i)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M360.24 384.45l637.23-203.31-628.3 233.59z" transform="matrix(.6533 -.34756 -.19671 -1.1543 -147.12 760.92)" opacity=".363" fill="#80ffe6" filter="url(#c)"></path>
+                        <path d="M269.5 490.25l457.12-78.122v-4.55L266 435.896z" opacity=".668" fill="url(#j)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M1015.4 297.01l-660.09-11.053v3.268l657.64 50.226z" transform="matrix(-.68228 0 0 1.2202 711.32 -154.728)" opacity=".313" fill="#fff" filter="url(#k)"></path>
+                        <path d="M281.24 466.99l445.38-46.915v-4.493l-452.31-6.95z" opacity=".413" fill="url(#l)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M335.11 255.73l690.19-66.12L334.34 291.5z" transform="matrix(.655 -.00473 -.00882 -1.0965 -201.033 430.01)" opacity=".363" fill="#ffee58" filter="url(#m)"></path>
+                        <path d="M1021.2 227.46l-692.97 45.145.044 3.267 690.48-5.972z" transform="matrix(-.655 .00473 .00893 1.1099 681.49 -92.81)" opacity=".313" fill="#fff" filter="url(#n)"></path>
+                        <path d="M281.22 385.8l445.4 37.255v5.846l-449.81 15.513z" opacity=".668" fill="url(#o)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M281.2 403.46l445.42 22.099v-2.652l-449.18-68.864z" opacity=".668" fill="url(#p)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M268.46 392.63l458.17 32.063v-4.174l-456.96-82.1z" opacity=".49" fill="#ffee58" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M261.2 515.57l465.42-87.279v4.588l-463.71 142.27z" opacity=".49" fill="url(#r)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M262.43 391.94l464.19 27.007v4.52L267 453.625z" opacity=".49" fill="url(#s)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M260.94 457.27l465.68-29.23v4.583l-468.9 84.168z" opacity=".49" fill="url(#t)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M266.84 443.85l459.78-22.943v4.583l-463.01 77.881z" opacity=".49" fill="url(#u)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M269.64 449.38l456.98-17.832v-4.525l-466.93-36.415z" opacity=".49" fill="url(#v)" transform="translate(-257.72 -210.44)"></path>
+                        <path d="M897.77 440.28c0 52.925-52.449 95.838-117.16 95.854-64.709 0-117.18-42.881-117.22-95.822-.032-52.925 52.392-95.857 117.1-95.897 64.709-.04 117.21 42.828 117.28 95.753" opacity=".875" fill="url(#w)" transform="translate(-257.72 -210.44)"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="innercon">
+                <div class="h" style="padding-top: 40px;">
+                    <div class="infobox">
+                        <div class="icon" style="background-image:url('Image/fatcow/pencil.png');"></div>
+                        <div class="text" fixed>
+                            <div class="innertext">
+                                <a xhr href="?help/item">书籍，书单，作者</a>
+                                <p>了解如何添加或编辑书籍，书单，或作者的信息</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="infobox">
+                        <div class="icon" style="background-image:url('Image/fatcow/box_closed.png');"></div>
+                        <div class="text" fixed>
+                            <div class="innertext">
+                                <a xhr href="?help/order">订单</a>
+                                <p>了解如何销售或购买书籍，以及付款等信息</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="infobox">
+                        <div class="icon" style="background-image:url('Image/fatcow/coins.png');"></div>
+                        <div class="text" fixed>
+                            <div class="innertext">
+                                <a xhr href="?help/decoins">获取DeCoins积分</a>
+                                <p>了解获取DeCoins积分的各种方式</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="infobox">
+                        <div class="icon" style="background-image:url('Image/fatcow/paypal_logo.png');"></div>
+                        <div class="text" fixed>
+                            <div class="innertext">
+                                <a xhr href="?help/payment">支付方式</a>
+                                <p>了解此网站使用的各种支付方式</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="infobox">
+                        <div class="icon" style="background-image:url('Image/fatcow/user.png');"></div>
+                        <div class="text" fixed>
+                            <div class="innertext">
+                                <a xhr href="?help/account">用户与账户</a>
+                                <p>注册、登录账户以及忘记密码，管理自己的账户</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="infobox">
+                        <div class="icon" style="background-image:url('Image/fatcow/zoom.png');"></div>
+                        <div class="text" fixed>
+                            <div class="innertext">
+                                <a xhr href="?help/search">搜索引擎</a>
+                                <p>使用搜索引擎以及搜索引擎的过滤器</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="infobox">
+                        <div class="icon" style="background-image:url('Image/fatcow/locate.png');"></div>
+                        <div class="text" fixed>
+                            <div class="innertext">
+                                <a xhr href="?help/language">更换语言</a>
+                                <p>更换浏览此网站所使用的语言</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="infobox">
+                        <div class="icon" style="background-image:url('Image/fatcow/info_rhombus.png');"></div>
+                        <div class="text" fixed>
+                            <div class="innertext">
+                                <a xhr href="?help/about">关于我们</a>
+                                <p>关于我们，联系我们，分享此网站</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="infobox">
+                        <div class="icon" style="background-image:url('Image/fatcow/use_in_formula.png');"></div>
+                        <div class="text" fixed>
+                            <div class="innertext">
+                                <a xhr href="?help/about/terms">使用条款与Cookie</a>
+                                <p>查看网站的管理规则以及我们如何收集您的信息</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="infobox">
+                        <div class="icon" style="background-image:url('Image/fatcow/ask_and_answer.png');"></div>
+                        <div class="text" fixed>
+                            <div class="innertext">
+                                <a xhr href="?help/feedback">反馈问题</a>
+                                <p>提供意见，或反馈问题给我们，也可以向我们提问</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="innercon">
+                <div style="width:65%;z-index: 1;text-align: left;margin-top: 10px;">
+                    <p class="l">有其它没有分类的疑问?<br/>通过搜索找到答案。点击下面的按钮开始。</p>
+                    <a class="btn" href="javascript:;" onclick="focusSearch('help:')">搜索疑问</a>
+                </div>
+            </div>
+        </div>
+        <p id='page_title'>DeBook 帮助与支持</p>
+        MAINPAGE;
+    }
+
+    function writeHelpInnerCss(){
+        echo <<<CSS
+            <style>
+                .innercon{
+                    text-align: left;
+                }
+                
+                .dcon p{
+                    margin-top: 10px;
+                }
+            
+                .dcon h1.l{
+                    font-size:28px;
+                    font-weight: normal;
+                }
+            
+                .dcon .line{
+                    margin:0 0 20px 0;
+                }
+            
+                .dcon ul, .dcon ol{
+                    margin:10px 0;
+                }
+            
+                .dcon ul>li{
+                    list-style: disc;
+                }
+            
+                .dcon ul>li, .dcon ol>li{
+                    font-size:17px;
+                    line-height: 1.7em;
+                    color:#202122;
+                    font-weight: lighter;
+                    letter-spacing: 0.8px;
+                }
+            </style>
+        CSS;
+    }
+
+    function writeHelpInner($path){
+        $pathHtml = writeHelpPath($path);
+        $fbase = __DIR__;
+        $fbase = str_replace("\\","/",$fbase);
+        $path = $fbase . "/.help/" . $path;
+        if(file_exists($path)){
+            if(is_dir($path)){
+                if(file_exists($path."/home.html")){
+                    echo file_get_contents($path."/home.html");
+                }else if(file_exists($path."/index.html")){
+                    echo file_get_contents($path."/index.html");
+                }else{
+                    writeNoHelp();
+                }
+            }else if(is_file($path)){
+                echo file_get_contents($path);
+            }else{
+                writeNoHelp();
+            }
+        }else if(file_exists($path.".html")){
+            if(basename($path)=="home"||basename($path)=="index"){
+                writeNoHelp();
+            }else{
+                echo file_get_contents($path.".html");
+            }
+        }else{
+            writeNoHelp();
+        }
+        writeHelpInnerCss();
+        echo "<div class='dcon' style='margin: 0 auto;padding: 0;'><div class='pathbox'>$pathHtml</div></div>";
+    }
+
+    function writeNoHelp(){
+        echo "<div class=\"dcon\"><div class=\"innercon\"><div style=\"width:65%;z-index: 1;text-align: left;\"><h2 class=\"l\" style=\"margin-bottom: 8px;\">帮助与支持页面不存在</h2><p class=\"l\">404 - 您所访问的帮助与支持页面不存在<br>请检查您的网址是否有错误</p><a class=\"btn\" xhr href=\"?help\">返回帮助与支持主页</a></div><div k style=\"position:absolute;top:-24px;width:300px\"><svg style=\"position:relative;float:left;width:100%;-webkit-filter:grayscale(100%)\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 768 576\"><defs><linearGradient id=\"b\" x1=\"162.84\" gradientUnits=\"userSpaceOnUse\" x2=\"162.84\" gradientTransform=\"matrix(.70233 0 0 .6756 -3.924 6.49)\" y1=\"439.45\" y2=\"228.35\"><stop stop-color=\"#fdd835\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><filter id=\"g\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"2.186\"></feGaussianBlur></filter><filter id=\"e\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"4.5\"></feGaussianBlur></filter><filter id=\"k\" width=\"1.026\" y=\"-.165\" x=\"-.013\" height=\"1.331\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"3.687\"></feGaussianBlur></filter><filter id=\"c\" width=\"1.033\" y=\"-.104\" x=\"-.016\" height=\"1.209\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"4.062\"></feGaussianBlur></filter><linearGradient id=\"a\"><stop stop-color=\"#fff\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fff\" offset=\"1\"></stop></linearGradient><filter id=\"n\" width=\"1.026\" y=\"-.165\" x=\"-.013\" height=\"1.331\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"3.687\"></feGaussianBlur></filter><filter id=\"m\" width=\"1.033\" y=\"-.104\" x=\"-.016\" height=\"1.209\" color-interpolation-filters=\"sRGB\"><feGaussianBlur stdDeviation=\"4.062\"></feGaussianBlur></filter><linearGradient id=\"d\" y2=\"285.22\" gradientUnits=\"userSpaceOnUse\" x2=\"360.36\" y1=\"283.79\" x1=\"342.5\"><stop offset=\"0\"></stop><stop stop-color=\"#ccc\" offset=\"1\"></stop></linearGradient><linearGradient id=\"f\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.68228 0 0 1.2202 967.34 -126.44)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"h\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.70022 -.06541 -.01782 .44318 984.41 235.89)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"i\" y2=\"445.22\" xlink:href=\"#b\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71448 -.15435 .00897 -.31646 979.33 599.82)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"j\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71803 .08687 -.02422 -.31389 995.29 518.54)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"l\" y2=\"445.22\" xlink:href=\"#b\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71264 .17918 -.0368 -.30996 999.11 486.13)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"o\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.67271 -.05464 -.01387 .40326 955.28 281.41)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"p\" y2=\"445.22\" xlink:href=\"#a\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.68869 .084 -.02555 -.28535 967.79 538.45)\" y1=\"445.22\" x1=\"564.42\"></linearGradient><linearGradient id=\"q\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.68705 -.13544 .0063 -.28793 953.07 612.49)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"r\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.71448 .15435 .00897 .31646 970.76 250.51)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"s\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.73092 .00801 -.05464 .31184 1010.7 281.9)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"t\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.72479 .09476 -.01722 .31612 989.98 251.77)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"u\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.72479 .09476 -.01722 .31612 995.87 238.35)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#ffee58\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><linearGradient id=\"v\" y2=\"445.22\" gradientUnits=\"userSpaceOnUse\" x2=\"1188.2\" gradientTransform=\"matrix(-.73086 -.01204 -.05293 -.31214 1017.3 570.96)\" y1=\"445.22\" x1=\"564.42\"><stop stop-color=\"#fdd835\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#fdd835\" offset=\"1\"></stop></linearGradient><radialGradient id=\"w\" gradientUnits=\"userSpaceOnUse\" cy=\"133.61\" cx=\"14.817\" gradientTransform=\"matrix(2.8644 0 0 2.343 738.15 127.24)\" r=\"40.913\"><stop stop-color=\"#f6f6aa\" offset=\"0\"></stop><stop stop-opacity=\"0\" stop-color=\"#f8f8ac\" offset=\"1\"></stop></radialGradient></defs><path d=\"M335.11 255.73l663.28-80.86L334.34 291.5z\" transform=\"matrix(.68228 0 0 -1.2055 -212.275 413)\" opacity=\".363\" fill=\"#ffee58\" filter=\"url(#c)\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -287.17)\" fill=\"none\" stroke=\"#000\" stroke-width=\".792\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -274.9)\" fill=\"none\" stroke=\"#000\" stroke-width=\".792\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -260.97)\" stroke=\"#000\" stroke-width=\"1.266\"></path><path d=\"M477.98 260.36L442.8 755.71l71.61 11.07 8.39-516.6z\" fill=\"#b3b3b3\" stroke=\"#b3b3b3\"></path><path d=\"M522.98 250.36l40.714 6.429 27.143 503.57-76.071 7.142z\" fill=\"#f2f2f2\" stroke=\"#f2f2f2\"></path><path d=\"M563.69 256.78l20 12.857 41.071 481.07-33.75 9.464z\" fill=\"#ececec\" stroke=\"#ececec\"></path><path d=\"M468.69 270.36l9.286-8.571-35.536 493.93-19.464-8.215z\" fill=\"#999\" stroke=\"#b3b3b3\"></path><path d=\"M536.9 494.32l26.895.126-1.515 55.432z\" fill=\"#b3b3b3\"></path><path d=\"M540.92 500.13l17.425.253.126 18.562-17.678-.127zm.05 20.93l17.425.253.126 18.562-17.678-.127zm-97.89 131.1l1.515-49.119 4.672-1.768-3.283 51.644zm15.59-199.06l1.515-49.119 4.672-1.768-3.283 51.644zm9.85-125.26l1.515-49.119 4.672-1.768-3.283 51.644z\" stroke=\"#000\"></path><path d=\"M396.25 308.52a66.875 12.589 0 1 1-.006-.173\" transform=\"matrix(.94034 0 0 1.6973 215.844 -299.45)\" fill=\"none\" stroke=\"#000\" stroke-width=\".792\"></path><path d=\"M567.349 188.699a41.786 13.304 0 1 1-.004-.183\"></path><path d=\"M297.95 302.54c17.309-10.51 57.09-7.151 72.143.536v-25.18c-21.019-12.346-47.757-13.053-71.786-1.606z\" fill=\"url(#d)\" stroke=\"#000\" stroke-width=\"2.2\" transform=\"translate(191.55 -84.15)\"></path><path d=\"M485.03 248.35c17.309-10.51 66.019-8.937 81.071-1.25v-25.179c-18.16-11.63-58.11-14.3-80.71-1.6z\" stroke=\"#000\"></path><path d=\"M513.07 160.21l13.036-10.714 11.964 11.071z\" stroke=\"#000\" stroke-linejoin=\"round\"></path><path d=\"M516.91 160l.357 16.071 16.43.536.535-16.25z\" stroke=\"#000\"></path><path d=\"M525.84 152.86l.893-55.179M477.09 210.18l.536 34.107M462.26 224.64l.54 34.11m125.18-37.5l-.536 37.679M565.84 207.68l-.714 38.214\" fill=\"none\" stroke=\"#000\"></path><path d=\"M538.985 160.537a13.181 4.197 0 1 1-.001-.057\"></path><path d=\"M557.73 191.91l-6.566 22.728m-7.074-1.518l-6.06-26.264\" fill=\"none\" stroke=\"#000\" stroke-width=\"2.3\"></path><path d=\"M1013.6 197.14l-658.29 84.542v14.496s662.99 98.569 658.29 93.904z\" transform=\"matrix(-.68228 0 0 1.1507 711.32 -134.302)\" opacity=\".668\" fill=\"none\" stroke=\"#fff\" stroke-width=\"4.048\" filter=\"url(#e)\"></path><path d=\"M286.77 301.95l439.86 97.468v17.688l-439.86 114.58z\" opacity=\".668\" fill=\"url(#f)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M1012.9 190.92l-657.59 94.611v5.7s660.74 108.96 656.04 104.29z\" transform=\"matrix(-.68228 0 0 1.2202 711.32 -154.728)\" opacity=\".668\" fill=\"none\" stroke=\"#fff\" stroke-width=\"4.048\" filter=\"url(#g)\"></path><path d=\"M281.44 345.28l445.18 59.875v6.424l-450.25-1.9z\" opacity=\".668\" fill=\"url(#h)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M265.33 331.8l461.3 91.787v-4.588l-459.59-146.78z\" opacity=\".49\" fill=\"url(#i)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M360.24 384.45l637.23-203.31-628.3 233.59z\" transform=\"matrix(.6533 -.34756 -.19671 -1.1543 -147.12 760.92)\" opacity=\".363\" fill=\"#80ffe6\" filter=\"url(#c)\"></path><path d=\"M269.5 490.25l457.12-78.122v-4.55L266 435.896z\" opacity=\".668\" fill=\"url(#j)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M1015.4 297.01l-660.09-11.053v3.268l657.64 50.226z\" transform=\"matrix(-.68228 0 0 1.2202 711.32 -154.728)\" opacity=\".313\" fill=\"#fff\" filter=\"url(#k)\"></path><path d=\"M281.24 466.99l445.38-46.915v-4.493l-452.31-6.95z\" opacity=\".413\" fill=\"url(#l)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M335.11 255.73l690.19-66.12L334.34 291.5z\" transform=\"matrix(.655 -.00473 -.00882 -1.0965 -201.033 430.01)\" opacity=\".363\" fill=\"#ffee58\" filter=\"url(#m)\"></path><path d=\"M1021.2 227.46l-692.97 45.145.044 3.267 690.48-5.972z\" transform=\"matrix(-.655 .00473 .00893 1.1099 681.49 -92.81)\" opacity=\".313\" fill=\"#fff\" filter=\"url(#n)\"></path><path d=\"M281.22 385.8l445.4 37.255v5.846l-449.81 15.513z\" opacity=\".668\" fill=\"url(#o)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M281.2 403.46l445.42 22.099v-2.652l-449.18-68.864z\" opacity=\".668\" fill=\"url(#p)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M268.46 392.63l458.17 32.063v-4.174l-456.96-82.1z\" opacity=\".49\" fill=\"#ffee58\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M261.2 515.57l465.42-87.279v4.588l-463.71 142.27z\" opacity=\".49\" fill=\"url(#r)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M262.43 391.94l464.19 27.007v4.52L267 453.625z\" opacity=\".49\" fill=\"url(#s)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M260.94 457.27l465.68-29.23v4.583l-468.9 84.168z\" opacity=\".49\" fill=\"url(#t)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M266.84 443.85l459.78-22.943v4.583l-463.01 77.881z\" opacity=\".49\" fill=\"url(#u)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M269.64 449.38l456.98-17.832v-4.525l-466.93-36.415z\" opacity=\".49\" fill=\"url(#v)\" transform=\"translate(-257.72 -210.44)\"></path><path d=\"M897.77 440.28c0 52.925-52.449 95.838-117.16 95.854-64.709 0-117.18-42.881-117.22-95.822-.032-52.925 52.392-95.857 117.1-95.897 64.709-.04 117.21 42.828 117.28 95.753\" opacity=\".875\" fill=\"url(#w)\" transform=\"translate(-257.72 -210.44)\"></path></svg></div></div><style>		div.dcon{background-image: none;overflow: hidden;}div.dcon>div.innercon{height:auto;margin-bottom: 15px;}div.dcon>div.innercon:last-child{margin-bottom: 0;}div.dcon>div.innercon>div{position:relative;float:left;}div.title{width:100%;}div[wborder]{border:1px solid #767676;}div[innerbox]{padding:2px 6px;}h2.l{font-weight: normal;}p.l{font-size:18px;line-height:1.779;color:#333;}a.btn{position: relative;float: left;margin-top: 5px;font-size: 17px;padding: 2px 7px;margin-bottom: 10px;}div.h{position: relative;float:left;width: 100%;}div.h>div{position:relative;float:left;width:25%;margin-bottom: 16px;height:63px;}div.infobox>div.icon{position:relative;float:left;margin:4px 8px;width:32px;height:32px;background-repeat: no-repeat;}div.infobox>div.text{position:relative;float:left;max-width: 186px;text-align: left;white-space: normal;}div.infobox>div.text>div.innertext{font-size:16px;color:#444;}div[k]{right:0px;}@mediascreenand ( min-width : 0\0 ) {div[k]{right:-80%;}}@media only screen and (max-width:1100px){div.h>div{width:33.3%;}div.infobox>div.text{max-width:192px}}@media only screen and (max-width:840px){div.h>div{width:50%;height:96px;}div.infobox>div.text{max-width:160px}}	</style></div>";
+    }
+
+    function writeHelpPath($path){
+        $opath = $path;
+        $fbase = __DIR__;
+        $fbase = str_replace("\\","/",$fbase);
+        $path = $fbase . "/.help/" . $path;
+        $state = 0;
+        if(file_exists($path)){
+            if(is_dir($path)){
+                if(file_exists($path."/home.html")||file_exists($path."/index.html")){
+                    $state = 1;
+                }
+            }else if(is_file($path)){
+                $state = 1;
+                if(strripos($path,"home.html")!==false||strripos($path,"index.html")!==false) $state=0;
+            }
+        }else if(file_exists($path.".html")){
+            if(basename($path)!="home"&&basename($path)!="index"){
+                $state = 1;
+            }
+        }
+        $pathnames = array(""=>"DeBook帮助与支持主页",
+                           "item"=>"书籍，书单，作者",
+                           "book"=>"书籍",
+                           "list"=>"书单",
+                           "author"=>"作者",
+                           "order"=>"订单",
+                           "decoins"=>"获取DeCoins积分",
+                           "payment"=>"支付方式",
+                           "account"=>"用户与账户",
+                           "search"=>"搜索引擎",
+                           "language"=>"更换语言",
+                           "about"=>"关于我们",
+                           "terms"=>"使用条款与Cookie",
+                           "feedback"=>"反馈问题",
+                           "not_found"=>"不存在的帮助与支持页面");
+        if($state==0){
+            return "<a xhr href='?help'>".$pathnames[""]."</a>><p>".$pathnames["not_found"]."</p>";
+        }else{
+            $html = "<a xhr href='?help'>".$pathnames[""]."</a>>";
+            $cpath = "";
+            $parts = explode("/",$opath);
+            $nparts = array();
+            for($i=0;$i<sizeof($parts);$i++){
+                if($parts[$i]=="") continue;
+                if($parts[$i]=="home.html"||$parts[$i]=="index.html") continue;
+                if(strripos($parts[$i],".html")!==false) $parts[$i] = substr($parts[i],0,strlen($parts[$i])-5);
+                array_push($nparts,$parts[$i]);
+            }
+            for($i=0;$i<sizeof($nparts);$i++){
+                $cpath .= "/".$nparts[$i];
+                if(!isset($pathnames[$nparts[$i]])) continue;
+                $html .= "<a xhr href=\"?help$cpath\">".$pathnames[$nparts[$i]]."</a>";
+                if($i!=sizeof($nparts)-1) $html .= ">";
+            }
+            return $html;
+        }
+    }
+
+    if(!isset($home)){
+        $helpPath = getArray($_POST,"helpPath");
+        if($helpPath=="/"||$helpPath==""){
+            writeHelpMain();
+        }else{
+            writeHelpInner($helpPath);
+        }
+    }
+?>

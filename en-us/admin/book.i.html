@@ -1,0 +1,113 @@
+<?php
+    include "../.phtml/admin.php";
+    $condata = getcon(getArray($_POST, "id"));
+    $data = (array) json_decode($condata["object"]);
+    $data = decodeTextInArr($data);
+    
+    //preparing images
+    $o = explode(":", $data["images"]);
+    $image_str = "";
+    $randAddr = $o[0];
+    $editText = isset($data["editId"]) ? "Edit Book" : "Add Book";
+    for ($i = 0; $i < sizeof($o) - 1; $i++) {
+        $jpg = urldecode(base64_decode($o[$i + 1]));
+        $image_str .= "<a edit title=\"Book Image\"><img src=\"../Image/tmp/$randAddr/$jpg\" alt=\"book_name_picture\"></a>";
+    }
+    $bigImage_str = "";
+    if ($o[0] != "") {
+        $o[1] = urldecode(base64_decode($o[1]));
+        $bigImage_str = "<div class=\"_image\"><a edit title=\"Book Image\" style=\"float:none\"><img src=\"../Image/tmp/$o[0]/$o[1]\" alt=\"book_name_picture\"></a><div class=\"line\"></div><a style=\"color:#999;float:left\">book image</a></div>";
+    } else {
+        $bigImage_str = "<div class=\"_image\"><a style=\"color:#999;float:left\">The applicant did not upload any images</a><div class=\"line\"></div></div>";
+    }
+    //preparing all the data
+    $bn = $data["book_name"];
+    $ln = $data["book_label"] == "" ? "(empty)" : $data["book_label"];
+    $an = $data["author_name"];
+    $cn = $data["contents"];
+    $si = $data["searchIndex"] == "" ? "(empty)" : $data["searchIndex"];
+    $usr = decodeInfo($condata["contributor"]);
+    $email = $usr["email"] == "!" || $usr["email"] == "" ? "(anonymous)" : $usr["email"];
+    $ip = $condata["ip"];
+    $date = getLongDate($condata["date"]);
+    $object = $condata["object"];
+    $btn = $condata["status"] == 0 ? '<button class="asbox_submit" id="but_continue"><span>Continue</span></button><button class="asbox_submit" shallow id="but_ignore"><span>Ignore</span></button><button class="asbox_submit" shallow id="but_cancel"><span>Cancel</span></button>' : '<button class="asbox_submit" shallow id="but_cancel"><span>Cancel</span></button>';
+    echo <<<PAGE
+        <div class="dcon" style="margin-top: 15px;" id="editBoard">
+            <div class="scon">
+                <div class="pleft">
+                    $bigImage_str
+                    <div class="_all_image">
+                        <div class="_images_con">
+                            $image_str
+                        </div>
+                        <a style="color:#999">Book image</a>
+                    </div>
+                </div>
+                <div class="pright">
+                    <div class="title">
+                        <div class="asbox_con" edit>
+                            <p title>&nbsp;Book name*</p>
+                            <input class="asbox" placeholder="Book name" onfocus="boxstyle(this.parentElement,1)"
+                                onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="book_name" value="$bn">
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p title>&nbsp;Book label&nbsp;<a xhr href="../?search/label/all">All labels</a></p>
+                            <input class="asbox" placeholder="Book label" onfocus="boxstyle(this.parentElement,1)"
+                                onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="label_id" value="$ln">
+                        </div>
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;Author name*</p>
+                            <input class="asbox" placeholder="Author name" onfocus="boxstyle(this.parentElement,1)"
+                                onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="author_name" value="$an">
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="detail">
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;Book summary*&nbsp;<a>200 words or more recommended</a></p>
+                            <textarea class="asbox" onfocus="boxstyle(this.parentElement,1)"
+                                onblur="boxstyle(this.parentElement,0)" id="contents">$cn</textarea>
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="detail">
+                        <div class="asbox_con" edit style="margin-bottom: 0px;">
+                            <p title>&nbsp;Search Index&nbsp;<a xhr href="../?help/search_index">What is this? </a></p>
+                            <input class="asbox" placeholder="Search index" onfocus="boxstyle(this.parentElement,1)"
+                                onblur="boxstyle(this.parentElement,0)" autocomplete="off" id="search_index" value="$si">
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <p style="margin-bottom: 5px;"><b>The following is the data submitted by the user</b></p>
+                    <div class="detail">
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;Applicant email</p>
+                            <div class="asbox">$email</div>
+                            <!--Requests can be added or modified-->
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;User IP</p>
+                            <div class="asbox">$ip</div>
+                            <!--Requests can be added or modified-->
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;Request time</p>
+                            <div class="asbox">$date</div>
+                            <!--Request can be added or modified-->
+                        </div>
+                        <div class="asbox_con" edit>
+                            <p console>&nbsp;This request belongs to the following behavior</p>
+                            <div class="asbox">$editText</div>
+                            <!--Request can be added or modified-->
+                        </div>
+                    </div>
+                    <div class="line" style="margin:5px 0 15px 0;"></div>
+                    <div class="detail" style="margin-bottom: 20px;">
+                        $btn
+                    </div>
+                </div>
+            </div>
+        </div>
+    PAGE;
+?>
