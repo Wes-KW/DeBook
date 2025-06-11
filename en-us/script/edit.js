@@ -1,4 +1,4 @@
-//problems detected: multiple images shouldn't be represented in string with ';', use ':' instead
+//bugs: multiple images shouldn't be represented in string with ';', use ':' instead
 
 var images = [];
 var labels = [];
@@ -607,7 +607,7 @@ function hideEdit(isCancel){
         var _image = document.getElementById("uploadImage");
         var _images_con = document.getElementById("uploadImageCon");
         _image.children[0].children[0].src = "Image/src/add.jpg";
-        _images_con.innerHTML = '<a edit="" tips="添加图像" onmouseover="showTooltip(this)" onmouseleave="hideTooltip(this)" href="javascript:addMulImage();"><img src="Image/src/add.jpg" alt="book_name_picture"></a>';
+        _images_con.innerHTML = '<a edit="" tips="Add Photos" onmouseover="showTooltip(this)" onmouseleave="hideTooltip(this)" href="javascript:addMulImage();"><img src="Image/src/add.jpg" alt="book_name_picture"></a>';
         //delete content
         document.getElementById("book_name").value = "";
         document.getElementById("label_id").value = "";
@@ -687,7 +687,7 @@ function addMulImage(){
                     if(data[i]==""){
                         no_err = true;
                     }else{
-                        err_text = "上传（部分）文件时出现一下错误。<br />" + data[i] + "<br />";
+                        err_text = "Unable to upload file(s)<br/>" + data[i] + "<br/>";
                     }
                 }
                 if(no_err){
@@ -714,9 +714,9 @@ function addMulImage(){
                     }
                 }else{
                     if(this.responseText=="[]"){
-                        showMsgbox(msgbox,'<h3 style="margin-bottom:5px;width:100%">上传文件时出现错误</h3><p>上传单个或多个文件出现以下错误</p><style> div.asbox_con{margin-bottom:5px;} div.asbox_con:last-child{margin-bottom:0px;}</style><p><b>上传了相同文件名的图像。</b><br/>请不要重复上传文件或上传同一个文件名的两个不同文件。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" right="" onclick="hideMsgbox(this.parentElement.parentElement)">好的</a>');
-                    }else{
-                        showMsgbox(msgbox,'<h3 style="margin-bottom:5px;width:100%">上传文件时出现错误</h3><p>上传单个或多个文件出现以下错误</p><style> div.asbox_con{margin-bottom:5px;} div.asbox_con:last-child{margin-bottom:0px;}</style><p>' + this.responseText + '</p><div class="line" style="margin-top: 5px;"></div><a class="btn" right="" onclick="hideMsgbox(this.parentElement.parentElement)">好的</a>');
+                        showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Error uploading file</h3><p>An error occur when uploading file(s)</p><style> div.asbox_con{margin-bottom:5px;} div.asbox_con:last-child{margin-bottom:0px;}</style><div class="line" style="margin-top: 5px;"></div><p><b>Some files have the same file name</b><br/>Do not upload files of the same file name</p><div class="line" style="margin-top: 5px;"></div><a class="btn" right="" onclick="hideMsgbox(this.parentElement.parentElement)">OK</a>');
+                    } else {
+                        showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Error uploading file</h3><p>An error occur when uploading file(s)</p><style> div.asbox_con{margin-bottom:5px;} div.asbox_con:last-child{margin-bottom:0px;}</style><div class="line" style="margin-top: 5px;"></div><p>' + this.responseText + '</p><div class="line" style="margin-top: 5px;"></div><a class="btn" right="" onclick="hideMsgbox(this.parentElement.parentElement)">OK</a>');
                     }
                 }
             }else if(this.status==0){
@@ -817,7 +817,7 @@ function addSinImage(){
                     if(data[i]==""){
                         no_err = true;
                     }else{
-                        err_text = "上传（部分）文件时出现一下错误。<br />" + data[i] + "<br />";
+                        err_text = "Unable to upload file(s)<br/>" + data[i] + "<br/>";
                     }
                 }
                 if(no_err){
@@ -826,9 +826,9 @@ function addSinImage(){
                     _images_con.src = "Image/tmp/" + randAddress + "/" + images[0];
                 }else{
                     if(this.responseText=="[]"){
-                        showMsgbox(msgbox,'<h3 style="margin-bottom:5px;width:100%">上传文件时出现错误</h3><p>上传单个或多个文件出现以下错误</p><style> div.asbox_con{margin-bottom:5px;} div.asbox_con:last-child{margin-bottom:0px;}</style><div class="line" style="margin-top: 5px;"></div><p><b>上传了相同文件名的图像。</b><br/>请不要重复上传文件或上传同一个文件名的两个不同文件。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" right="" onclick="hideMsgbox(this.parentElement.parentElement)">好的</a>');
-                    }else{
-                        showMsgbox(msgbox,'<h3 style="margin-bottom:5px;width:100%">上传文件时出现错误</h3><p>上传单个或多个文件出现以下错误</p><style> div.asbox_con{margin-bottom:5px;} div.asbox_con:last-child{margin-bottom:0px;}</style><div class="line" style="margin-top: 5px;"></div><p>' + this.responseText + '</p><div class="line" style="margin-top: 5px;"></div><a class="btn" right="" onclick="hideMsgbox(this.parentElement.parentElement)">好的</a>');
+                        showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Error uploading file</h3><p>An error occur when uploading file(s)</p><style> div.asbox_con{margin-bottom:5px;} div.asbox_con:last-child{margin-bottom:0px;}</style><div class="line" style="margin-top: 5px;"></div><p><b>Some files have the same file name</b><br/>Do not upload files of the same file name</p><div class="line" style="margin-top: 5px;"></div><a class="btn" right="" onclick="hideMsgbox(this.parentElement.parentElement)">OK</a>');
+                    } else {
+                        showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Error uploading file</h3><p>An error occur when uploading file(s)</p><style> div.asbox_con{margin-bottom:5px;} div.asbox_con:last-child{margin-bottom:0px;}</style><div class="line" style="margin-top: 5px;"></div><p>' + this.responseText + '</p><div class="line" style="margin-top: 5px;"></div><a class="btn" right="" onclick="hideMsgbox(this.parentElement.parentElement)">OK</a>');
                     }
                 }
             }else if(this.status==0){

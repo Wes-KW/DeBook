@@ -59,8 +59,8 @@
             $btn1Style = "onclick='addToCart()'";
             $btn2Style = "onclick='buy()'";
             if($images==""){
-                $srcpicname = "Image/src/abb/0.jpg";
-                $image_small_html .= "<a style='color:#757575'>No photos of this book</a>";
+                $srcpicname = "Image/src/abb/" . rand(1,6);
+                $image_small_html .= "<a style='color:#757575'>No Photos of this Book</a>";
             }else{
                 $arrImage = explode(":",$images);
                 $firImage = $arrImage[0];
@@ -212,7 +212,7 @@
                     $tel = $applyArr[$i]["udlvinfo"]["phone_number"];
                     $email = $applyArr[$i]["email"];
                     $sch = $applyArr[$i]["udlvinfo"]["sch_allow"]?"Yes":"No";
-                    $schHTML = $applyArr[$i]["udlvinfo"]["sch_allow"]?"<div class=\"row\" half><a class=\"sword\">Ship from School&nbsp;</a><p class=\"sword\">".$applyArr[$i]["udlvinfo"]["sch"]."</p></div>":"";
+                    $schHTML = $applyArr[$i]["udlvinfo"]["sch_allow"]?"<div class=\"row\" half><a class=\"sword\">Ship From (School) Address&nbsp;</a><p class=\"sword\">".$applyArr[$i]["udlvinfo"]["sch"]."</p></div>":"";
                     $sdays = $applyArr[$i]["udlvinfo"]["sdays"]?"<div class=\"row\" half><a class=\"sword\" green-white>7-Day No-Reason Return</a></div>":"";
                     $imgHTML = "";
                     $imgPath = $applyArr[$i]["images"]["Path"];
@@ -225,7 +225,7 @@
                         $usrid = $applyArr[$i]["evaluations"][0]["usrid"];
                         for($x=0;$x<sizeof($aplEva);$x++){
                             $com = rawurldecode($aplEva[$x]["contents"]);
-                            if($com=="") $com = "(This user hasn't written any reviews)";
+                            if($com=="") $com = "(No Reviews from this User)";
                             $usrname2 = $aplEva[$x]["usrname"];
                             if($usrname2=="") $usrname2 = "<font style='color:#757575'>(Anonymous User)</font>";
                             $evanum = intval($aplEva[$x]["evanum"]);

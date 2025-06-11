@@ -164,6 +164,15 @@
         return $new_arr;
     }
 
+    function recordItemSendMail($email, $text, $type) {
+        $rec = $email;
+        if(strpos($rec,"!")!==false) $rec = substr($rec,1,strlen($rec)-1);
+        $sub = "Content Creation or Modification Approved - DeBook Used Book Market";
+        $html = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook Used Book Market</h3><p>The modification or creation of entry <b>$text</b> has been approved. You can find this $type by searching the keyword. </p><p>Thank you for your support</p><p>DeBook Used Book Market</p>";
+        $althtml = "DeBook Used Book Market\n\nThe modification or creation of entry $text has been approved. You can find this $type by searching the keyword.\n\nThank you for your support\n\nDeBook Used Book Market";
+        goMail($rec,$rec,$sub,$html,$althtml);
+    }
+
     function recordAur($id,$jsonStr){
         $root = FBASE."Image/author/";
         $root_tmp = FBASE."Image/tmp/";
@@ -250,17 +259,12 @@
             exeSql("UPDATE usrinfo SET coins=coins + $coins_add WHERE email='$usr'");
             $date = time();
             $rename = rawurldecode($names);
-            $content = rawurlencode("添加或编辑关于作者的词条 - $rename");
+            $content = rawurlencode("Add or edit an entry of author - $rename");
             exeSql("INSERT INTO trsinfo SET value='$coins_add',toUsrid='$reusrid',content='$content',date='$date'");
         }
         $namesA = urldecode($names);
-        if($usr["email"]!=""){
-            $rec = $usr["email"];
-            if(strpos($rec,"!")!==false) $rec = substr($rec,1,strlen($rec)-1);
-            $sub = "您在DeBook上的编辑已经通过，感谢您的支持。";
-            $html = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook二手书市场</h3><h2>您在DeBook二手书市场的对<b>$namesA</b>的添加或修改已经通过。此作者可以通过搜索寻找到。</h2><p>如果您添加或编辑作者时已登录DeBook，您将会收获1-3的DeCoins积分。您可以在DeBook账户中查看。</p><p>如果您从未在DeBook上添加或修改任何书籍，书单或作者，并认为您的账户存在潜在危险，请立刻更改账户密码，否则请忽略此消息。</p><p>感谢您的支持</p><p>- Nawaski.com</p>";
-            $althtml = "DeBook 账户 您在DeBook二手书市场的对作者 $namesA 的添加或修改已经通过。此作者可以通过搜索寻找到。如果您添加或编辑作者时已登录DeBook，您将会收获1-3的DeCoins积分。您可以在DeBook账户中查看。如果您从未在DeBook上添加或修改任何书籍，书单或作者，并认为您的账户存在潜在危险，请立刻更改账户密码，否则请忽略此消息。感谢您的支持 - Nawaski.com";
-            goMail($rec,$rec,$sub,$html,$althtml);
+        if ($usr["email"]!="") {
+            recordItemSendMail($usr["email"], $namesA, "author");
         }
     }
 
@@ -348,17 +352,12 @@
             exeSql("UPDATE usrinfo SET coins=coins + $coins_add WHERE email='$usr'");
             $date = time();
             $rename = rawurldecode($names);
-            $content = rawurlencode("添加或编辑关于书籍的词条-$rename");
+            $content = rawurlencode("Add or edit an entry of book - $rename");
             exeSql("INSERT INTO trsinfo SET value='$coins_add',toUsrid='$reusrid',content='$content',date='$date'");
         }
         $namesA = urldecode($names);
-        if($usr["email"]!=""){
-            $rec = $usr["email"];
-            if(strpos($rec,"!")!==false) $rec = substr($rec,1,strlen($rec)-1);
-            $sub = "您在DeBook上的编辑已经通过，感谢您的支持。";
-            $html = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook二手书市场</h3><h2>您在DeBook二手书市场的对<b><i>$namesA</i></b>的添加或修改已经通过。此书籍可以通过搜索寻找到。</h2><p>如果您添加或编辑书籍时已登录DeBook，您将会收获1-3的DeCoins积分。您可以在DeBook账户中查看。</p><p>如果您从未在DeBook上添加或修改任何书籍，书单或作者，并认为您的账户存在潜在危险，请立刻更改账户密码，否则请忽略此消息。</p><p>感谢您的支持</p><p>- DeSchoolService</p>";
-            $althtml = "DeBook 账户 您在DeBook二手书市场的对书籍 $namesA 的添加或修改已经通过。此作者可以通过搜索寻找到。如果您添加或编辑书籍时已登录DeBook，您将会收获1-3的DeCoins积分。您可以在DeBook账户中查看。如果您从未在DeBook上添加或修改任何书籍，书单或作者，并认为您的账户存在潜在危险，请立刻更改账户密码，否则请忽略此消息。感谢您的支持 - DeSchoolService";
-            goMail($rec,$rec,$sub,$html,$althtml);
+        if ($usr["email"]!="") {
+            recordItemSendMail($usr["email"], $namesA, "book");
         }
     }
 
@@ -458,17 +457,12 @@
             exeSql("UPDATE usrinfo SET coins=coins + $coins_add WHERE email='$usr'");
             $date = time();
             $rename = rawurldecode($names);
-            $content = rawurlencode("添加书单-$rename");
+            $content = rawurlencode("Add a booklist - $rename");
             exeSql("INSERT INTO trsinfo SET value='$coins_add',toUsrid='$reusrid',content='$content',date='$date'");
         }
         $namesA = urldecode($names);
         if($usr["email"]!=""){
-            $rec = $usr["email"];
-            if(strpos($rec,"!")!==false) $rec = substr($rec,1,strlen($rec)-1);
-            $sub = "您在DeBook上的编辑已经通过，感谢您的支持。";
-            $html = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook二手书市场</h3><h2>您在DeBook二手书市场的对<b>$namesA</b>的添加或修改已经通过。此书单可以通过搜索寻找到。</h2><p>如果您添加或编辑书单时已登录DeBook，您将会收获1-3的DeCoins积分。您可以在DeBook账户中查看。</p><p>如果您从未在DeBook上添加或修改任何书籍，书单或作者，并认为您的账户存在潜在危险，请立刻更改账户密码，否则请忽略此消息。</p><p>感谢您的支持</p><p>- DeSchoolService</p>";
-            $althtml = "DeBook 账户 您在DeBook二手书市场的对书单 $namesA 的添加或修改已经通过。此作者可以通过搜索寻找到。如果您添加或编辑书单时已登录DeBook，您将会收获1-3的DeCoins积分。您可以在DeBook账户中查看。如果您从未在DeBook上添加或修改任何书籍，书单或作者，并认为您的账户存在潜在危险，请立刻更改账户密码，否则请忽略此消息。感谢您的支持 - DeSchoolService";
-            goMail($rec,$rec,$sub,$html,$althtml);
+            recordItemSendMail($usr["email"], $namesA, "booklist");
         }
     }
 
@@ -485,9 +479,9 @@
                 $advice = decodeText($advice);
                 $rec = $usr["email"];
                 if(strpos($rec,"!")!==false) $rec = substr($rec,1,strlen($rec)-1);
-                $sub = "您在DeBook上的编辑未能通过。";
-                $html = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook二手书市场</h3><h2>您在DeBook二手书市场的对<b>$namesA</b>的添加或修改未能通过。我们为您致以歉意。以下信息为我们为您提供的修改意见，您可以尝试修改后重新提交。</h2><br/><p>$advice</p><br/><p>如果您从未在DeBook上添加或修改任何书籍，书单或作者，并认为您的账户存在潜在危险，请立刻更改账户密码，否则请忽略此消息。</p><p>感谢您的支持</p><p>- DeSchoolService</p>";
-                $althtml = "您在DeBook二手书市场的对 $namesA 的添加或修改未能通过。我们为您致以歉意。以下信息为我们为您提供的修改意见，您可以尝试修改后重新提交。$advice 如果您从未在DeBook上添加或修改任何书籍，书单或作者，并认为您的账户存在潜在危险，请立刻更改账户密码，否则请忽略此消息。感谢您的支持 - DeSchoolService";
+                $sub = "Content Creation or Modification Failed - DeBook Used Book Market";
+                $html = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook Used Book Market</h3><p>Creation or modification of <b>$namesA</b> has failed. We apologize for your inconvenience. The following information why it fails to pass the audit.</p><br/><p>$advice</p><p>Thank you for your support</p><p>DeBook Used Book Market</p>";
+                $althtml = "DeBook Used Book Market\n\nCreation or modification of $namesA has failed. We apologize for your inconvenience. The following information why it fails to pass the audit.\n\n$advice\n\nThank you for your support\n\nDeBook Used Book Market";
                 goMail($rec,$rec,$sub,$html,$althtml);
             }
         }

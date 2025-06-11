@@ -23,7 +23,7 @@ function addToCart(){
         gotoPage("?cart/newItem/"+strCart);
         putHis("","","?cart");
     },function(){
-        netErr2();
+        badNet();
     });
 }
 
@@ -45,7 +45,7 @@ function reSelectCom(obj){
             },function(){
                 obj.removeAttribute("pre-selected");
                 obj.setAttribute("null-selected","");
-                netErr2();
+                badNet();
             });
         }else if(selectedNum>1){
             if(obj.hasAttribute("null-selected")) obj.removeAttribute("null-selected");
@@ -58,7 +58,7 @@ function reSelectCom(obj){
             },function(){
                 obj.removeAttribute("pre-selected");
                 obj.setAttribute("null-selected","");
-                netErr2();
+                badNet();
             });
         }else{
             obj.setAttribute("tips","请按选项框下方的删除按钮将此书移出购物车");
@@ -100,12 +100,12 @@ function deleteCartItem(obj,ids,bookid){
                 obj2.outerHTML = "";
             }
         },function(){
-            netErr2();
+            badNet();
             obj.innerHTML = "删除";
             obj.setAttribute("onclick","deleteCartItem(this,"+strJson(ids)+")");
         });
     },function(){
-        netErr2();
+        badNet();
         obj.innerHTML = "删除";
         obj.setAttribute("onclick","deleteCartItem(this,"+strJson(ids)+")");
     });
@@ -161,7 +161,7 @@ function rewritePQ(textObj,bookid,fn,errFn){
         if(com_pricebar.children[2].innerHTML.length==1) com_pricebar.children[2].innerHTML += "0";
         if(fn!=null) fn();
     },function(){
-        netErr2();
+        badNet();
         if(errFn!=null) errFn();
     })
 }
@@ -204,9 +204,9 @@ function selectItem(obj,num){
                 }else{
                     bob.removeAttribute("selected");
                 }
-            },function(){netErr2();});
+            },function(){badNet();});
         },function(){
-            netErr2();
+            badNet();
         });
     },100);
 }
@@ -276,7 +276,7 @@ function clearCart(){
             par.innerHTML += "<div class=\"infobox\" style=\"border: 0;padding:6px 0;width:100%;\"><div class=\"chbox\" style=\"top: 6px;\"><input type=\"checkbox\" class=\"asbox\" disabled><span style=\"background-image: url('Image/fatcow/asterisk_yellow.png');\"></span></div><div class=\"text\" style=\"margin-left:25px\"><p class=\"title\">购物车内没有任何书籍</p><p style=\"font-size: 16px;color: #202122;\"><a xhr href=\"?book\">转到书籍主页</a>或<a style=\"cursor:pointer\" onclick=\"focusSearch()\">搜索书籍</a>，以添加一本书籍到购物车。</p></div></div>";
             hideMsgbox(msgbox);
         },function(){
-            netErr2();
+            badNet();
         });
     }
 }

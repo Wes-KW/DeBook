@@ -11,24 +11,23 @@ var usr = {
     keys: ['usrid', 'email', 'time', 'coins', 'deliver_info', 'receipt_info', 'cart', 'pwd']
 }
 
-/*
-  structure of deliver_info
-  name:
-  phone_number:
-  sent_location:
-  allow_school_supply:
-  allow_7_day_no_reason_return:
-  allow_decoins_discount:
-  school_location:
- 
-  structure of each receipt_info
-  id:
-  address:
-  is_default:
-  name:
-  telephone:
-  email:
- */
+/* 
+structure of deliver_info 
+name: 
+phone_number: 
+sent_location: 
+allow_school_supply: 
+allow_7_day_no_reason_return: 
+allow_decoins_discount: 
+school_location: 
+
+structure of each receipt_info 
+ID: 
+address: 
+is_default: 
+name: 
+telephone: email: 
+*/
 
 function decodeInfo(text) {
     return JSON.parse(decodeURI(atob(text)));
@@ -96,12 +95,11 @@ function newXMLHttpRequest(method, url, send, fnOK, fnErr, fnProgress, fnLoad) {
             fnOK(xmlHttp.responseText);
         } else if (this.readyState == 4) {
             if (fnErr == null) return;
-            fnErr({ 'readyState': this.readyState, 'status': this.status });
+            fnErr({'readyState': this.readyState, 'status': this.status});
         }
     }
     if (window.addEventListener != null) {
-        xmlHttp.addEventListener("progress", fnProgress != null ? function (e) { fnProgress(e) } : function () { });
-        xmlHttp.addEventListener("load", fnLoad != null ? function (e) { fnLoad(e) } : function () { });
+        xmlHttp.addEventListener("progress", fnProgress != null ? function (e) { fnProgress(e) } : function () { }); xmlHttp.addEventListener("load", fnLoad != null ? function (e) { fnLoad(e) } : function () { });
     } else {
         xmlHttp.attachEvent("progress", fnProgress != null ? function (e) { fnProgress(e) } : function () { });
         xmlHttp.attachEvent("load", fnLoad != null ? function (e) { fnLoad(e) } : function () { });
@@ -109,7 +107,7 @@ function newXMLHttpRequest(method, url, send, fnOK, fnErr, fnProgress, fnLoad) {
 }
 
 function objToSql(obj) {
-    //setSql
+    //setSql 
     var sql = "";
     for (var i in obj) {
         sql += i + "=" + '"' + obj[i] + '"';
@@ -120,7 +118,7 @@ function objToSql(obj) {
 }
 
 function objToSqlGet(obj) {
-    //getSql
+    //getSql 
     var sql = "";
     for (var i in obj) {
         sql += i + ", ";
@@ -161,8 +159,8 @@ function checkPwd(value) {
     else if (value.length >= 8) { level += 0.6; }
     else { level = 0; }
     var i = 0, charNum = 0, cptlNum = 0, intNum = 0, symNum = 0;
-    var len = value.length;
-    for (i; i < len; i++) { if (/^[a-z,A-Z]/.test(value[i])) { charNum += 1; } if (/^[A-Z]/.test(value[i])) { cptlNum += 1; } if (/^[0-9]/.test(value[i])) { intNum += 1; } var pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？]"); if (pattern.test(value[i])) { symNum += 1; } }
+    varlen = value.length;
+    for (i; i < len; i++) { var pattern = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？]"); if (pattern.test(value[i])) { symNum += 1; } }
     if (charNum > 5) { level += 0.2; }
     else if (charNum > 2) { level += 0.15; }
     if (cptlNum > 3) { level += 0.2; }
@@ -268,7 +266,7 @@ function focusSplitInput(obj) {
 }
 
 function getSplitInputValue(obj) {
-    var s = "";
+    vars = "";
     for (var i = 0; i < obj.children.length; i++) {
         s += obj.children[i].children[0].value;
     }
@@ -282,8 +280,8 @@ function checkTimeout() {
             if (typeof k["usrid"] == "undefined" || k["usrid"] == "") {
                 logout();
             } else {
-                //check if information were changed
-                //needs to add an identification on the ip address of the user
+                //check if information were changed 
+                //needs to add an identification on the ip address of the user 
                 newXMLHttpRequest('POST', '.phtml/vrfylogin.php', 'direct=usrCheck', function (rspt2) {
                     var k2 = JSON.parse(rspt2);
                     var mm = typeof k2["pwd_changed"] != "undefined";
@@ -296,7 +294,7 @@ function checkTimeout() {
                         for (var key in k2) {
                             if (k2[key] != usr[key]) {
                                 usr[key] = k2[key];
-                                //updateSession
+                                //updateSession 
                                 newXMLHttpRequest('POST', '.phtml/vrfylogin.php', 'direct=update&key=' + key + '&value=' + usr[key], function () { }, function () { });
                             }
                         }
@@ -320,18 +318,18 @@ function logout() {
         var sc = document.getElementById("sectionCon");
         var section = sc.children[0];
         section.children[0].innerHTML = '<div class="rcon" style="display: block;padding:25px 0px">\
-      <div class="pcon">\
-      <h2 style="width:210px;">会话已过期</h2>\
-      <h3 style="width:240px;margin-bottom: 10px;">您的登录会话已过期</h3>\
-      <p>您的登录会话已过期，这通常是由于您在其它标签页或窗口登出了此网站，或者您重新打开没有登录信息的页面。<br>您将没有权限查看或修改任何设置和数据。<a href="?account">重新登录</a>。</p>\
-      </div>\
-      </div>';
+<div class="pcon">\
+<h2 style="width:210px;">Session expired</h2>\
+<h3 style="width:240px;margin-bottom: 10px;">Your login session has expired</h3>\
+<p>Your login session has expired, usually because you logged out of this site in another tab or window, or you reopened the page without login information. <br>You will not be able to view or modify any settings or data. <a href="?account">Log in again</a>. </p>\
+</div>\
+</div>';
     }
     for (key in usr) {
         usr[key] = "";
     }
     var msgbox = document.getElementsByClassName("MsgBox")[0];
-    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">会话已过期</h3><p>登录会话已过期</p><div class="line" style="margin-top: 5px;"></div><a class="btn" right xhr href="?account">重新登录</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">好的</a>');
+    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Session expired</h3><p>Login session expired</p><div class="line" style="margin-top: 5px;"></div><a class="btn" right xhr href="?account">Re-login</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">OK</a>');
     initAllLink();
 }
 
@@ -375,19 +373,18 @@ function usrpage(d, bool) {
         }
     }
 }
-
 /*Delivery Method */
 function showUpdateSentInfo() {
     var msgbox = document.getElementsByClassName('MsgBox')[0];
-    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">发货人信息添加或更改</h3><p>填写发货人信息</p><div class="line" style="margin-top: 5px;"></div>\
-    <div class="asbox_con" style="width:98.4%;"><p>&nbsp;姓名</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="姓名" autocomplete="off"></div>\
-    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;手机号码</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="手机号码" autocomplete="off" pattern="[0-9]*"></div>\
-    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;发货地址</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="发货地址" autocomplete="off"></div>\
-    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><input type="checkbox" id="check0" class="asbox" type="checkbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" style="height:100%"><span style="left:0;top:3px;position:absolute;"></span><button a type="button" style="padding:0px;margin-left:18px;" onclick="this.parentElement.children[0].checked=!this.parentElement.children[0].checked">是否提供学校发货服务</button></div>\
-    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;学校发货地址&nbsp;<font style="text-decoration:underline dashed 1px;color:#333;font-weight:bold">多个地址用“;”隔开</font></p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="学校发货地址" autocomplete="off"></div>\
-    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><input type="checkbox" id="check1" class="asbox" type="checkbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" style="height:100%"><span style="left:0;top:3px;position:absolute;"></span><button a type="button" style="padding:0px;margin-left:18px;" onclick="this.parentElement.children[0].checked=!this.parentElement.children[0].checked">是否支持7天无理由退货</button></div>\
-    <div class="line" style="margin-top: 5px;"></div><a class="btn" right>确认</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">取消</a>');
-    var btn = msgbox.children[0].children[msgbox.children[0].children.length - 2];
+    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Add or change the consignor information</h3><p>Fill in the consignor information</p><div class="line" style="margin-top: 5px;"></div>\
+<div class="asbox_con" style="width:98.4%;"><p>&nbsp;Name</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Name" autocomplete="off"></div>\
+<div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;Mobile phone number</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Mobile phone number" autocomplete="off" pattern="[0-9]*"></div>\
+<div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;Shipping address</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Shipping address" autocomplete="off"></div>\
+<div class="asbox_con" style="width:98.4%;margin-top:5px;"><input type="checkbox" id="check0" class="asbox" type="checkbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" style="height:100%"><span style="left:0;top:3px;position:absolute;"></span><button a type="button" style="padding:0px;margin-left:18px;" onclick="this.parentElement.children[0].checked=!this.parentElement.children[0].checked">Do you provide school delivery service?</button></div>\
+<div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;School delivery address&nbsp;<font style="text-decoration:underline dashed 1px;color:#333;font-weight:bold">Multiple addresses are separated by ";"</font></p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="School shipping address" autocomplete="off"></div>\
+<div class= "asbox_con" style = "width:98.4%;margin-top:5px;" > <input type="checkbox" id="check1" class="asbox" type="checkbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" style="height:100%"><span style="left:0;top:3px;position:absolute;"></span><button a type="button" style="padding:0px;margin-left:18px;" onclick="this.parentElement.children[0].checked=!this.parentElement.children[0].checked">Whether to support 7-day no-reason returns</button></div>\
+<div class="line" style="margin-top: 5px;"></div><a class="btn" right>Confirm</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">Cancel</a>'); 
+var btn = msgbox.children[0].children[msgbox.children[0].children.length - 2];
     var inputs = msgbox.getElementsByTagName('input');
     for (var i = 0; i < inputs.length; i++) {
         inputs[i].onclick = function () { this.select(); }
@@ -404,7 +401,7 @@ function showUpdateSentInfo() {
     }
     btn.onclick = function () {
         btn.innerHTML = "<span class='wait' style='width:11px;background-color:whitesmoke;'></span>";
-        //encode deliver_info
+        //encode deliver_info 
         var obj = new Object();
         obj.name = inputs[0].value;
         obj.phone_number = inputs[1].value;
@@ -413,20 +410,20 @@ function showUpdateSentInfo() {
         obj.sch = inputs[4].value;
         obj.sdays = inputs[5].checked ? 1 : 0;
         var dlvinfo = encodeInfo(obj);
-        //updateSession&Cookie
+        //updateSession&Cookie 
         newXMLHttpRequest('POST', '.phtml/vrfylogin.php', 'direct=update&key=deliver_info&value=' + dlvinfo, function () {
-            //updateData
-            //unsafe:revise not to use direct sql check
+            //updateData 
+            //unsafe:revise not to use direct sql check 
             newXMLHttpRequest('POST', '.phtml/more/echoSql.phtml', 'sql=UPDATE usrinfo SET deliver_info="' + dlvinfo + '" where usrid="' + usr.usrid + '"', function () {
                 msgbox.children[0].innerHTML = "";
                 hideMsgbox(msgbox);
-                //updateLocal
+                //updateLocal 
                 document.getElementById("dlv_name").children[0].innerHTML = obj.name;
                 document.getElementById("dlv_pn").children[0].innerHTML = obj.phone_number;
                 document.getElementById("dlv_adrs").children[0].innerHTML = obj.address;
-                document.getElementById("dlv_sch_allow").children[0].innerHTML = obj.sch_allow ? "提供" : "不提供";
+                document.getElementById("dlv_sch_allow").children[0].innerHTML = obj.sch_allow ? "Provide" : "Do not provide";
                 document.getElementById("dlv_sch").children[0].innerHTML = obj.sch;
-                document.getElementById("dlv_sdays").children[0].innerHTML = obj.sdays ? "支持" : "不支持";
+                document.getElementById("dlv_sdays").children[0].innerHTML = obj.sdays ? "Supported" : "Not supported";
             }, function (obj) {
                 errMsg(stObj, btn);
             });
@@ -440,16 +437,16 @@ function showUpdateSentInfo() {
 function showUpdateReceiptMethod(changeId, extraFn) {
     if (typeof changeId == "undefined") changeId = "";
     var msgbox = document.getElementsByClassName('MsgBox')[0];
-    var innerHTML = '<h3 style="margin-bottom:5px;width:100%">收货人信息添加或更改</h3><p>填写收货人信息</p><div class="line" style="margin-top: 5px;"></div>\
-    <div class="asbox_con" style="width:98.4%;"><p>&nbsp;收货地址</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="收货地址" autocomplete="none"></div>\
-    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;收货人</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="收货人" autocomplete="none"></div>\
-    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;电话</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="电话" autocomplete="none" pattern="[0-9]*"></div>\
-    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;电子邮箱</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="电子邮箱" autocomplete="none"></div>\
-    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><input type="checkbox" id="check0" class="asbox" type="checkbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="none" style="height:100%"><span style="top:2px;position:absolute;"></span><button a type="button" style="padding:1px 0;margin-left:18px;" onclick="this.parentElement.children[0].checked=!this.parentElement.children[0].checked">设为默认地址</button></div>\
-    <div class="line" style="margin-top: 5px;"></div>\
-    <a class="btn" right>确认</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">取消</a>';
+    var innerHTML = '<h3 style="margin-bottom:5px;width:100%">Add or change consignee information</h3><p>Fill in consignee information</p><div class="line" style="margin-top: 5px;"></div>\
+                    <div class="asbox_con" style="width:98.4%;"><p>&nbsp;Delivery address</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Delivery address" autocomplete="none"></div>\
+                    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;Consignee</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Consignee" autocomplete="none"></div>\
+                    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;Phone</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Phone" autocomplete="none" pattern="[0-9]*"></div>\
+                    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;Email</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Email" autocomplete="none"></div>\
+                    <div class="asbox_con" style="width:98.4%;margin-top:5px;"><input type="checkbox" id="check0" class="asbox" type="checkbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="none" style="height:100%"><span style="top:2px;position:absolute;"></span><button a type="button" style="padding:1px 0;margin-left:18px;" onclick="this.parentElement.children[0].checked=!this.parentElement.children[0].checked">Set as default address</button></div>\
+                    <div class="line" style = "margin-top: 5px;" ></div >\
+                    <a class="btn" right>Confirm</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">Cancel</a>'; 
     showMsgbox(msgbox, innerHTML);
-    var btn = msgbox.children[0].children[msgbox.children[0].children.length - 2];
+    var btn = msgbox.children[0].children[msgbox.children[0].children.llength - 2];
     var inputs = msgbox.getElementsByTagName('input');
     if (changeId != "") {
         var sadd = "";
@@ -466,8 +463,7 @@ function showUpdateReceiptMethod(changeId, extraFn) {
                 cname = fdata["name"];
                 dtel = fdata["tele"];
                 demail = fdata["email"];
-                inputs[0].value = sadd;
-                inputs[1].value = cname;
+                inputs[0].value = sadd; inputs[1].value = cname;
                 inputs[2].value = dtel;
                 inputs[3].value = demail;
                 break;
@@ -488,7 +484,7 @@ function showUpdateReceiptMethod(changeId, extraFn) {
         for (var i = 0; i < inputs.length; i++) {
             if (inputs[i].value == "") {
                 var text = inputs[i].parentElement.children[0].innerText;
-                shbox(inputs[i], text.substring(1, text.length) + "不能为空", 1500);
+                shbox(inputs[i], text.substring(1, text.length) + "cannot be empty", 1500);
                 return;
             }
         }
@@ -523,11 +519,11 @@ function showUpdateReceiptMethod(changeId, extraFn) {
             text = newT;
         }
         btn.innerHTML = "<span class='wait' style='margin-right:0px;'></span>";
-        //database
+        //database 
         newXMLHttpRequest("POST", '.phtml/more/echoSql.phtml', 'sql=UPDATE usrinfo SET receipt_info="' + text + '" WHERE usrid="' + usr.usrid + '"', function () {
-            //local_session
+            //local_session 
             newXMLHttpRequest("POST", '.phtml/vrfylogin.php', 'direct=update&key=receipt_info&value=' + text, function () {
-                //local
+                //local 
                 if (extraFn != null && typeof extraFn == "function") extraFn(encodeInfo(obj));
                 if (location.search.indexOf("?account") < 0) return;
                 var table = document.getElementById("receipt_info_table");
@@ -536,10 +532,10 @@ function showUpdateReceiptMethod(changeId, extraFn) {
                     if (table.children[1].children[0].hasAttribute("empty")) {
                         table.children[1].children[0].outerHTML = "";
                     }
-                    var d = "";
+                    vard = "";
                     d += '<tr id=' + obj.id + '><td><input type="checkbox" class="asbox" type="checkbox" onclick="edSelect(this)"><span></span></td><td onclick=\'edSelect(this.parentElement.children[0].children[0],1)\'><a>' + obj.address + '</a>';
-                    if (obj.id.indexOf("A") >= 0) d += '<font class="default">(默认)</font>';
-                    d += '</td><td onclick=\'edSelect(this.parentElement.children[0].children[0],1)\'>' + obj.name + '</td><td onclick=\'edSelect(this.parentElement.children[0].children[0],1)\'>电话: ' + obj.tele + '<br>电子邮件: ' + obj.email + '</td><td><a onclick="removeReceiptMethod(\'' + obj.id + '\');">删除</a> | <a onclick="showUpdateReceiptMethod(\'' + obj.id + '\');">更改</a></td></tr>';
+                    if (obj.id.indexOf("A") >= 0) d += '<font class="default">(Default)</font>';
+                    d += '</td><td onclick=\'edSelect(this.parentElement.children[0].children[0],1)\'>' + obj.name + '</td><td onclick=\'edSelect(this.parentElement.children[0].children[0],1)\'>Phone: ' + obj.tele + '<br>Email: ' + obj.email + '</td><td><a onclick="removeReceiptMethod(\'' + obj.id + '\');">Remove</a> | <a onclick="showUpdateReceiptMethod(\'' + obj.id + '\');">Change</a></td></tr>';
                     table.children[1].innerHTML += d;
                 } else {
                     for (var i = 0; i < rows.length; i++) {
@@ -554,10 +550,10 @@ function showUpdateReceiptMethod(changeId, extraFn) {
                                 }
                                 rows[i].setAttribute("id", changeId);
                                 rows[i].children[1].innerHTML = "<a>" + obj.address + "</a>";
-                                if (obj.id.indexOf("A") >= 0) rows[i].children[1].innerHTML += "<font class='default'>(默认)</font>";
+                                if (obj.id.indexOf("A") >= 0) rows[i].children[1].innerHTML += "<font class='default'>(Default)</font>";
                                 rows[i].children[2].innerHTML = obj.name;
-                                rows[i].children[3].innerHTML = "电话: " + obj.tele + "<br>电子邮件: " + obj.email;
-                                rows[i].children[4].innerHTML = '<a onclick="removeReceiptMethod(\'' + changeId + '\');">删除</a> | <a onclick="showUpdateReceiptMethod(\'' + changeId + '\');">更改</a>';
+                                rows[i].children[3].innerHTML = "Telephone: " + obj.tele + "<br>Email: " + obj.email;
+                                rows[i].children[4].innerHTML = '<a onclick="removeReceiptMethod(\'' + changeId + '\');">Remove</a> | <a onclick="showUpdateReceiptMethod(\'' + changeId + '\');">Change</a>';
                             }
                         }
                     }
@@ -589,11 +585,11 @@ function removeReceiptMethod(id) {
             }
         }
     }
-    //database
+    //database 
     newXMLHttpRequest("POST", '.phtml/more/echoSql.phtml', 'sql=UPDATE usrinfo SET receipt_info="' + new_text + '" WHERE usrid="' + usr.usrid + '"', function (rspt) {
-        //local_session
+        //local_session 
         newXMLHttpRequest("POST", '.phtml/vrfylogin.php', 'direct=update&key=receipt_info&value=' + new_text, function (rspt2) {
-            //local
+            //local 
             var rows = table.children[1].children;
             for (var i = rows.length - 1; i >= 0; i--) {
                 if (rows[i].hasAttribute("id")) {
@@ -605,7 +601,7 @@ function removeReceiptMethod(id) {
                 }
             }
             if (rows.length == 0) {
-                rows[0].parentElement.innerHTML = "<tr empty=\"\"><td colspan=\"5\" style=\"text-align: center;background-color: #f2f4f6;\">(没有收货地址)</td></tr>";
+                rows[0].parentElement.innerHTML = "<tr empty=\"\"><td colspan=\"5\" style=\"text-align: center;background-color: #f2f4f6;\">(no shipping address)</td></tr>";
             }
         }, function (err) {
             errMsg(err, btn);
@@ -617,7 +613,7 @@ function removeReceiptMethod(id) {
 
 function removeSelectedReceiptMethod() {
     var data = document.getElementById("receipt_info_table").getAttribute("data");
-    if (data != null && confirm("您确定删除所有选中的收货地址吗？(此操作不可撤回)")) {
+    if (data != null && confirm("Are you sure you want to delete all selected delivery addresses? (This operation is irreversible)")) {
         removeReceiptMethod(document.getElementById("receipt_info_table").getAttribute("data"));
     }
 }
@@ -625,12 +621,12 @@ function removeSelectedReceiptMethod() {
 function showUpdateEmail() {
     var vrfyCode = null;
     var msgbox = document.getElementsByClassName('MsgBox')[0];
-    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">更改电子邮箱</h3><p>更改现有的电子邮箱</p><div class="line" style="margin-top: 5px;"></div><div class="asbox_con" style="width:98.4%;"><p>&nbsp;新电子邮箱</p><input class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="新电子邮箱" id=\'eml0\'><p>&nbsp;<a style="cursor: pointer;">获取验证码</a></p></div><div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;验证码</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="验证码" autocomplete="off"></div><div class="line" style="margin-top: 5px;"></div><a class="btn" right >确认</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">取消</a>');
+    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Change email</h3><p>Change existing email</p><div class="line" style="margin-top: 5px;"></div><div class="asbox_con" style="width:98.4%;"><p>&nbsp;New Email</p><input class="asbox" onblur="boxstyle(this.parentElement,0)" onfocus="boxstyle(this.parentElement,1)" autocomplete="off" placeholder="New Email" id=\'eml0\'><p>&nbsp;<a style="cursor: pointer;">Get Verification Code</a></p></div><div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;Verification Code</p><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Verification Code" autocomplete="off"></div><div class="line" style="margin-top: 5px;"></div><a class="btn" right >Confirm</a></a></div class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">Cancel</a>');
     var input = msgbox.getElementsByClassName('asbox');
     var btn = msgbox.children[0].children[msgbox.children[0].children.length - 2];
     var getCodeBtn = msgbox.getElementsByClassName('asbox_con')[0].children[2].children[0];
     var pds = "<span class='wait'></span>";
-    //safer
+    //safer 
     var fn = function () {
         var msgbox = document.getElementsByClassName('MsgBox')[0];
         var input = msgbox.getElementsByClassName('asbox');
@@ -640,14 +636,14 @@ function showUpdateEmail() {
                 if (rspt == "0") {
                     code = randomStr('n', 6);
                     var rec = input[0].value;
-                    var sub = "DeBook ID验证码";
-                    var HTML = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook 账户</h3><h2>我们收到了您的更换邮箱请求。您的验证码为<b>" + code + "</b>。请在DeBook网页继续操作。</h2><p>请不要转发验证码给任何陌生人，以防盗号。</p><p>如果您从未申请过更换邮箱，请务必忽略此封信件。</p><p>感谢您的联系</p><p>- Nawaski.com</p>";
+                    var sub = "DeBook ID Verification Code";
+                    var HTML = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook Account</h3><h2>We have received your request to change your email address. Your verification code is <b>" + code + "</b>. Please continue the operation on the DeBook webpage.</h2><p>Please do not forward the verification code to any stranger to prevent account theft.</p><p>If you have never applied for a change of email address, please be sure to ignore this email.</p><p>Thank you for your contact</p><p>- Nawaski.com</p>";
                     var direct = "MAIL=" + rec + "&SUBJECT=" + sub + "&HTML=" + HTML + "&ALT=" + getHTMLText(HTML);
                     getCodeBtn.innerHTML = pds;
                     newXMLHttpRequest('POST', '.phtml/sendMail.phtml', "emailKey=go&" + direct, function (rspt) {
                         var getCodeBtn = msgbox.getElementsByClassName('asbox_con')[0].children[2].children[0];
                         if (rspt == "") {
-                            getCodeBtn.innerHTML = "再试一次"
+                            getCodeBtn.innerHTML = "Try again"
                             var d = getCodeBtn.outerHTML;
                             var p = getCodeBtn.parentElement;
                             vrfyCode = $.md5(code);
@@ -656,40 +652,40 @@ function showUpdateEmail() {
                             }, 180000);//30min timeout
                             getCodeBtn = msgbox.getElementsByClassName('asbox_con')[0].children[2].children[0];
                             getCodeBtn.onclick = function () { fn(); };
-                            p.innerHTML = "&nbsp;没收到邮件？" + d;
+                            p.innerHTML = "Didn't receive the email?" + d;
                         } else {
-                            shbox(input[0], "电子邮箱错误", 1500);
-                            getCodeBtn.innerHTML = "再试一次"
+                            shbox(input[0], "Email error", 1500);
+                            getCodeBtn.innerHTML = "Try again"
                             var d = getCodeBtn.outerHTML;
                             var p = getCodeBtn.parentElement;
                             getCodeBtn = msgbox.getElementsByClassName('asbox_con')[0].children[2].children[0];
                             getCodeBtn.onclick = function () { fn(); };
-                            p.innerHTML = "&nbsp;发送邮件失败。" + d;
+                            p.innerHTML = "&nbsp;Failed to send email." + d;
                         }
                     }, function () {
-                        getCodeBtn.innerHTML = "再试一次"
+                        getCodeBtn.innerHTML = "Try again"
                         var d = getCodeBtn.outerHTML;
                         var p = getCodeBtn.parentElement;
                         getCodeBtn = msgbox.getElementsByClassName('asbox_con')[0].children[2].children[0];
                         getCodeBtn.onclick = fn;
-                        p.innerHTML = "&nbsp;发送邮件失败(网络错误)。" + d;
+                        p.innerHTML = "&nbsp;Failed to send email (network error)." + d;
                     });
                 } else {
-                    shbox(input[0], "此邮箱已经注册过，替换邮箱以继续", 2500);
+                    shbox(input[0], "This email has been registered, replace the email to continue", 2500);
                 }
             }, function (stObj) {
                 var advice = "";
                 if (stObj.status == 0) {
-                    advice = "请确保您已经联网";
+                    advice = "Please make sure you are online";
                 } else if (stObj.status == 403) {
-                    advice = "请确保您有权限访问此页面";
+                    advice = "Please make sure you have permission to access this page";
                 } else if (stObj.status == 404 || stObj.status == 500) {
-                    advice = "请确保所访问路径没有错误";
+                    advice = "Please make sure there is no error in the accessed path";
                 }
-                showMsgbox(msgbox, '<h3 style="width:100%">网络错误</h3><p>访问网络时遇到错误，页面返回代码：' + stObj.status + '，' + advice + '。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                showMsgbox(msgbox, '<h3 style="width:100%">Network error</h3><p>An error occurred while accessing the network. The page returns code: ' + stObj.status + ', ' + advice + '.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
             });
         } else {
-            shbox(input[0], "电子邮箱错误", 1500);
+            shbox(input[0], "Email error", 1500);
         }
     }
     getCodeBtn.onclick = fn;
@@ -702,11 +698,11 @@ function showUpdateEmail() {
     var fn2 = function () {
         btn.innerHTML = pds;
         if (input[1].value != "" && $.md5(input[1].value) == vrfyCode) {
-            //database
+            //database 
             newXMLHttpRequest('POST', '.phtml/more/echoSql.phtml', 'sql=UPDATE usrinfo SET email="' + input[0].value + '", email_news="' + input[0].value + '" WHERE usrid="' + usr.usrid + '"', function (rspt) {
-                //local_session
+                //local_session 
                 newXMLHttpRequest('POST', '.phtml/vrfylogin.php', 'direct=update&key=email&value=' + input[0].value, function () {
-                    //local_website
+                    //local_website 
                     document.getElementById("label_email").children[0].innerHTML = input[0].value;
                     var msgbox = document.getElementsByClassName('MsgBox')[0];
                     hideMsgbox(msgbox);
@@ -717,8 +713,8 @@ function showUpdateEmail() {
                 errMsg(err, btn);
             });
         } else {
-            shbox(input[1], "验证码不正确", 1000);
-            btn.innerHTML = "再试一次";
+            shbox(input[1], "Verification code is incorrect", 1000);
+            btn.innerHTML = "Try again";
         }
     }
     btn.onclick = fn2;
@@ -740,17 +736,17 @@ function showUpdateNickname() {
     nickname.children[1].children[0].focus();
     var pds = "<span class='wait' style='margin-right:0px;'></span>";
     btncan.style.display = "block";
-    btn.innerHTML = "确定";
+    btn.innerHTML = "OK";
     btn.onclick = function () {
-        //database
+        //database 
         newXMLHttpRequest('POST', '.phtml/more/echoSql.phtml', 'sql=UPDATE usrinfo SET nickname="' + nickname.children[1].children[0].value + '" WHERE usrid="' + usr.usrid + '"', function (rspt) {
-            //local_session
+            //local_session 
             newXMLHttpRequest('POST', '.phtml/vrfylogin.php', 'direct=update&key=nickname&value=' + nickname.children[1].children[0].value, function () {
-                //local
+                //local 
                 nickname.children[0].innerHTML = nickname.children[1].children[0].value;
                 nickname.children[0].style.display = "";
                 nickname.children[1].style.display = "none";
-                btn.innerHTML = "更改";
+                btn.innerHTML = "Change";
                 btncan.style.display = "none";
                 btn.onclick = function () { showUpdateNickname(); };
             }, function (err) {
@@ -768,7 +764,7 @@ function showUpdateNickname() {
     }
     btncan.onclick = function () {
         btncan.style.display = "none";
-        btn.innerHTML = "更改";
+        btn.innerHTML = "Change";
         nickname.children[0].style.display = "";
         nickname.children[1].style.display = "none";
         btn.onclick = function () { showUpdateNickname(); };
@@ -777,15 +773,15 @@ function showUpdateNickname() {
 
 function showUpdatePassword0() {
     var msgbox = document.getElementsByClassName('MsgBox')[0];
-    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">更改密码</h3><p>更改账号密码</p><div class="line" style="margin-top: 5px;"></div><div class="asbox_con" style="width:98.4%;"><p>&nbsp;原始密码</p><input type="password" class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="原始密码" autocomplete="off"></div><div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;新密码</p><input type="password" class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="新密码" autocomplete="off"></div><div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;确认新密码</p><input type="password" class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="确认新密码" autocomplete="off"></div><div class="line" style="margin-top: 5px;"></div><a class="btn" right >确认</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">取消</a>');
+    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Change password</h3><p>Change account password</p><div class="line" style="margin-top: 5px;"></div><div class="asbox_con" style="width:98.4%;"><p>&nbsp;Original password</p><input type="password" class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Original password" autocomplete="off"></div><div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;New password</p><input type="password" class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="New password" autocomplete="off"></div><div class="asbox_con" style="width:98.4%;margin-top:5px;"><p>&nbsp;Confirm new password</p><input type="password" class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Confirm new password" autocomplete="off"></div><div class="line" style="margin-top: 5px;"></div><a class="btn" right >Confirm</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">Cancel</a>');
     var btn = msgbox.children[0].children[msgbox.children[0].children.length - 2];
     var input = msgbox.getElementsByTagName('input');
     btn.onclick = function () {
         btn.innerHTML = "<span class='wait' style='width:19px;background-color:whitesmoke;'></span>";
         //checkPwd
         if ($.md5(input[0].value) != usr.pwd.split(':')[0]) {
-            shbox(input[0], "原始密码不正确", 1500);
-            btn.innerHTML = "再试一次";
+            shbox(input[0], "Original password incorrect", 1500);
+            btn.innerHTML = "Try again";
         } else {
             if (checkPwd(input[1].value) != 0) {
                 if ($.md5(input[1].value) == $.md5(input[2].value)) {
@@ -793,13 +789,13 @@ function showUpdatePassword0() {
                     //CHANGE LOCAL JS DATA
                     usr.pwd = $.md5(input[1].value) + ":" + pwd2;
                     if (checkPwd(input[1].value) < 2) {
-                        showMsgbox(msgbox, '<h3 style="width:100%">密码不安全</h3><p style="width:100%">您的密码比较简单，我们将继续更改，但我们强烈建议您在事后修改密码。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>知道了</a>');
+                        showMsgbox(msgbox, '<h3 style="width:100%">The password is not secure</h3><p style="width:100%">Your password is simple, we will continue to change it, but we strongly recommend that you change your password afterwards.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>Got it</a>');
                     }
                     //CHANGE DATABASE DATA
                     newXMLHttpRequest('POST', '.phtml/usr.php', 'key=forget&pwd=' + usr.pwd + '&ue=' + usr.usrid, function () {
                         //change session
                         newXMLHttpRequest('POST', '.phtml/vrfylogin.php', 'direct=update&key=pwd&value=' + usr.pwd, function () {
-                            showMsgbox(msgbox, '<h3 style="width:100%">密码修改成功</h3><p style="width:100%">您的密码已经修改了。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>知道了</a>');
+                            showMsgbox(msgbox, '<h3 style="width:100%">Password change successful</h3><p style="width:100%">Your password has been changed.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>Got it</a>');
                             window.setTimeout(function () {
                                 hideMsgbox(msgbox);
                             }, 2000);
@@ -810,12 +806,12 @@ function showUpdatePassword0() {
                         errMsg(st, btn);
                     })
                 } else {
-                    shbox(input[2], "两次密码不匹配", 1500);
-                    btn.innerHTML = "再试一次";
+                    shbox(input[2], "The two passwords do not match", 1500);
+                    btn.innerHTML = "Try again";
                 }
             } else {
-                shbox(input[1], "新密码非常不安全", 1500);
-                btn.innerHTML = "再试一次";
+                shbox(input[1], "The new password is very unsafe", 1500);
+                btn.innerHTML = "Try again";
             }
         }
     }
@@ -824,63 +820,63 @@ function showUpdatePassword0() {
 function showUpdatePassword1(extraFn) {
     var pwdp = "";
     var msgbox = document.getElementsByClassName('MsgBox')[0];
-    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">更改支付密码</h3><p>输入账户密码</p><div class="line" style="margin-top: 5px;"></div><div class="asbox_con" style="width:98.4%;"><p>&nbsp;原始密码</p><input type="password" class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="原始密码" autocomplete="off"></div><div class="line" style="margin-top: 5px;"></div><a class="btn" right >确认</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">取消</a>');
+    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Change payment password</h3><p>Enter account password</p><div class="line" style="margin-top: 5px;"></div><div class="asbox_con" style="width:98.4%;"><p>&nbsp;Original password</p><input type="password" class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" placeholder="Original password" autocomplete="off"></div><div class="line" style="margin-top: 5px;"></div><a class="btn" right >Confirm</a><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">Cancel</a>');
     var input = msgbox.getElementsByClassName('asbox')[0];
     var btn = msgbox.children[0].children[msgbox.children[0].children.length - 2];
     btn.onclick = function () {
         if ($.md5(input.value) == usr.pwd.split(":")[0]) {
             btn.innerHTML = "<span class='wait' style='width:19px;background-color:whitesmoke;'></span>";
-            showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">新支付密码</h3><p>输入支付密码</p><div class="line" style="margin-top: 5px;"></div>\
-                                <div class="split_input">\
-                                  <div class="asbox_con">\
-                                    <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-                                  </div>\
-                                  <div class="asbox_con">\
-                                    <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-                                  </div>\
-                                  <div class="asbox_con">\
-                                    <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-                                  </div>\
-                                  <div class="asbox_con">\
-                                    <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-                                  </div>\
-                                  <div class="asbox_con">\
-                                    <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-                                  </div>\
-                                  <div class="asbox_con">\
-                                    <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-                                  </div>\
+            showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">New payment password</h3><p>Enter payment password</p><div class="line" style="margin-top: 5px;"></div>\
+                                <div class= "split_input">\
+                                    <div class="asbox_con">\
+                                        <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                                    </div>\
+                                    <div class="asbox_con">\
+                                        <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                                    </div>\
+                                    <div class="asbox_con">\
+                                        <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                                    </div>\
+                                    <div class="asbox_con">\
+                                        <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                                    </div>\
+                                    <div class="asbox_con">\
+                                        <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                                    </div>\
+                                    <div class="asbox_con">\
+                                        <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                                    </div>\
                                 </div>\
                                 <div class="line" style="margin-top: 5px;"></div>\
-                                <a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">取消</a>');
+                                <a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">Cancel</a>');
             var d = msgbox.getElementsByClassName('split_input')[0];
             makeSplitInput(d);
             var l = d.lastElementChild.children[0];
             l.onkeyup = function () {
                 if (l.value.length > 0) {
                     pwdp = $.md5(getSplitInputValue(d));
-                    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">确认支付密码</h3><p>再次输入支付密码</p><div class="line" style="margin-top: 5px;"></div>\
-            <div class="split_input">\
-              <div class="asbox_con">\
-                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-              </div>\
-              <div class="asbox_con">\
-                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-              </div>\
-              <div class="asbox_con">\
-                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-              </div>\
-              <div class="asbox_con">\
-                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-              </div>\
-              <div class="asbox_con">\
-                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-              </div>\
-              <div class="asbox_con">\
-                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
-              </div>\
-            </div>\
-            <div class="line" style="margin-top: 5px;"></div><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">取消</a>');
+                    showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Confirm payment password</h3><p>Enter payment password again</p><div class="line" style="margin-top: 5px;"></div>\
+                            <div class="split_input">\
+                            <div class="asbox_con">\
+                            <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                            </div>\
+                            <div class="asbox_con">\
+                                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                            </div>\
+                            <div class="asbox_con">\
+                                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                            </div>\
+                            <div class="asbox_con">\
+                                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                            </div>\
+                            <div class="asbox_con">\
+                                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                            </div>\
+                            <div class="asbox_con">\
+                                <input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%;" autocomplete="off" type="password" maxlength="1">\
+                            </div>\
+                        </div>\
+                        <div class="line" style="margin-top: 5px;"></div><a class="btn" right onclick="hideMsgbox(this.parentElement.parentElement)">Cancel</a>'); 
                     d = msgbox.getElementsByClassName('split_input')[0];
                     l = d.lastElementChild.children[0];
                     makeSplitInput(d);
@@ -893,7 +889,7 @@ function showUpdatePassword1(extraFn) {
                             newXMLHttpRequest('POST', '.phtml/more/echoSql.phtml', 'sql=UPDATE usrinfo SET pwd="' + usr.pwd + '" where usrid="' + usr.usrid + '"', function () {
                                 //change session
                                 newXMLHttpRequest('POST', '.phtml/vrfylogin.php', 'direct=update&key=pwd&value=' + usr.pwd, function () {
-                                    showMsgbox(msgbox, '<h3 style="width:100%">密码修改成功</h3><p style="width:100%">您的密码已经修改了。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>知道了</a>');
+                                    showMsgbox(msgbox, '<h3 style="width:100%">Password changed successfully</h3><p style="width:100%">Your password has been changed.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>Got it</a>');
                                     window.setTimeout(function () {
                                         hideMsgbox(msgbox);
                                         if (extraFn != null) extraFn();
@@ -906,8 +902,8 @@ function showUpdatePassword1(extraFn) {
                             })
                         } else {
                             shakeBox(d.children[0], "leftRight", 3, 50, 10);
-                            btn.innerHTML = "再试一次";
-                            d.setAttribute('tips', '<font size="4" err>两次密码不匹配</font>');
+                            btn.innerHTML = "Try again";
+                            d.setAttribute('tips', '<font size="4" err>The two passwords do not match</font>');
                             mx = d.getClientRects()[0].left;
                             my = d.getClientRects()[0].top + 20;
                             showTooltip(d);
@@ -920,8 +916,8 @@ function showUpdatePassword1(extraFn) {
             }
         } else {
             shakeBox(input, "leftRight", 3, 50, 10);
-            btn.innerHTML = "再试一次";
-            input.setAttribute('tips', '<font size="4" err>原始密码不正确</font>');
+            btn.innerHTML = "Try again";
+            input.setAttribute('tips', '<font size="4" err>The original password is incorrect</font>');
             mx = input.getClientRects()[0].left;
             my = input.getClientRects()[0].top + 10;
             showTooltip(input);
@@ -953,11 +949,11 @@ function hasDefault() {
 }
 
 function getNextId() {
-    var rifo = usr.receipt_info;
-    if (typeof rifo == "undefined" || rifo == "") return 0;
+    varrifo = usr.receipt_info;
+    if (typeofrifo == "undefined" || ribo == "") return 0;
     var rifo = rifo.split(":");
     var recids = [];
-    for (var i = 0; i < rifo.length; i++) {
+    for (var i = 0; i < ribo.length; i++) {
         if (rifo[i] == "") continue;
         recids[recids.length] = parseInt(decodeInfo(rifo[i]).id.split("|")[0]);
     }
@@ -984,14 +980,14 @@ function errMsg(stObj, WIO) {
     var msgbox = document.getElementsByClassName("MsgBox")[0];
     var advice = "";
     if (stObj.status == 0) {
-        advice = "请确保您已经联网";
+        advice = "Make sure you are online";
     } else if (stObj.status == 403) {
-        advice = "请确保您有权限访问此页面";
+        advice = "Make sure you have permission to access this page";
     } else if (stObj.status == 404) {
-        advice = "请确保所访问路径没有错误";
+        advice = "Make sure there is no error in the access path";
     }
-    showMsgbox(msgbox, '<h3 style="width:100%">网络错误</h3><p>访问网络时遇到错误，页面返回代码：' + stObj.status + '，' + advice + '。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>')
+    showMsgbox(msgbox, '<h3 style="width:100%">Network Error</h3><p>An error occurred while accessing the network. The page returns the code: ' + stObj.status + ', ' + advice + '. </p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)"right>OK</a>')
     if (WIO != null) {
-        WIO.innerHTML = "再试一次";
+        WIO.innerHTML = "Try again";
     }
 }

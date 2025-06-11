@@ -44,7 +44,7 @@
             $name = urldecode($d["names"]);
             $contents = nl2br(urldecode($d["contents"]));
             if($images==""){
-                $srcpicname = "Image/src/abb/" . rand(1,2) . ".jpg";
+                $srcpicname = "Image/src/abb/" . rand(2,6) . ".png";
                 $image_small_html .= "<a style='color:#757575'>This entry contains no photos</a>";
             }else{
                 $arrImage = explode(":",$images);

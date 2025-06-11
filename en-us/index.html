@@ -1143,7 +1143,6 @@
             var idx = in_array(page, args[0]);
             if (idx == -1) {
                 if (args[0] == "") {
-                    //load this page
                     goHome();
                 } else {
                     goNullPage();
@@ -1224,7 +1223,7 @@
                     });
                 } else if (idx == 3) {
                     //account manipulation
-                    loadTitle("DeBook 账户");
+                    loadTitle("DeBook Account");
                     completeEvent(function () {
                         judgeUsr();
                     });

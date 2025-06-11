@@ -63,15 +63,15 @@ function newID(obj, attribute, fn, WIO) {
     }, function (stObj) {
         var advice = "";
         if (stObj.status == 0) {
-            advice = "请确保您已经联网";
+            advice = "Please make sure you are connected to the Internet";
         } else if (stObj.status == 403) {
-            advice = "请确保您有权限访问此页面";
+            advice = "Please make sure you have permission to access this page";
         } else if (stObj.status == 404) {
-            advice = "请确保所访问路径没有错误";
+            advice = "Please make sure there is no error in the accessed path";
         }
-        showMsgbox(msgbox, '<h3 style="width:100%">网络错误</h3><p>访问网络时遇到错误，页面返回代码：' + stObj.status + '，' + advice + '。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>')
+        showMsgbox(msgbox, '<h3 style="width:100%">Network error</h3><p>An error occurred while accessing the network. The page returns code: ' + stObj.status + ', ' + advice + '.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>')
         if (WIO != null) {
-            WIO.innerHTML = "再试一次";
+            WIO.innerHTML = "Try again";
         }
     });
 }
@@ -81,7 +81,7 @@ function sendMail(rec, sub, HTML, successText, errText, WIO, extraFn) {
     var direct = "MAIL=" + rec + "&SUBJECT=" + sub + "&HTML=" + HTML + "&ALT=" + getHTMLText(HTML);
     var resetWIO = function () {
         if (WIO != null) {
-            WIO.innerHTML = "再试一次";
+            WIO.innerHTML = "Try again";
             WIO.onclick = function () {
                 if (typeof extraFn == "function") {
                     extraFn();
@@ -98,23 +98,23 @@ function sendMail(rec, sub, HTML, successText, errText, WIO, extraFn) {
     newXMLHttpRequest('POST', '.phtml/sendMail.phtml', "emailKey=go&" + direct, function (rspt) {
         if (rspt == "") {
             if (successText !== 0) {
-                showMsgbox(msgbox, '<h3 style="width:100%">邮件已发送</h3><p>' + successText + '</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                showMsgbox(msgbox, '<h3 style="width:100%">Mail sent</h3><p>' + successText + '</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
             }
             resetWIO();
         } else {
-            showMsgbox(msgbox, '<h3 style="width:100%">邮件发送失败</h3><p style="width:100%">' + errText + '</p><p>错误代码: ' + rspt + '</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+            showMsgbox(msgbox, '<h3 style="width:100%">Mail failed to send</h3><p style="width:100%">' + errText + '</p><p>Error code: ' + rspt + '</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
             resetWIO();
         }
     }, function (stObj) {
         var advice = "";
         if (stObj.status == 0) {
-            advice = "请确保您已经联网";
+            advice = "Please make sure you are connected to the Internet";
         } else if (stObj.status == 403) {
-            advice = "请确保您有权限访问此页面";
+            advice = "Please make sure you have permission to access this page";
         } else if (stObj.status == 404 || stObj.status == 500) {
-            advice = "请确保所访问路径没有错误";
+            advice = "Please make sure there is no error in the accessed path";
         }
-        showMsgbox(msgbox, '<h3 style="width:100%">网络错误</h3><p>访问网络时遇到错误，页面返回代码：' + stObj.status + '，' + advice + '。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+        showMsgbox(msgbox, '<h3 style="width:100%">Network error</h3><p>An error occurred while accessing the network. The page returns code: ' + stObj.status + ', ' + advice + '.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>Okay</a>');
         resetWIO();
     });
 }
@@ -133,16 +133,16 @@ function mdMailCode(obj, extraFn) {
     var code = randomStr('n', 6);
     var restriction = obj.parentElement.parentElement.children[1].value;
     var rec = obj.parentElement.parentElement.children[1].value;
-    var sub = "DeBook ID验证码";
-    var HTML = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook 账户</h3><h2>我们收到了您的注册或找回密码请求。您的验证码为<b>" + code + "</b>。请在DeBook网页继续操作。</h2><p>请不要转发验证码给任何陌生人，以防盗号。</p><p>如果您从未申请过此注册或尝试找回密码，请务必忽略此封信件。</p><p>感谢您的联系</p><p>- Nawaski.com</p>";
-    sendMail(rec, sub, HTML, "一封包含验证码的邮件已经发送到您的邮箱，请查收。", "", obj, extraFn);
+    var sub = "DeBook ID Verification Code";
+    var HTML = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook Account</h3><h2>We have received your registration or password recovery request. Your verification code is <b>" + code + "</b>. Please continue the operation on the DeBook website. </h2><p>Please do not forward the verification code to any stranger to prevent account theft. </p><p>If you have never applied for this registration or tried to retrieve your password, please be sure to ignore this letter. </p><p>Thank you for your contact</p><p>- Nawaski.com</p>";
+    sendMail(rec, sub, HTML, "An email containing a verification code has been sent to your mailbox, please check it.", "", obj, extraFn);
     return $.md5(restriction + code);
 }
 
 function pwdChgMail(mail) {
     var rec = mail;
-    var sub = "DeBook ID密码变更";
-    var HTML = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook 账户</h3><h2>您的DeBook ID密码已经变更，密码变更于<b>" + new Date().constructor() + "</b>。变更密码将会锁定所有当前登录的账户，除非使用新密码重新登录。</h2><p>如果您在未登录的情况下没有找回密码，请务必立即更改您的密码。</p><p>如果您从未使用DeBook，请忽略此封信件。</p><p>感谢您的联系</p><p>- Nawaski.com</p>";
+    var sub = "DeBook ID password change";
+    var HTML = "<style>h3,h2,p,a{margin:0px;}h2{font-weight:normal;}</style><h3>DeBook account</h3><h2>Your DeBook ID password has been changed, the password was changed on <b>" + new Date().constructor() + "</b>. Changing your password will lock all currently logged-in accounts unless you log in again with the new password.</h2><p>If you do not retrieve your password without logging in, please change your password immediately.</p><p>If you have never used DeBook, please ignore this email.</p><p>Thank you for contacting</p><p>- Nawaski.com</p>";
     sendMail(rec, sub, HTML, 0, "", null);
 }
 
@@ -181,8 +181,7 @@ function setY() {
 }
 
 function resetSubmit(obj) {
-    obj.innerHTML = "<span>继续</span>";
-    obj.removeAttribute('disabled');
+    obj.innerHTML = "<span>Continue</span>"; obj.removeAttribute('disabled');
 }
 
 function chgLockForm(num, lockStatus) {
@@ -199,7 +198,7 @@ function chgLockForm(num, lockStatus) {
         }
         fm.setAttribute("disabled", '');
     } else {
-        var cfms = fm.getElementsByTagName('input');
+        varcfms = fm.getElementsByTagName('input');
         for (var i = 0; i < cfms.length; i++) {
             cfms[i].removeAttribute("disabled");
         }
@@ -223,25 +222,25 @@ function setForget() {
                     makeMailCodeVrfy(obj);
                 });
                 newXMLHttpRequest('POST', '.phtml/vrfylogin.php', 'direct=setECCode&e_code=' + global_codes.code2, function () { }, function () { });
-                //30min timeout
+                //30min timeout 
                 window.setTimeout(function () {
                     global_codes.code2 = "";
                     newXMLHttpRequest('POST', '.phtml/vrfylogin.php', 'direct=setECCode&e_code=', function () { }, function () { });
                 }, 180000);
             } else {
                 var msgbox = document.getElementsByClassName('MsgBox')[0];
-                showMsgbox(msgbox, '<h3 style="width:100%">用户错误</h3><p style="width:100%">此邮箱还未用以注册，如要加入我们，请在<b>“加入到DeBook”</b>栏填写信息。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                showMsgbox(msgbox, '<h3 style="width:100%">User error</h3><p style="width:100%">This email has not been used for registration. If you want to join us, please fill in the information in the <b>"Join DeBook"</b> column.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
             }
         }, function (stObj) {
             var advice = "";
             if (stObj.status == 0) {
-                advice = "请确保您已经联网";
+                advice = "Please make sure you are online";
             } else if (stObj.status == 403) {
-                advice = "请确保您有权限访问此页面";
+                advice = "Please make sure you have permission to access this page";
             } else if (stObj.status == 404 || stObj.status == 500) {
-                advice = "请确保所访问路径没有错误";
+                advice = "Please make sure there is no error in the accessed path";
             }
-            showMsgbox(msgbox, '<h3 style="width:100%">网络错误</h3><p>访问网络时遇到错误，页面返回代码：' + stObj.status + '，' + advice + '。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+            showMsgbox(msgbox, '<h3 style="width:100%">Network error</h3><p>An error occurred while accessing the network. The page returns code: ' + stObj.status + ', ' + advice + '.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>Okay</a>');
         });
     }
     var forget = function () {
@@ -260,7 +259,7 @@ function setForget() {
                 if ($.md5(pwd2_0.value) == $.md5(pwd2_1.value)) {
                     if (checkPwd(pwd2_0.value) > 0.15) {
                         if (checkPwd(pwd2_0.value) < 2) {
-                            showMsgbox(msgbox, '<h3 style="width:100%">密码不安全</h3><p style="width:100%">您的密码比较简单，我们将继续更改，但我们强烈建议您在事后修改密码。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>知道了</a>');
+                            showMsgbox(msgbox, '<h3 style="width:100%">Password is not secure</h3><p style="width:100%">Your password is simple and we will continue to change it, but we strongly recommend that you change your password afterwards.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>Got it</a>');
                             t = 4000;
                         }
                         newXMLHttpRequest('POST', '.phtml/usr.php', 'key=getpwd&ue=' + eml1.value, function (rspt) {
@@ -275,7 +274,7 @@ function setForget() {
                                         chgLockForm(2, 0);
                                         resetSubmit(submit2);
                                         window.setTimeout(function () {
-                                            showMsgbox(msgbox, '<h3 style="width:100%">密码更改成功</h3><p style="width:100%">您的密码已经更改。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                                            showMsgbox(msgbox, '<h3 style="width:100%">Password change successful</h3><p style="width:100%">Your password has been changed.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
                                             eml1.value = "";
                                             emlc1.value = "";
                                             pwd2_0.value = "";
@@ -283,7 +282,7 @@ function setForget() {
                                             global_codes.code2 = "";
                                         }, t);
                                     } else {
-                                        showMsgbox(msgbox, '<h3 style="width:100%">电子邮箱验证码错误</h3><p style="width:100%">请检查您的电子邮箱验证码是否正确，然后再试一次。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                                        showMsgbox(msgbox, '<h3 style="width:100%">Email verification code error</h3><p style="width:100%">Please check if your email verification code is correct and try again.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
                                         chgLockForm(2, 0);
                                         resetSubmit(submit2);
                                     }
@@ -293,7 +292,7 @@ function setForget() {
                                     resetSubmit(submit2);
                                 });
                             } else {
-                                showMsgbox(msgbox, '<h3 style="width:100%">电子邮箱错误</h3><p style="width:100%">请检查您的电子邮箱是否以正确的方式填写，然后再试一次。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                                showMsgbox(msgbox, '<h3 style="width:100%">Email verification code error</h3><p style="width:100%">Please check if your email address is filled in correctly and try again. </p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
                                 chgLockForm(2, 0);
                                 resetSubmit(submit2);
                             }
@@ -303,17 +302,17 @@ function setForget() {
                             resetSubmit(submit2);
                         });
                     } else {
-                        showMsgbox(msgbox, '<h3 style="width:100%">密码非常不安全</h3><p style="width:100%">空密码或一到两个字符的密码非常不安全，安全起见，请加入更多字符，最好运用大小写，数字以及符号。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                        showMsgbox(msgbox, '<h3 style="width:100%">Passwords are very unsafe</h3><p style="width:100%">Empty passwords or passwords with one or two characters are very unsafe. For safety reasons, please add more characters, preferably uppercase and lowercase, numbers and symbols.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
                         chgLockForm(2, 0);
                         resetSubmit(submit2);
                     }
                 } else {
-                    showMsgbox(msgbox, '<h3 style="width:100%">两次密码不相符</h3><p style="width:100%">请检查您输入的两次密码是否相同并更改，然后再试一次。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                    showMsgbox(msgbox, '<h3 style="width:100%">The two passwords do not match</h3><p style="width:100%">Please check that the two passwords you entered are the same and change them, then try again.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
                     chgLockForm(2, 0);
                     resetSubmit(submit2);
                 }
             } else {
-                showMsgbox(msgbox, '<h3 style="width:100%">用户错误</h3><p style="width:100%">此邮箱还未用以注册，如要加入我们，请在<b>“加入到DeBook”</b>栏填写信息。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                showMsgbox(msgbox, '<h3 style="width:100%">User error</h3><p style="width:100%">This email has not been used for registration. If you want to join us, please fill in the information in the <b>"Join DeBook"</b> column.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
                 chgLockForm(2, 0);
                 resetSubmit(submit2);
             }
@@ -371,12 +370,12 @@ function login() {
     submit0.setAttribute("disabled", "");
     submit0.innerHTML = '<span class="wait" style="width:11px;padding-left: 6px;background-color:whitesmoke;background-position: 2px;"></span>';
     newXMLHttpRequest("POST", ".phtml/usr.php", "key=login&usr=" + id0.value + "&pwd=" + pwd0.value + "&longt=" + longt, function (rspt) {
-        var mb = document.getElementsByClassName("MsgBox")[0];
+        varmb = document.getElementsByClassName("MsgBox")[0];
         if (rspt == "ERR_USR_NOT_FOUND" || rspt == "ERR_NOT_AUTHORIZED") {
-            showMsgbox(mb, '<h3 style="width:100%">用户名或密码错误</h3><p style="width:100%">您的用户名或密码错误，请检查并更改后重试。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>知道了</a>');
+            showMsgbox(mb, '<h3 style="width:100%">Username or password error</h3><p style="width:100%">Your username or password is wrong, please check and change it and try again.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>Got it</a>');
             chgLockForm(0, 0);
             submit0.removeAttribute("disabled");
-            submit0.innerHTML = '<span>继续</span>';
+            submit0.innerHTML = '<span>Continue</span>';
         } else if (rspt == "1") {
             autologin(function () {
                 if (getHashContinue() != "") {
@@ -398,14 +397,13 @@ function setSignUp() {
     var signupVrfyCode1 = function () {
         var msgbox = document.getElementsByClassName('MsgBox')[0];
         var input = msgbox.getElementsByClassName('asbox')[0];
-        // 验证本机验证码
         if ($.md5(input.value.toLocaleUpperCase()) === global_codes.code1) {
             window.setTimeout(function () {
                 recordSignup();
             }, 100);
         } else {
             shakeBox(input, "leftRight", 3, 50, 10);
-            input.setAttribute('tips', '<font size="4" err>验证码不正确</font>');
+            input.setAttribute('tips', '<font size="4" err>The verification code is incorrect</font>');
             mx = input.getClientRects()[0].left;
             my = input.getClientRects()[0].top + 10;
             showTooltip(input);
@@ -417,7 +415,7 @@ function setSignUp() {
     var recordSignup = function () {
         var submit1 = document.getElementById('submit1');
         var msgbox = document.getElementsByClassName('MsgBox')[0];
-        showMsgbox(msgbox, '<h3 style="width:100%">注册中</h3><p>我们正在为您注册，注册完后将为您登录，请耐心等待。<span class=\'wait\' style=\'width: 18px;height: 18px;margin-left: 2px;\'></span></p>');
+        showMsgbox(msgbox, '<h3 style="width:100%">Registering</h3><p>We are registering for you. After registration, you will be logged in. Please wait patiently. <span class=\'wait\' style=\'width: 18px;height: 18px;margin-left: 2px;\'></span></p>');
         //usrinfo
         makeID(document.getElementById('id1'), function () {
             usr.usrid = document.getElementById('id1').value;
@@ -428,8 +426,7 @@ function setSignUp() {
             usr.pwd = $.md5(document.getElementById('pwd1-0').value) + ":";
             usr.receipt_info = "";
             usr.deliver_info = "";
-            usr.cart = "";
-            var usrd = new Object;
+            usr.cart = ""; var usrd = new Object;
             for (var i in usr) {
                 if (i != "keys") {
                     usrd[i] = usr[i];
@@ -437,7 +434,7 @@ function setSignUp() {
             }
             var newSql = objToSql(usrd);
             newXMLHttpRequest('POST', '.phtml/usr.php', 'key=signup&data=' + newSql, function () {
-                //log in;
+                //log in; 
                 newXMLHttpRequest('POST', '.phtml/usr.php', 'key=login&usr=' + usr.email + '&pwd=' + document.getElementById('pwd1-0').value, function (rspt) {
                     window.setTimeout(function () {
                         autologin(function () {
@@ -459,25 +456,25 @@ function setSignUp() {
                 global_codes.code2 = mdMailCode(obj, function () {
                     makeMailCode(obj);
                 });
-                //30 min timeout
+                //30 min timeout 
                 window.setTimeout(function () {
                     global_codes.code2 = "";
                 }, 180000);
             } else {
                 var msgbox = document.getElementsByClassName('MsgBox')[0];
-                showMsgbox(msgbox, '<h3 style="width:100%">此邮箱已经注册过</h3><p style="width:100%">此邮箱已经注册过，如要登录，请转到<b><a style="float:none" xhr href="?account#login">登录页面</a></b>，否则，请更换邮箱。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                showMsgbox(msgbox, '<h3 style="width:100%">This email has been registered</h3><p style="width:100%">This email has been registered. If you want to log in, please go to the <b><a style="float:none" xhr href="?account#login">Login page</a></b>, otherwise, please change your email.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
                 initAllLink();
             }
         }, function (stObj) {
             var advice = "";
             if (stObj.status == 0) {
-                advice = "请确保您已经联网";
+                advice = "Please make sure you are online";
             } else if (stObj.status == 403) {
-                advice = "请确保您有权限访问此页面";
+                advice = "Please make sure you have permission to access this page";
             } else if (stObj.status == 404 || stObj.status == 500) {
-                advice = "请确保所访问路径没有错误";
+                advice = "Please make sure there is no error in the accessed path";
             }
-            showMsgbox(msgbox, '<h3 style="width:100%">网络错误</h3><p>访问网络时遇到错误，页面返回代码：' + stObj.status + '，' + advice + '。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+            showMsgbox(msgbox, '<h3 style="width:100%">Network error</h3><p>An error occurred while accessing the network. The page returns code: ' + stObj.status + ', ' + advice + '.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
         });
     }
     var signup = function () {
@@ -485,7 +482,7 @@ function setSignUp() {
         var submit1 = document.getElementById('submit1');
         submit1.setAttribute('disabled', '');
         chgLockForm(1, 1);
-        //verify id
+        //verify id 
         var msgbox = document.getElementsByClassName('MsgBox')[0];
         var eml0 = document.getElementById('eml0');
         var emlc0 = document.getElementById('emlc0');
@@ -494,29 +491,28 @@ function setSignUp() {
         submit1.innerHTML = "<span class='wait' style='width:11px;background-color:whitesmoke;'></span>";
         newXMLHttpRequest('POST', '.phtml/usr.php', 'key=hasEmail&email=' + eml0.value, function (rspt) {
             if (eml0.value != "" && rspt == "0") {
-                //continue 验证邮箱
+                //continue verify email
                 if (emlc0.value != "" && $.md5(eml0.value + emlc0.value) == global_codes.code2) {
-                    //continue 验证邮箱代号
+                    //continue verify email code
                     if (checkPwd(pwd1_0.value) > 0.15) {
-                        //continue 验证密码
+                        //continue verify password
                         var timewait = 0;
                         if (checkPwd(pwd1_0.value) < 0.2) {
-                            showMsgbox(msgbox, '<h3 style="width:100%">密码不安全</h3><p style="width:100%">您的密码比较简单，我们将继续注册，但我们强烈建议您在事后修改密码。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>知道了</a>');
+                            showMsgbox(msgbox, '<h3 style="width:100%">Password is not safe</h3><p style="width:100%">Your password is relatively simple, we will continue to register, but we strongly recommend that you change your password afterwards.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>Know it</a>');
                             hideMsgbox(msgbox, 4000);
                             timewait = 4500;
                         }
                         if (pwd1_0.value == pwd1_1.value) {
-                            //cotinue verify_code 
+                            //cotinue verify_code
                             window.setTimeout(function () {
-                                showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">验证码</h3><p>输入验证码以确认你不是机器人。(不区分大小写)</p><div class="line" style="margin-top: 5px;"></div><div style="width: 100%;"><div class="asbox_con" style="width:28%;margin-right:1%"><canvas style="width:73%;height:28px;position:relative;float:left;"></canvas><a tips="刷新代码" onmouseover="showTooltip(this)" onmouseleave="hideTooltip()" class="btn" id="refresh_btn" style="width:20px;height:20px;padding:3px;border-radius:0px;background-size:24px;background-position:2px;background-repeat:no-repeat;background-image:url(\'Image/fatcow/arrow_refresh.png\')"></a></div><div class="asbox_con" style="width:69%;margin-left:1%"><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%" autocomplete="off"></div></div><div class="line" style="margin-top: 5px;"></div><a class="btn" id="confirm_btn" right>确认</a><a class="btn" right onclick="cancelVrfyCode(this,document.getElementById(\'submit1\'));chgLockForm(1,0);">取消</a>');
+                                showMsgbox(msgbox, '<h3 style="margin-bottom:5px;width:100%">Verification code</h3><p>Enter the verification code to confirm that you are not a robot. (Not case sensitive)</p><div class="line" style="margin-top: 5px;"></div><div style="width: 100%;"><div class="asbox_con" style="width:28%;margin-right:1%"><canvas style="width:73%;height:28px;position:relative;float:left;"></canvas><a tips="Refresh code" onmouseover="showTooltip(this)" onmouseleave="hideTooltip()" class="btn" id="refresh_btn" style="width:20px;height:20px;padding:3px;border-radius:0px;background-size:24px;background-position:2px;background-repeat:no-repeat;background-image:url(\'Image/fatcow/arrow_refresh.png\')"></a></div><div class="asbox_con" style="width:69%;margin-left:1%"><input class="asbox" onfocus="boxstyle(this.parentElement,1)" onblur="boxstyle(this.parentElement,0)" oninput="" style="width:100%" autocomplete="off"></div></div><div class="line" style="margin-top: 5px;"></div><a class="btn" id="confirm_btn" right>Confirm</a><a class="btn" right onclick="cancelVrfyCode(this,document.getElementById(\'submit1\'));chgLockForm(1,0);">Cancel</a>');
                                 global_codes.code1 = newCode();
                                 var btn = document.getElementById("refresh_btn");
                                 btn.onclick = function () {
                                     clearCode();
                                     global_codes.code1 = newCode();
                                 }
-                                var confirmBtn = document.getElementById("confirm_btn");
-                                confirmBtn.onclick = function () {
+                                var confirmBtn = document.getElementById("confirm_btn"); confirmBtn.onclick = function () {
                                     signupVrfyCode1();
                                 }
                                 msgbox.getElementsByClassName("asbox")[0].onkeydown = function (e) {
@@ -529,37 +525,37 @@ function setSignUp() {
                                     }
                                 }
                             }, timewait);
-                            //to verify_code
+                            //to verify_code 
                         } else {
-                            showMsgbox(msgbox, '<h3 style="width:100%">密码不匹配</h3><p style="width:100%">两次密码不一样，请确保密码相同后再试一次。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>是的</a>');
+                            showMsgbox(msgbox, '<h3 style="width:100%">Password mismatch</h3><p style="width:100%">The two passwords are different, please make sure the passwords are the same and try again. </p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>Yes</a>');
                             resetSubmit(submit1);
                             chgLockForm(1, 0);
                         }
                     } else {
-                        showMsgbox(msgbox, '<h3 style="width:100%">密码非常不安全</h3><p style="width:100%">空密码或一到两个字符的密码非常不安全，安全起见，请加入更多字符，最好运用大小写，数字以及符号。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                        showMsgbox(msgbox, '<h3 style="width:100%">Passwords are very unsafe</h3><p style="width:100%">Empty passwords or passwords with one or two characters are very unsafe. For safety reasons, please add more characters, preferably uppercase and lowercase, numbers and symbols. </p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
                         resetSubmit(submit1);
                         chgLockForm(1, 0);
                     }
                 } else {
-                    showMsgbox(msgbox, '<h3 style="width:100%">没有填写(正确的)邮箱验证码</h3><p style="width:100%">请填写(正确的)邮箱验证码后再试一次。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                    showMsgbox(msgbox, '<h3 style="width:100%">No (correct) email verification code was filled in</h3><p style="width:100%">Please fill in the (correct) email verification code and try again.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
                     resetSubmit(submit1);
                     chgLockForm(1, 0);
                 }
             } else {
-                showMsgbox(msgbox, '<h3 style="width:100%">没有填写(正确的)电子邮箱，或填写了已经注册过的邮箱。</h3><p style="width:100%">请填写(正确的或其它的)电子邮箱后再试一次。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+                showMsgbox(msgbox, '<h3 style="width:100%">No (correct) email address was filled in, or an already registered email address was filled in.</h3><p style="width:100%">Please fill in the (correct or other) email address and try again. </p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
                 resetSubmit(submit1);
                 chgLockForm(1, 0);
             }
         }, function (stObj) {
             var advice = "";
             if (stObj.status == 0) {
-                advice = "请确保您已经联网";
+                advice = "Please make sure you are connected to the Internet";
             } else if (stObj.status == 403) {
-                advice = "请确保您有权限访问此页面";
+                advice = "Please make sure you have permission to access this page";
             } else if (stObj.status == 404 || stObj.status == 500) {
-                advice = "请确保所访问路径没有错误";
+                advice = "Please make sure there is no error in the accessed path";
             }
-            showMsgbox(msgbox, '<h3 style="width:100%">网络错误</h3><p>访问网络时遇到错误，页面返回代码：' + stObj.status + '，' + advice + '。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>')
+            showMsgbox(msgbox, '<h3 style="width:100%">Network error</h3><p>An error occurred while accessing the network. The page returns code: ' + stObj.status + ', ' + advice + '. </p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>')
             resetSubmit(submit1);
             chgLockForm(1, 0);
         });
@@ -594,23 +590,21 @@ function netFatal(stObj, num, submit) {
     var msgbox = document.getElementsByClassName("MsgBox")[0];
     var advice = "";
     if (stObj.status == 0) {
-        advice = "请确保您已经联网";
+        advice = "Make sure you are online";
     } else if (stObj.status == 403) {
-        advice = "请确保您有权限访问此页面";
+        advice = "Make sure you have permission to access this page";
     } else if (stObj.status == 404 || stObj.status == 500) {
-        advice = "请确保所访问路径没有错误";
+        advice = "Please make sure there is no error in the accessed path";
     }
-    showMsgbox(msgbox, '<h3 style="width:100%">网络错误</h3><p>访问网络时遇到错误，页面返回代码：' + stObj.status + '，' + advice + '。</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>好的</a>');
+    showMsgbox(msgbox, '<h3 style="width:100%">Network error</h3><p>An error occurred while accessing the network. The page returns code: ' + stObj.status + ', ' + advice + '.</p><div class="line" style="margin-top: 5px;"></div><a class="btn" onclick="hideMsgbox(this.parentElement.parentElement)" right>OK</a>');
     resetSubmit(submit);
     chgLockForm(num, 0);
 }
 
 //sign up ends
 
-//signout
-
 function cancelVrfyCode(cancelbtn, button) {
     hideMsgbox(cancelbtn.parentElement.parentElement);
-    button.innerHTML = "<span>继续</span>";
+    button.innerHTML = "<span>Continue</span>";
     button.removeAttribute('disabled');
 }

@@ -18,7 +18,7 @@
     $ip = $condata["ip"];
     $date = getLongDate($condata["date"]);
     $object = $condata["object"];
-    $btn = $condata["status"] == 0 ? '<button class="asbox_submit" id="but_continue"><span>继续</span></button><button class="asbox_submit" shallow id="but_ignore"><span>Ignore</span></button><button class="asbox_submit" shallow id="but_cancel"><span>Cancel</span></button>' : '<button class="asbox_submit" shallow id="but_cancel"><span>Cancel</span></button>'; 
+    $btn = $condata["status"] == 0 ? '<button class="asbox_submit" id="but_continue"><span>Continue</span></button><button class="asbox_submit" shallow id="but_ignore"><span>Ignore</span></button><button class="asbox_submit" shallow id="but_cancel"><span>Cancel</span></button>' : '<button class="asbox_submit" shallow id="but_cancel"><span>Cancel</span></button>'; 
     echo <<<PAGE
         <div class="dcon" style="margin-top: 15px;" id="editBoard"> 
             <div class="scon"> 

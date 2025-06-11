@@ -3,7 +3,7 @@
     include_once ".phtml/deliver.php";
     
     function getCnDateTime($date){
-      return date("Y年m月d日 H:i:s",$date);
+      return date("Y-m-d H:i:s",$date);
     }
 
     function writeUsrPage(){
@@ -68,7 +68,7 @@
         $buyConfirm = "onclick=\"buyConfirm($dlvid)\"";
         $name = $data[$i]["aplinfo"]["udlvinfo"]["name"];
         if($data[$i]["aplinfo"]["usrid"]=="SPECIAL"){
-          $name = "DeBook Official Account";
+          $name = "DeBook Official";
         }
         $staHtml = "";
         $cmdHtml = "";
@@ -185,7 +185,7 @@
       $sellPp = $sellCp-1;
       $sellPagePrevAttr = $sellCp>1?"onclick='showSellOrder(null,null,$sellPp)'":"disabled";
       $sellPageNextAttr = $sellCp<$sellTp?"onclick='showSellOrder(null,null,$sellNp)'":"disabled";
-      $sellPageHtml = "<a $sellPagePrevAttr>Previous</a><a style=\"color:#202122\">Page ".$sellCp." of ".$sellTp."</a><a $sellPageNextAttr>Next</a><a onclick=\"showSellOrder(null,null,null,null,1);\">Show the cancelled ".$hideCount." orders</a>";
+      $sellPageHtml = "<a $sellPagePrevAttr>Previous</a><a style=\"color:#202122\">P. ".$sellCp." of ".$sellTp."</a><a $sellPageNextAttr>Next</a><a onclick=\"showSellOrder(null,null,null,null,1);\">Show the cancelled ".$hideCount." orders</a>";
       //receipt
       $receiptHtml = "";
       if(count($receiptInfo)==0){
